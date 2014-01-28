@@ -13,7 +13,33 @@ class UsersController extends AppController {
  *
  * @var array
  */
-	public $components = array('Paginator');
+	public $components = array(
+		'Paginator'
+	);
+
+/**
+ * login method
+
+ */
+
+public function beforeFilter() {
+    parent::beforeFilter();
+    // Allow users to register and logout.
+    $this->Auth->allow('add', 'logout');
+}
+
+public function login() {
+    if ($this->request->is('post')) {
+        if ($this->Auth->login()) {
+            return $this->redirect($this->Auth->redirect());
+        }
+        $this->Session->setFlash(__('Invalid username or password, try again'));
+    }
+}
+
+public function logout() {
+    return $this->redirect($this->Auth->logout());
+}
 
 /**
  * index method
@@ -22,6 +48,16 @@ class UsersController extends AppController {
  */
 	public function index() {
 		$this->User->recursive = 0;
+
+		/*
+			This is how we send data to the View.  Right now, our paginator is handling the actual querying, so there isn't much to see.
+
+			the $this->set() method takes two parameters.
+			@param string $name
+				specifies the name of the variable that will be accessible in the view.  For example this 'users' will create a variable in the view called $users
+			@param array $data
+				this is the value of your variable.  In this case, this is data straight from our database.
+		*/
 		$this->set('users', $this->Paginator->paginate());
 	}
 
