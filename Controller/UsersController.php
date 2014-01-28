@@ -19,7 +19,6 @@ class UsersController extends AppController {
 
 /**
  * login method
-
  */
 
 public function beforeFilter() {
