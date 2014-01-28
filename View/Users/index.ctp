@@ -64,6 +64,11 @@
 		For example, $users[0] and $users[1] will return a user object.  This is a CakePHP convention--not a rule that has to be followed in PHP.
 		foreach initiates an iterator and PHP handles this set of data quite handily.
 
+		Notice that there is a key called ['User'] inside the $user array.  This directly references the User model.
+		Later on, as we add more models, and teach cake how they are related, this array will be filled with more information
+
+		For example you might later find $user['Skill'] packed with related data about the user's skill set.  Cake fetches these associations for you automatically.
+
 		the echo() function just prints whatever is handed to it as text
 		the h() function is a handy alias for the htmlspecialchars() PHP function.  This appropriately escapes data by turning it into valid HTML.
 
