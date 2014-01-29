@@ -1,34 +1,26 @@
-<?php
-	/*
-		Add.ctp
-		--
-		I have also annotated this form, since it shows the mechanics of GETTING data
-	*/
-?>
 <div class="users form">
-<?php
-	/*
-		The Form component has a lot of handy methods that generate HTML for us.
-
-		This small blob of PHP should echo something like
-		<form action="/users/add" id="UserAddForm" method="post" accept-charset="utf-8">
-
-	*/
-?>
 <?php echo $this->Form->create('User'); ?>
 	<fieldset>
-		<legend><?php echo __('Add User'); // again, look at the use of the __() method ?></legend>
+		<legend><?php echo __('Add User'); ?></legend>
 	<?php
-		echo $this->Form->input('username'); // you can echo a form input.  You can pass all kinds of arguments to the Form::input() function to customize the function
+		echo $this->Form->input('username');
 		echo $this->Form->input('password');
+		echo $this->Form->input('email');
+		echo $this->Form->input('first_name');
+		echo $this->Form->input('last_name');
+		echo $this->Form->input('Skill');
 	?>
 	</fieldset>
-<?php echo $this->Form->end(__('Submit')); // this will output the submit button and close the open form tag. ?>
+<?php echo $this->Form->end(__('Submit')); ?>
 </div>
 <div class="actions">
 	<h3><?php echo __('Actions'); ?></h3>
 	<ul>
 
 		<li><?php echo $this->Html->link(__('List Users'), array('action' => 'index')); ?></li>
+		<li><?php echo $this->Html->link(__('List Recoveries'), array('controller' => 'recoveries', 'action' => 'index')); ?> </li>
+		<li><?php echo $this->Html->link(__('New Recovery'), array('controller' => 'recoveries', 'action' => 'add')); ?> </li>
+		<li><?php echo $this->Html->link(__('List Skills'), array('controller' => 'skills', 'action' => 'index')); ?> </li>
+		<li><?php echo $this->Html->link(__('New Skill'), array('controller' => 'skills', 'action' => 'add')); ?> </li>
 	</ul>
 </div>
