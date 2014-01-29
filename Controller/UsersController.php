@@ -17,7 +17,13 @@ class UsersController extends AppController {
 		'Paginator'
 	);
 
+<<<<<<< HEAD
 
+=======
+/**
+ * login method
+ */
+>>>>>>> a8cf989abb24ab5caa3aef3336f8dcc88626e9af
 
 public function beforeFilter()
 {
