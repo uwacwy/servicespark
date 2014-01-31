@@ -18,37 +18,16 @@ class User extends AppModel {
  *
  * @var string
  */
-	public $displayField = 'full_name';
+	public $displayField = 'username';
 
-	public $virtualFields = array(
-	    'full_name' => 'CONCAT(User.first_name, " ", User.last_name)'
-	);
-
-	public function beforeSave($options = array())
-	{
-	    if (isset($this->data[ $this->alias ]['password']))
-	    {
+	public function beforeSave($options = array()) {
+	    if (isset($this->data[$this->alias]['password'])) {
 	        $passwordHasher = new SimplePasswordHasher();
-	        $this->data[ $this->alias ]['password'] = $passwordHasher->hash( $this->data[ $this->alias ]['password'] );
+	        $this->data[$this->alias]['password'] = $passwordHasher->hash(
+	            $this->data[$this->alias]['password']
+	        );
 	    }
 	    return true;
 	}
 
-	public $hasOne = 'Recovery';
-
-	public $hasAndBelongsToMany = array(
-		'Skill' => array(
-			'className' => 'Skill',
-			'joinTable' => 'skills_users',
-			'foreignKey' => 'user_id',
-			'associationForeignKey' => 'skill_id',
-			'unique' => 'keepExisting',
-			'conditions' => '',
-			'fields' => '',
-			'order' => '',
-			'limit' => '',
-			'offset' => '',
-			'finderQuery' => '',
-		)
-	);
 }
