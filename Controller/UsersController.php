@@ -17,20 +17,10 @@ class UsersController extends AppController {
 		'Paginator'
 	);
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-=======
-/**
- * login method
- */
->>>>>>> a8cf989abb24ab5caa3aef3336f8dcc88626e9af
-=======
 /**
  * login method
 
  */
->>>>>>> parent of 0a375d7... Password Recovery is half-built
 
 public function beforeFilter() {
     parent::beforeFilter();
