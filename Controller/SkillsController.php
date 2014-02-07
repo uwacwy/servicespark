@@ -36,6 +36,7 @@ class SkillsController extends AppController {
 		if (!$this->Skill->exists($id)) {
 			throw new NotFoundException(__('Invalid skill'));
 		}
+		
 		$options = array('conditions' => array('Skill.' . $this->Skill->primaryKey => $id));
 		$this->set('skill', $this->Skill->find('first', $options));
 	}
@@ -48,10 +49,12 @@ class SkillsController extends AppController {
 	public function add() {
 		if ($this->request->is('post')) {
 			$this->Skill->create();
+
 			if ($this->Skill->save($this->request->data)) {
 				return $this->flash(__('The skill has been saved.'), array('action' => 'index'));
 			}
 		}
+
 		$users = $this->Skill->User->find('list');
 		$this->set(compact('users'));
 	}
@@ -67,14 +70,17 @@ class SkillsController extends AppController {
 		if (!$this->Skill->exists($id)) {
 			throw new NotFoundException(__('Invalid skill'));
 		}
+
 		if ($this->request->is(array('post', 'put'))) {
 			if ($this->Skill->save($this->request->data)) {
 				return $this->flash(__('The skill has been saved.'), array('action' => 'index'));
 			}
-		} else {
+		} 
+		else {
 			$options = array('conditions' => array('Skill.' . $this->Skill->primaryKey => $id));
 			$this->request->data = $this->Skill->find('first', $options);
 		}
+
 		$users = $this->Skill->User->find('list');
 		$this->set(compact('users'));
 	}
@@ -88,13 +94,18 @@ class SkillsController extends AppController {
  */
 	public function delete($id = null) {
 		$this->Skill->id = $id;
+
 		if (!$this->Skill->exists()) {
 			throw new NotFoundException(__('Invalid skill'));
 		}
+
 		$this->request->onlyAllow('post', 'delete');
+
 		if ($this->Skill->delete()) {
 			return $this->flash(__('The skill has been deleted.'), array('action' => 'index'));
-		} else {
+		} 
+		else {
 			return $this->flash(__('The skill could not be deleted. Please, try again.'), array('action' => 'index'));
 		}
-	}}
+	}
+}
