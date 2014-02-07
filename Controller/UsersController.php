@@ -52,7 +52,7 @@ public function logout()
  * @return void
  */
 	public function index()
-{
+	{
 			$this->User->recursive = 0;
 
 		/*
@@ -110,7 +110,7 @@ public function logout()
 			$this->User->create();
 			if ($this->User->saveAll($this->request->data))
 			{
-					$this->Session->setFlash(__('The user has been saved.'));
+				$this->Session->setFlash(__('The user has been saved.'));
 				return $this->redirect(array('action' => 'index'));
 			}
 			else
@@ -177,6 +177,7 @@ public function logout()
 
 			return;
 
+			// Unreachable code? What is the purpose of this?
 			if ($this->User->save($this->request->data)  && $this->User->saveAll($saveSkills) )
 			{
 				$this->Session->setFlash(__('The user has been saved.'));
