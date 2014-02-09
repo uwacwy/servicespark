@@ -29,13 +29,14 @@ class Recovery extends AppModel {
  *
  * @var array
  */
+
 	public $hasOne = array(
 		'User' => array(
 			'className' => 'User',
 			'foreignKey' => 'user_id',
-			'conditions' => '',
-			'fields' => '',
-			'order' => ''
+			'conditions' => array(
+				'Recovery.expiration >= Now()'
+			)
 		)
 	);
 }

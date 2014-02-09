@@ -1,5 +1,7 @@
 <?php
 App::uses('AppController', 'Controller');
+App::uses('CakeEmail', 'Network/Email');
+
 /**
  * Users Controller
  *
@@ -32,6 +34,13 @@ public function login()
 	{
     	if ($this->Auth->login())
 		{
+			/*
+				Eliminate Open Password Recovery Attempts
+			*/
+			
+			$this->User->Recovery->delete( $this->Auth->user('id') );
+				
+
         	return $this->redirect($this->Auth->redirect());
     	}
     	$this->Session->setFlash(__('Invalid username or password, try again'));
@@ -91,14 +100,18 @@ public function logout()
 	{
 		if ($this->request->is('post'))
 		{
-			if( $this->request->data['User']['password'] != $this->request->data['User']['password_confirmation'] )
+			if( $this->request->data['User']['password_l'] != $this->request->data['User']['password_r'] )
 			{
 				$this->Session->setFlash( __('The passwords did not match.  Please try again.') );
 				unset(
-					$this->request->data['User']['password'], 
-					$this->request->data['User']['password_confirmation'] ); // this will blank the fields
+					$this->request->data['User']['password_l'], 
+					$this->request->data['User']['password_r'] ); // this will blank the fields
 
 				return false; // stops remaining processing
+			}
+			else
+			{
+				$this->request->data['User']['password'] = $this->request->data['User']['password_l'];
 			}
 
 			$this->request->data['Skill'][0]['skill'] = "CakePHP Programming";
@@ -205,11 +218,8 @@ public function logout()
 
 				debug($user);
 
-				if( isset($user['Recovery']) )
-				{
-					debug('deleted existing recovery');
-					$this->User->Recovery->delete($user['Recovery']['user_id']);
-				}
+				$this->User->Recovery->delete($user['Recovery']['user_id']);
+
 
 				if( isset($user['User']['email']) )
 				{
@@ -225,19 +235,42 @@ public function logout()
 						should our database be compromised, it would still be difficult to attack these passwords
 					*/
 
-					$nhashes = 9999;
+					/*
+						Specify the required hashing time in seconds
+					*/
+					$n_time = 2; // 2 seconds
+					$exp_duration = "3 days";
 
 					$hasher = new SimplePasswordHasher();
 					$hash = $user['User']['password'];
+					$start_t = time();
 
-					for($i = 0; $i < $nhashes; $i++)
+					for($i = 0; (time() - $start_t) < $n_time; $i++)
 					{
 						$hash = $hasher->hash($hash);
 					}
 
-					debug('email user before hash(n) is computed');
+					debug('emailing user hash n');
+					$Email = new CakeEmail();
 
-					$user['Recovery']['expiration'] = date('Y-m-d H:i:s', strtotime('+3 days'));
+					/* send variables to the email generator */
+					$email_user = $user['User'];
+					$token = $hash;
+					$expiration = $exp_duration;
+					$Email->viewVars( compact('email_user', 'token', 'expiration') );
+
+
+					/* send the email */
+					$Email->template('PasswordRecovery')
+						->emailFormat('text')
+						->to( $user['User']['email'] )
+						->from( 'volunteer@unitedwayalbanycounty.org' )
+						->subject( sprintf('Password Recovery for %s', $user['User']['email']) )
+						->send();
+
+					debug('email sent');
+
+					$user['Recovery']['expiration'] = date('Y-m-d H:i:s', strtotime( sprintf('+%s', $exp_duration) ) );
 					$user['Recovery']['token'] = $hasher->hash($hash); // here we are saving n+1 = hash(n)
 
 					debug($user);
@@ -249,10 +282,6 @@ public function logout()
 			}
 		}
 
-		if( $this->request->is( array('get') ) )
-		{
-			debug('we are validating a token');
-		}
 	}
 
 	/*
