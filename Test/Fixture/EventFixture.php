@@ -32,8 +32,8 @@ class EventFixture extends CakeTestFixture {
 			'event_id' => 1,
 			'title' => 'Lorem ipsum dolor sit amet',
 			'description' => 'Lorem ipsum dolor sit amet',
-			'start_time' => '2014-02-09 21:00:10',
-			'stop_time' => '2014-02-09 21:00:10'
+			'start_time' => '2014-02-09 21:22:02',
+			'stop_time' => '2014-02-09 21:22:02'
 		),
 	);
 
