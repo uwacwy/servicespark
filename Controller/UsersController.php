@@ -10,76 +10,74 @@ App::uses('CakeEmail', 'Network/Email');
  */
 class UsersController extends AppController {
 
-/**
- * Components
- *
- * @var array
- */
+	/**
+	 * Components
+	 *
+	 * @var array
+	 */
 	public $components = array(
 		'Paginator'
 	);
 
-
-
-public function beforeFilter()
-{
-    	//parent::beforeFilter();
-    // Allow users to register and logout.
-    $this->Auth->allow('add', 'logout', 'recover');
-}
-
-public function login()
-{
-	if ($this->request->is('post'))
+	public function beforeFilter()
 	{
-    	if ($this->Auth->login())
-		{
-			/*
-				Eliminate Open Password Recovery Attempts
-			*/
-			
-			$this->User->Recovery->delete( $this->Auth->user('id') );
-				
-
-        	return $this->redirect($this->Auth->redirect());
-    	}
-    	$this->Session->setFlash(__('Invalid username or password, try again'));
-	}
-}
-
-public function logout()
-{
-    return $this->redirect($this->Auth->logout());
-}
-
-/**
- * index method
- *
- * @return void
- */
-	public function index()
-{
-			$this->User->recursive = 0;
+		// Allow users to register and logout.
+		$this->Auth->allow('register', 'login', 'logout');
 
 		/*
-			This is how we send data to the View.  Right now, our paginator is handling the actual querying, so there isn't much to see.
-
-			the $this->set() method takes two parameters.
-			@param string $name
-				specifies the name of the variable that will be accessible in the view.  For example this 'users' will create a variable in the view called $users
-			@param array $data
-				this is the value of your variable.  In this case, this is data straight from our database.
+			Since we always process the passwords before we save it, unset
 		*/
+		unset( $this->request->data['User']['password'] );
+	}
+
+	public function login()
+	{
+		if ($this->request->is('post'))
+		{
+	    	if ($this->Auth->login())
+			{
+				/*
+					delete recoveries
+					--
+					if a user successfully logs in, they should have any password
+					recovery attempts deleted.  Users are told in the password recovery
+					email that they can simply login to cancel any outstanding recovery
+					requests.
+				*/
+				if( $this->User->Recovery->exists( $this->Auth->user('user_id') ) )
+				{
+					$this->User->Recovery->delete( $this->Auth->user('user_id') );
+				}	
+
+	        	return $this->redirect($this->Auth->redirect());
+	    	}
+	    	$this->Session->setFlash(__('Invalid username or password, try again'));
+		}
+	}
+
+	public function logout()
+	{
+		return $this->redirect($this->Auth->logout());
+	}
+
+	/**
+	 * index method
+	 *
+	 * @return void
+	 */
+	public function index()
+	{
+		$this->User->recursive = 0;
 		$this->set('users', $this->Paginator->paginate());
 	}
 
-/**
- * view method
- *
- * @throws NotFoundException
- * @param string $id
- * @return void
- */
+	/**
+	 * view method
+	 *
+	 * @throws NotFoundException
+	 * @param string $id
+	 * @return void
+	 */
 	public function view($id = null)
 	{
 		if ( !$this->User->exists($id) )
@@ -91,12 +89,12 @@ public function logout()
 		$this->set('user', $this->User->find('first', $options));
 	}
 
-/**
- * add method
- *
- * @return void
- */
-	public function add()
+	/**
+	 * register method
+	 *
+	 * @return void
+	 */
+	public function register()
 	{
 		if ($this->request->is('post'))
 		{
@@ -107,21 +105,22 @@ public function logout()
 					$this->request->data['User']['password_l'], 
 					$this->request->data['User']['password_r'] ); // this will blank the fields
 
+				$this->set('test_password_match', false);
+
 				return false; // stops remaining processing
 			}
 			else
 			{
+				$this->set('test_password_match', true);
 				$this->request->data['User']['password'] = $this->request->data['User']['password_l'];
 			}
 
-			$this->request->data['Skill'][0]['skill'] = "CakePHP Programming";
-
 
 			$this->User->create();
-			if ($this->User->saveAll($this->request->data))
+			if ($this->User->save($this->request->data))
 			{
-					$this->Session->setFlash(__('The user has been saved.'));
-				return $this->redirect(array('action' => 'index'));
+				$this->Session->setFlash(__('This account has been created.'));
+				return $this->redirect(array('action' => 'login'));
 			}
 			else
 			{
@@ -147,45 +146,21 @@ public function logout()
 		if ($this->request->is(array('post', 'put')))
 		{
 
-			if( $this->request->data['User']['password'] != "")
+
+			if( $this->request->data['User']['password_l'] != "")
 			{
-				if( $this->request->data['User']['password'] != $this->request->data['User']['password_confirmation'] )
+				if( $this->request->data['User']['password_l'] != $this->request->data['User']['password_r'] )
 				{
 					$this->Session->setFlash( __('The passwords did not match.  They were not changed.') );
 					unset(
-						$this->request->data['User']['password'], 
-						$this->request->data['User']['password_confirmation'] ); // this will blank the fields
+						$this->request->data['User']['password_l'], 
+						$this->request->data['User']['password_r'] ); // this will blank the fields
 				}
-			}
-
-			if( !empty($this->data['User']['skills_csv']) )
-			{
-				$skills = split(',', $this->data['User']['skills_csv']);
-
-				foreach ($skills as $skill)
+				else
 				{
-					$skill_meta = $this->get_skills($skill);
-
-					debug($skill_meta);
-
-					if( empty($skill_meta) )
-					{
-						$saveSkills[] = array(
-							'User' => array('user_id' => $id),
-							'Skill' => array('skill' => trim($skill) )
-						);
-					}
-					else
-					{
-
-					}
-					
+					$this->request->data['User']['password'] = $this->request->data['User']['password_l'];
 				}
 			}
-
-			debug($saveSkills);
-
-			return;
 
 			if ($this->User->save($this->request->data)  && $this->User->saveAll($saveSkills) )
 			{
@@ -207,97 +182,6 @@ public function logout()
 		}
 	}
 
-	public function recover($token = null)
-	{
-		if( $this->request->is( array('post') ) )
-		{
-			if( isset($this->request->data['User']['username']) )
-			{
-				$user = $this->User->find('first', 
-					array('conditions' => array('User.username' => $this->request->data['User']['username']) ));
-
-				debug($user);
-
-				$this->User->Recovery->delete($user['Recovery']['user_id']);
-
-
-				if( isset($user['User']['email']) )
-				{
-					/*
-						hash the existing password a lot of times
-
-						give the user hash n
-						but save the hash n+1
-
-						if the user gives us hash n, we hash it and we find hash n+1, we have
-						protected our database from prying eyes
-
-						should our database be compromised, it would still be difficult to attack these passwords
-					*/
-
-					/*
-						Specify the required hashing time in seconds
-					*/
-					$n_time = 2; // 2 seconds
-					$exp_duration = "3 days";
-
-					$hasher = new SimplePasswordHasher();
-					$hash = $user['User']['password'];
-					$start_t = time();
-
-					for($i = 0; (time() - $start_t) < $n_time; $i++)
-					{
-						$hash = $hasher->hash($hash);
-					}
-
-					debug('emailing user hash n');
-					$Email = new CakeEmail();
-
-					/* send variables to the email generator */
-					$email_user = $user['User'];
-					$token = $hash;
-					$expiration = $exp_duration;
-					$Email->viewVars( compact('email_user', 'token', 'expiration') );
-
-
-					/* send the email */
-					$Email->template('PasswordRecovery')
-						->emailFormat('text')
-						->to( $user['User']['email'] )
-						->from( 'volunteer@unitedwayalbanycounty.org' )
-						->subject( sprintf('Password Recovery for %s', $user['User']['email']) )
-						->send();
-
-					debug('email sent');
-
-					$user['Recovery']['expiration'] = date('Y-m-d H:i:s', strtotime( sprintf('+%s', $exp_duration) ) );
-					$user['Recovery']['token'] = $hasher->hash($hash); // here we are saving n+1 = hash(n)
-
-					debug($user);
-
-					unset($user['User']['password']); // don't change the password yet
-
-					$this->User->saveAll($user);
-				}
-			}
-		}
-
-	}
-
-	/*
-		get_skills
-		--
-		searches for related skills
-	*/
-	public function get_skills($skill)
-	{
-		return $this->User->Skill->find('list',
-			array('conditions' => 
-				array('skill' => trim($skill) )
-			)
-		);
-	}
-
 
 
 
@@ -315,10 +199,21 @@ public function logout()
 		{
 				throw new NotFoundException(__('Invalid user'));
 		}
+
 		$this->request->onlyAllow('post', 'delete');
+
 		if ($this->User->delete())
 		{
-				$this->Session->setFlash(__('The user has been deleted.'));
+			$this->Session->setFlash(__('The user has been deleted.'));
+
+			/*
+				In order to preserve state, the user will be logged out if they delete their account
+			*/
+			if( $this->Auth->user('user_id') == $id )
+			{
+				$this->Session->setFlash(__('Your account was deleted and you have been logged out.'));
+    			return $this->redirect($this->Auth->logout());
+    		}
 		}
 		else
 		{

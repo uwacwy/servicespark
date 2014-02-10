@@ -18,7 +18,7 @@ class User extends AppModel {
  *
  * @var string
  */
-	public $displayField = 'full_name';
+	public $displayField = 'username';
 
 	public $virtualFields = array(
 	    'full_name' => 'CONCAT(User.first_name, " ", User.last_name)'
@@ -36,19 +36,5 @@ class User extends AppModel {
 
 	public $hasOne = 'Recovery';
 
-	public $hasAndBelongsToMany = array(
-		'Skill' => array(
-			'className' => 'Skill',
-			'joinTable' => 'skills_users',
-			'foreignKey' => 'user_id',
-			'associationForeignKey' => 'skill_id',
-			'unique' => 'keepExisting',
-			'conditions' => '',
-			'fields' => '',
-			'order' => '',
-			'limit' => '',
-			'offset' => '',
-			'finderQuery' => '',
-		)
-	);
+
 }
