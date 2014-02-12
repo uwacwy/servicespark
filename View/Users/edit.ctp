@@ -5,7 +5,12 @@
 	<?php
 		echo $this->Form->input('user_id');
 		echo $this->Form->input('username');
-		echo $this->Form->input('password');
+		echo $this->Form->input('password_l', array('type' => 'password', 'label' => "New Password") );
+		echo $this->Form->input('password_r', array('type' => 'password', 'label' => "Confirm Password") );
+		echo $this->Form->input('email');
+		echo $this->Form->input('first_name');
+		echo $this->Form->input('last_name');
+		echo $this->Form->input('Skill');
 	?>
 	</fieldset>
 <?php echo $this->Form->end(__('Submit')); ?>

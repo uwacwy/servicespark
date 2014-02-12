@@ -193,6 +193,8 @@ class UsersController extends AppController {
 		} else {
 			$options = array('conditions' => array('User.' . $this->User->primaryKey => $id));
 			$this->request->data = $this->User->find('first', $options);
+			$skills = $this->User->Skill->find('list');
+			$this->set(compact('skills'));
 		}
 	}
 

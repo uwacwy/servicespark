@@ -9,9 +9,9 @@ class User extends AppModel {
 
 	public $primaryKey = 'user_id';
 	public $displayField = 'username';
-	public $hasOne = 'Recovery';
 	public $virtualFields = array(
-	    'full_name' => 'CONCAT(User.first_name, " ", User.last_name)'
+	    'full_name' => 'CONCAT(User.first_name, " ", User.last_name)',
+	    'account_age' => 'TIMESTAMPDIFF( MINUTE, User.created, Now() )'
 	);
 
 	public function beforeSave($options = array())
@@ -24,6 +24,24 @@ class User extends AppModel {
 	    return true;
 	}
 
+
+	public $hasOne = 'Recovery';
+
+	public $hasAndBelongsToMany = array(
+		'Skill' => array(
+			'className' => 'Skill',
+			'joinTable' => 'skills_users',
+			'foreignKey' => 'user_id',
+			'associationForeignKey' => 'skill_id',
+			'unique' => 'keepExisting',
+			'conditions' => '',
+			'fields' => '',
+			'order' => '',
+			'limit' => '',
+			'offset' => '',
+			'finderQuery' => '',
+		)
+	);
 
 	
 
