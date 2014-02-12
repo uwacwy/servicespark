@@ -28,8 +28,11 @@ class User extends AppModel {
 	{
 	    if (isset($this->data[ $this->alias ]['password']))
 	    {
-	        $passwordHasher = new SimplePasswordHasher();
-	        $this->data[ $this->alias ]['password'] = $passwordHasher->hash( $this->data[ $this->alias ]['password'] );
+	    	debug('initiating beforeSave password hash');
+	    	debug(sprintf('incoming password was %s', $this->data[ $this->alias ]['password']) );
+	        $hasher = new SimplePasswordHasher();
+	        $this->data[ $this->alias ]['password'] = $hasher->hash( $this->data[ $this->alias ]['password'] );
+	        debug(sprintf('outgoing password was %s', $this->data[ $this->alias ]['password']) );
 	    }
 	    return true;
 	}

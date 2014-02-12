@@ -118,19 +118,25 @@ class RecoveriesController extends AppController
 			$this->redirect( array('controller' => 'recoveries', 'action' => 'user') );
 		}
 
+		debug($attempts);
+
 
 		// if there is sent data, check new passwords for equality
 		if( $this->request->is('post') && !is_null($attempts['User']['user_id']) )
 		{
 			// we were sent recovery information
+			debug('recovering');
 
 			if( $this->request->data['User']['password_l'] == $this->request->data['User']['password_r'] )
 			{
-				$this->Recovery->User->id = $attempts['User']['user_id'];
+				debug('passwords matched; recovering');
 
-				if( $this->Recovery->User->saveField('password', $this->request->data['User']['password_l']) )
+				$save['User']['user_id'] = $attempts['User']['user_id'];
+				$save['User']['password'] = $this->request->data['User']['password_l'];
+
+				if( $this->Recovery->User->save($save) )
 				{
-					// debug('password changed');
+					debug('password changed');
 					$this->Session->setFlash('Your password has been successfully changed!  Please login.');
 					$this->Recovery->delete( $attempts['Recovery']['user_id'] ); // delete attempt from database
 					$this->redirect( array('controller' => 'users', 'action' => 'login') ); // redirect toward login screen

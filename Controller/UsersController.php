@@ -23,11 +23,6 @@ class UsersController extends AppController {
 	{
 		// Allow users to register and logout.
 		$this->Auth->allow('register', 'login', 'logout');
-
-		/*
-			Since we always process the passwords before we save it, unset
-		*/
-		unset( $this->request->data['User']['password'] );
 	}
 
 	public function login()
@@ -49,7 +44,7 @@ class UsersController extends AppController {
 					$this->User->Recovery->delete( $this->Auth->user('user_id') );
 				}	
 
-	        	return $this->redirect($this->Auth->redirect());
+	        	$this->redirect($this->Auth->redirect());
 	    	}
 	    	$this->Session->setFlash(__('Invalid username or password, try again'));
 		}
@@ -57,7 +52,7 @@ class UsersController extends AppController {
 
 	public function logout()
 	{
-		return $this->redirect($this->Auth->logout());
+		return $this->redirect( $this->Auth->logout() );
 	}
 
 	/**
@@ -92,35 +87,53 @@ class UsersController extends AppController {
 	/**
 	 * register method
 	 *
-	 * @return void
+	 * @return boolean true on success; false on failure
+	 *
+	 * @uses $this->request->data
+	 * @uses User.password
+	 * @sends void
+	 * 
+	 * This controller does not set any variables for the view.
+	 *
 	 */
 	public function register()
 	{
+		unset( $this->request->data['User']['password'] );
+
 		if ($this->request->is('post'))
 		{
+			/*
+				Process the password.
+				--
+				hashing is handled by the model
+				--
+				if password_l and password_r match
+					set User.password
+				else
+					blank password_l and password_r and return false so the form is displayed again
+			*/
 			if( $this->request->data['User']['password_l'] != $this->request->data['User']['password_r'] )
 			{
 				$this->Session->setFlash( __('The passwords did not match.  Please try again.') );
 				unset(
 					$this->request->data['User']['password_l'], 
-					$this->request->data['User']['password_r'] ); // this will blank the fields
-
-				$this->set('test_password_match', false);
+					$this->request->data['User']['password_r']
+				); // this will blank the fields
 
 				return false; // stops remaining processing
 			}
 			else
 			{
-				$this->set('test_password_match', true);
 				$this->request->data['User']['password'] = $this->request->data['User']['password_l'];
 			}
 
 
 			$this->User->create();
-			if ($this->User->save($this->request->data))
+
+			if ( $this->User->save($this->request->data) )
 			{
-				$this->Session->setFlash(__('This account has been created.'));
-				return $this->redirect(array('action' => 'login'));
+				$this->Session->setFlash( __('This account has been created.  Login with your username and password.') );
+				$this->redirect(array('action' => 'login'));
 			}
 			else
 			{
@@ -129,24 +142,26 @@ class UsersController extends AppController {
 		}
 	}
 
-/**
- * edit method
- *
- * @throws NotFoundException
- * @param string $id
- * @return void
- */
+	/**
+	 * edit method
+	 *
+	 * @throws NotFoundException
+	 * @param string $id
+	 * @return void
+
+
+	 */
 	public function edit($id = null)
 	{
+		unset( $this->request->data['User']['password'] );
+
 		if (!$this->User->exists($id))
 		{
-			throw new NotFoundException(__('Invalid user'));
-		}
+			throw new NotFoundException( __('Invalid user') );
+		} 
 
-		if ($this->request->is(array('post', 'put')))
+		if ($this->request->is( array('post', 'put') ) )
 		{
-
-
 			if( $this->request->data['User']['password_l'] != "")
 			{
 				if( $this->request->data['User']['password_l'] != $this->request->data['User']['password_r'] )
@@ -162,14 +177,14 @@ class UsersController extends AppController {
 				}
 			}
 
-			if ($this->User->save($this->request->data)  && $this->User->saveAll($saveSkills) )
+			if ( $this->User->save($this->request->data) )
 			{
-				$this->Session->setFlash(__('The user has been saved.'));
-				return $this->redirect(array('action' => 'index'));
+				$this->Session->setFlash( __('The user has been saved.') );
+				$this->redirect( array('action' => 'index') );
 			}
 			else
 			{
-				$this->Session->setFlash(__('The user could not be saved. Please, try again.'));
+				$this->Session->setFlash( __('The user could not be saved. Please, try again.') );
 			}
 		}
 		else
@@ -197,7 +212,7 @@ class UsersController extends AppController {
 		$this->User->id = $id;
 		if (!$this->User->exists())
 		{
-				throw new NotFoundException(__('Invalid user'));
+				throw new NotFoundException( __('Invalid user') );
 		}
 
 		$this->request->onlyAllow('post', 'delete');
@@ -212,13 +227,13 @@ class UsersController extends AppController {
 			if( $this->Auth->user('user_id') == $id )
 			{
 				$this->Session->setFlash(__('Your account was deleted and you have been logged out.'));
-    			return $this->redirect($this->Auth->logout());
+    			$this->redirect( $this->Auth->logout() );
     		}
 		}
 		else
 		{
 			$this->Session->setFlash(__('The user could not be deleted. Please, try again.'));
 		}
-		return $this->redirect(array('action' => 'index'));
+		return $this->redirect( array('action' => 'index') );
 	}
 }

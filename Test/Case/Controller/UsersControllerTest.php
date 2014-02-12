@@ -24,25 +24,6 @@ class UsersControllerTest extends ControllerTestCase {
 		'app.recovery'
 	);
 
-	/**
-	 * testLogin method
-	 *
-	 * @return void
-	 */
-	public function testLogin()
-	{
-
-	}
-
-	/**
-	 * testLogout method
-	 *
-	 * @return void
-	 */
-	public function testLogout()
-	{
-
-	}
 
 	/**
 	 * testIndex method
@@ -117,6 +98,7 @@ class UsersControllerTest extends ControllerTestCase {
 		);
 
 		$result = $this->testAction('/users/register', array('data' => $mismatch, 'return' => 'vars') );
+		$this->assertFalse( $result['test_password_match'] );
 	}
 
 	/**
@@ -126,7 +108,24 @@ class UsersControllerTest extends ControllerTestCase {
 	 */
 	public function testEdit()
 	{
-	
+		$this->controller = new UsersController();
+
+		$i = 1;
+
+		$data = array(
+			'User' => array(
+				'user_id' => $i,
+				'username' => sprintf('modified_test_user_%u', $i),
+				'password_l' => 'password',
+				'password_r' => 'password',
+				'email' => sprintf('modified_test_user_email_%u@testdomain.com', $i),
+				'first_name' => sprintf('modified_First_Name_%u', $i),
+				'last_name' => sprintf('modified_Last_Name_%u', $i)
+			)
+		);
+
+		$result = $this->testAction(sprintf('/users/edit/%u', $i), array('data' => $data) );
+		debug($result);
 	}
 
 
