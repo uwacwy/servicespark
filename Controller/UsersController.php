@@ -137,6 +137,7 @@ class UsersController extends AppController {
 			{
 				$this->Session->setFlash( __('This account has been created.  Login with your username and password.') );
 				$this->redirect(array('action' => 'login'));
+
 			}
 			else
 			{
