@@ -5,7 +5,7 @@
 	<?php
 		echo $this->Form->input('event_id');
 		echo $this->Form->input('title');
-		echo $this->Form->input('description');
+		echo $this->Form->input('description', array('type' => 'textarea'));
 		echo $this->Form->input('start_time');
 		echo $this->Form->input('stop_time');
 	?>
