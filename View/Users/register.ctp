@@ -19,8 +19,14 @@
 	<fieldset>
 		<legend><?php echo __('Add User'); // again, look at the use of the __() method ?></legend>
 	<?php
-		echo $this->Form->input('username'); // you can echo a form input.  You can pass all kinds of arguments to the Form::input() function to customize the function
-		echo $this->Form->input('password');
+
+		echo $this->Form->input('username');
+		echo $this->Form->input('password_l', array('type' => 'password', 'label' => "Password") );
+		echo $this->Form->input('password_r', array('type' => 'password', 'label' => "Confirm Password") );
+		echo $this->Form->input('email');
+		echo $this->Form->input('first_name');
+		echo $this->Form->input('last_name');
+		echo $this->Form->input('Skill');
 	?>
 	</fieldset>
 <?php echo $this->Form->end(__('Submit')); // this will output the submit button and close the open form tag. ?>
