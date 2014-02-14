@@ -55,8 +55,8 @@ class EventsController extends AppController {
 				$this->Session->setFlash(__('The event could not be saved. Please, try again.'));
 			}
 		}
-		$events = $this->Event->find('list');
-		$this->set(compact('events'));
+		$skills = $this->Event->Skill->find('list');
+		$this->set(compact('skills'));
 	}
 
 /**
@@ -81,8 +81,8 @@ class EventsController extends AppController {
 			$options = array('conditions' => array('Event.' . $this->Event->primaryKey => $id));
 			$this->request->data = $this->Event->find('first', $options);
 		}
-		$events = $this->Event->find('list');
-		$this->set(compact('events'));
+		$skills = $this->Event->Skill->find('list');
+		$this->set(compact('skills'));
 	}
 
 /**
