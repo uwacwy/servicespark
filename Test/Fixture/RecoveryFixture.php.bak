@@ -1,0 +1,20 @@
+<?php
+/**
+ * RecoveryFixture
+ *
+ */
+class RecoveryFixture extends CakeTestFixture {
+
+/**
+ * Import
+ *
+ * @var array
+ */
+	public $import = array('model' => 'Recovery');
+
+	public $fields = array(
+		'user_id' => array('type' => 'integer', 'key' => 'primary'),
+		'expiration' => array('type' => 'datetime', 'null' => false),
+		'token' => array('type' => 'string', 'length' => 64)
+	);
+}

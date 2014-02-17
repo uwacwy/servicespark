@@ -51,4 +51,30 @@ class AppController extends Controller {
             )
         )
     );
+
+    public function _CurrentUserCanPublish($organization_id)
+    {
+        App::uses('Permission', 'Model');
+
+        $permission = new Permission();
+        return $permission->_UserCanPublish( $this->Auth->user('user_id'), $organization_id);
+    }
+
+    public function _CurrentUserCanRead($organization_id)
+    {
+        App::uses('Permission', 'Model');
+
+        $permission = new Permission();
+        return $permission->_UserCanRead( $this->Auth->user('user_id'), $organization_id);
+    }
+
+    public function _CurrentUserCanWrite($organization_id)
+    {
+        App::uses('Permission', 'Model');
+
+        $permission = new Permission();
+        return $permission->_UserCanWrite( $this->Auth->user('user_id'), $organization_id);
+    }
+
+
 }

@@ -81,7 +81,15 @@ class UsersController extends AppController {
 				throw new NotFoundException(__('Invalid user'));
 		}
 
-		$options = array('conditions' => array('User.' . $this->User->primaryKey => $id));
+		$options = array(
+			'conditions' => array('User.' . $this->User->primaryKey => $id),
+			'contain' => array(
+				'Recovery', 
+				'Permission' => array('Organization'), // without this containable behavior, cake would have sent the related User back again
+				'Skill'
+			)
+		);
+
 		$this->set('user', $this->User->find('first', $options));
 	}
 
