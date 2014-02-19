@@ -50,13 +50,16 @@ class SkillsController extends AppController {
 		if ($this->request->is('post')) {
 			$this->Skill->create();
 
-			if ($this->Skill->save($this->request->data)) {
+			if ($this->Skill->saveAll($this->request->data)) {
 				return $this->flash(__('The skill has been saved.'), array('action' => 'index'));
 			}
 		}
 
 		$users = $this->Skill->User->find('list');
 		$this->set(compact('users'));
+
+		$events = $this->Skill->Event->find('list');
+		$this->set(compact('events'));
 	}
 
 /**

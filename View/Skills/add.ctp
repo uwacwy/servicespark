@@ -5,6 +5,7 @@
 	<?php
 		echo $this->Form->input('skill');
 		echo $this->Form->input('User');
+		echo $this->Form->input('Event');
 	?>
 	</fieldset>
 <?php echo $this->Form->end(__('Submit')); ?>
