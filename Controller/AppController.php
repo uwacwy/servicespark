@@ -52,6 +52,14 @@ class AppController extends Controller {
         )
     );
 
+    public function _CurrentUserIsSuperAdmin()
+    {
+        App::uses('User', 'Model');
+        $user = new User();
+        $user->user_id = $this->Auth->user('user_id');
+        return $user->field('super_admin');
+    }
+
     public function _CurrentUserCanPublish($organization_id)
     {
         App::uses('Permission', 'Model');

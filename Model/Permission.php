@@ -39,6 +39,27 @@ class Permission extends AppModel {
 		)
 	);
 
+	/*
+		This will delete existing records of permission
+		-> this is a kludge since CakePHP does not have comprehensive support for COMPOUND primary keys
+	*/
+	public function beforeSave($options)
+	{
+		// if user-organization pair exists
+		$conditions = array(
+			'Permission.user_id' => $this->data[ $this->alias ]['user_id'],
+			'Permission.organization_id' => $this->data[ $this->alias ]['organization_id']
+		);
+		$existing = $this->field('permission_id', $conditions);
+
+		if($existing)
+		{
+			$this->delete($existing);
+		}
+
+		return true;
+	}
+
 
 	public function _UserCanPublish($user_id, $organization_id)
 	{
@@ -62,6 +83,6 @@ class Permission extends AppModel {
 			'Permission.organization_id' => $organization_id
 		);
 
-		return $this->field($permission, $conditions);
+		return $this->field($permission, $conditions); // returns false when a record doesn't exist.
 	}
 }

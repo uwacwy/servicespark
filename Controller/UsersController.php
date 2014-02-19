@@ -93,6 +93,20 @@ class UsersController extends AppController {
 		$this->set('user', $this->User->find('first', $options));
 	}
 
+	public function admin_index()
+	{
+		$options = array(
+			'conditions' => array('User.' . $this->User->primaryKey => $this->Auth->user('user_id') ),
+			'contain' => array(
+				'Recovery', 
+				'Permission' => array('Organization'), // without this containable behavior, cake would have sent the related User back again
+				'Skill'
+			)
+		);
+
+		$this->set('user', $this->User->find('first', $options));
+	}
+
 
 
 	/**

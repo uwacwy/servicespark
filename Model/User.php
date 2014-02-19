@@ -16,20 +16,14 @@ class User extends AppModel {
 
 	public $validate = array(
 		'username' => array(
-			array(
+			'alphanumeric' => array(
 				'rule' => 'alphaNumeric',
-				'message' => 'Your username must consist of alphanumeric characters.',
-				'required' => true
+				'message' => 'Your username must consist of alphanumeric characters.'
 			),
-			array(
-				'rule' => 'unique',
+			'unique' => array(
+				'rule' => 'isUnique',
 				'message' => 'That username is taken.'
 			)
-		),
-		'password' => array(
-			'rule' => array('between', 40, 40),
-			'message' => 'There was a problem saving your password',
-			'required' => true
 		),
 		'email' => array(
 			'rule' => 'email',
