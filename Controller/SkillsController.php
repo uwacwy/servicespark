@@ -86,6 +86,9 @@ class SkillsController extends AppController {
 
 		$users = $this->Skill->User->find('list');
 		$this->set(compact('users'));
+
+		$events = $this->Skill->Event->find('list');
+		$this->set(compact('events'));
 	}
 
 /**
