@@ -56,14 +56,6 @@ class User extends AppModel {
 			'foreignKey' => 'user_id',
 			'associationForeignKey' => 'skill_id',
 			'unique' => 'keepExisting',
-<<<<<<< HEAD
-			// 'conditions' => '',
-			// 'fields' => '',
-			// 'order' => '',
-			// 'limit' => '',
-			// 'offset' => '',
-			// 'finderQuery' => '',
-=======
 			'conditions' => '',
 			'fields' => '',
 			'order' => '',
@@ -83,7 +75,6 @@ class User extends AppModel {
 			'limit' => '',
 			'offset' => '',
 			'finderQuery' => '',
->>>>>>> Addresses
 		)
 	);
 

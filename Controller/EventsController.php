@@ -72,11 +72,9 @@ class EventsController extends AppController {
 				$this->Session->setFlash(__('The event could not be saved. Please, try again.'));
 			}
 		}
-<<<<<<< HEAD
 		$skills = $this->Event->Skill->find('list');
 		$this->set(compact('skills'));
-=======
->>>>>>> Addresses
+
 	}
 
 /**
@@ -108,14 +106,9 @@ class EventsController extends AppController {
 			$options = array('conditions' => array('Event.' . $this->Event->primaryKey => $id));
 			$this->request->data = $this->Event->find('first', $options);
 		}
-<<<<<<< HEAD
-		$skills = $this->Event->Skill->find('list');
-		$this->set(compact('skills'));
-=======
 
 		$address = $this->Event->Address->find('all');
 		$this->set(compact('address'));
->>>>>>> Addresses
 	}
 
 /**
