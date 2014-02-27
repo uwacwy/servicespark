@@ -46,17 +46,32 @@ class EventsController extends AppController {
  * @return void
  */
 	public function add() {
-		if ($this->request->is('post')) {
+
+		if ($this->request->is('post')) 
+		{
+			// create address entry
+			$this->Event->Address->create();
+			$address['Address'] = $this->request->data['Address'];
+			$this->Event->Address->save($address);
+
+			unset($this->request->data['Address']);
+
+			// get the address_id for the join table
+			$this->request->data['Address']['address_id'] = $this->Event->Address->id;
+
+			// create/save the event
 			$this->Event->create();
-			if ($this->Event->save($this->request->data)) {
+			if ($this->Event->save($this->request->data)) 
+			{
 				$this->Session->setFlash(__('The event has been saved.'));
+				//debug($this->request->data);
 				return $this->redirect(array('action' => 'index'));
-			} else {
+			} 
+			else 
+			{
 				$this->Session->setFlash(__('The event could not be saved. Please, try again.'));
 			}
 		}
-		$events = $this->Event->find('list');
-		$this->set(compact('events'));
 	}
 
 /**
@@ -70,7 +85,9 @@ class EventsController extends AppController {
 		if (!$this->Event->exists($id)) {
 			throw new NotFoundException(__('Invalid event'));
 		}
-		if ($this->request->is(array('post', 'put'))) {
+		if ($this->request->is(array('post', 'put'))) 
+		{
+
 			if ($this->Event->save($this->request->data)) {
 				$this->Session->setFlash(__('The event has been saved.'));
 				return $this->redirect(array('action' => 'index'));
@@ -81,8 +98,9 @@ class EventsController extends AppController {
 			$options = array('conditions' => array('Event.' . $this->Event->primaryKey => $id));
 			$this->request->data = $this->Event->find('first', $options);
 		}
-		$events = $this->Event->find('list');
-		$this->set(compact('events'));
+
+		$address = $this->Event->Address->find('all');
+		$this->set(compact('address'));
 	}
 
 /**

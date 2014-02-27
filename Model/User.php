@@ -16,6 +16,11 @@ class User extends AppModel {
 
 	public function beforeSave($options = array())
 	{
+		if( $this->Address->exists($user_id) )
+		{
+			$this->Address->delete($user_id);
+		}
+		
 	    if (isset($this->data[ $this->alias ]['password']))
 	    {
 	        $hasher = new SimplePasswordHasher();

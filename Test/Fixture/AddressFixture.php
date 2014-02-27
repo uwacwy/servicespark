@@ -23,7 +23,7 @@ class AddressFixture extends CakeTestFixture {
 		'indexes' => array(
 			'PRIMARY' => array('column' => 'address_id', 'unique' => 1)
 		),
-		'tableParameters' => array('charset' => 'utf8', 'collate' => 'utf8_bin', 'engine' => 'MyISAM')
+		'tableParameters' => array('charset' => 'utf8', 'collate' => 'utf8_bin', 'engine' => 'InnoDB')
 	);
 
 /**

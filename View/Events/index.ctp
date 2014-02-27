@@ -11,9 +11,7 @@
 	</tr>
 	<?php foreach ($events as $event): ?>
 	<tr>
-		<td>
-			<?php echo $this->Html->link($event['Event']['title'], array('controller' => 'events', 'action' => 'view', $event['Event']['event_id'])); ?>
-		</td>
+		<td><?php echo h($event['Event']['event_id']); ?>&nbsp;</td>
 		<td><?php echo h($event['Event']['title']); ?>&nbsp;</td>
 		<td><?php echo h($event['Event']['description']); ?>&nbsp;</td>
 		<td><?php echo h($event['Event']['start_time']); ?>&nbsp;</td>
@@ -44,7 +42,5 @@
 	<h3><?php echo __('Actions'); ?></h3>
 	<ul>
 		<li><?php echo $this->Html->link(__('New Event'), array('action' => 'add')); ?></li>
-		<li><?php echo $this->Html->link(__('List Events'), array('controller' => 'events', 'action' => 'index')); ?> </li>
-		<!--<li><?php echo $this->Html->link(__('New Event'), array('controller' => 'events', 'action' => 'add')); ?> </li> -->
 	</ul>
 </div>

@@ -19,7 +19,7 @@ class EventFixture extends CakeTestFixture {
 		'indexes' => array(
 			'PRIMARY' => array('column' => 'event_id', 'unique' => 1)
 		),
-		'tableParameters' => array('charset' => 'utf8', 'collate' => 'utf8_bin', 'engine' => 'MyISAM')
+		'tableParameters' => array('charset' => 'utf8', 'collate' => 'utf8_bin', 'engine' => 'InnoDB')
 	);
 
 /**
@@ -32,8 +32,8 @@ class EventFixture extends CakeTestFixture {
 			'event_id' => 1,
 			'title' => 'Lorem ipsum dolor sit amet',
 			'description' => 'Lorem ipsum dolor sit amet',
-			'start_time' => '2014-02-09 21:22:02',
-			'stop_time' => '2014-02-09 21:22:02'
+			'start_time' => '2014-02-14 10:47:07',
+			'stop_time' => '2014-02-14 10:47:07'
 		),
 	);
 
