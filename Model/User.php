@@ -37,6 +37,7 @@ class User extends AppModel {
 
 	public function beforeSave($options = array())
 	{
+		
 	    if (isset($this->data[ $this->alias ]['password']))
 	    {
 	        $hasher = new SimplePasswordHasher();
@@ -55,12 +56,34 @@ class User extends AppModel {
 			'foreignKey' => 'user_id',
 			'associationForeignKey' => 'skill_id',
 			'unique' => 'keepExisting',
+<<<<<<< HEAD
 			// 'conditions' => '',
 			// 'fields' => '',
 			// 'order' => '',
 			// 'limit' => '',
 			// 'offset' => '',
 			// 'finderQuery' => '',
+=======
+			'conditions' => '',
+			'fields' => '',
+			'order' => '',
+			'limit' => '',
+			'offset' => '',
+			'finderQuery' => '',
+		),		
+		'Address' => array(
+			'className' => 'Address',
+			'joinTable' => 'addresses_users',
+			'foreignKey' => 'user_id',
+			'associationForeignKey' => 'address_id',
+			'unique' => 'keepExisting',
+			'conditions' => '',
+			'fields' => '',
+			'order' => '',
+			'limit' => '',
+			'offset' => '',
+			'finderQuery' => '',
+>>>>>>> Addresses
 		)
 	);
 

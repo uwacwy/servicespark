@@ -8,7 +8,25 @@
 		echo $this->Form->input('description');
 		echo $this->Form->input('start_time');
 		echo $this->Form->input('stop_time');
+<<<<<<< HEAD
 		echo $this->Form->input('Skill');
+=======
+
+
+		$i = 0;
+		foreach($this->request->data['Address'] as $address)
+		{
+			echo $this->Form->input("Address.$i.address_id");
+			foreach( array('mailing_address', 'mailing_city', 'mailing_state', 'mailing_zip','physical_address', 'physical_city', 'physical_state', 'physical_zip') as $field)
+			{
+				echo $this->Form->input("Address.$i.$field");
+			}
+
+			$i++;
+		}
+
+		debug($this->request->data);
+>>>>>>> Addresses
 	?>
 	</fieldset>
 <?php echo $this->Form->end(__('Submit')); ?>
@@ -19,7 +37,10 @@
 
 		<li><?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $this->Form->value('Event.event_id')), null, __('Are you sure you want to delete # %s?', $this->Form->value('Event.event_id'))); ?></li>
 		<li><?php echo $this->Html->link(__('List Events'), array('action' => 'index')); ?></li>
+<<<<<<< HEAD
 		<li><?php echo $this->Html->link(__('List Skills'), array('controller' => 'skills', 'action' => 'index')); ?> </li>
 		<li><?php echo $this->Html->link(__('New Skill'), array('controller' => 'skills', 'action' => 'add')); ?> </li>
+=======
+>>>>>>> Addresses
 	</ul>
 </div>

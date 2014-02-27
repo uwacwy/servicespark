@@ -27,6 +27,16 @@
 		echo $this->Form->input('first_name');
 		echo $this->Form->input('last_name');
 		echo $this->Form->input('Skill');
+
+		echo $this->Form->input('Address.address_id');
+		echo $this->Form->input('Address.mailing_address');
+		echo $this->Form->input('Address.mailing_city');
+		echo $this->Form->input('Address.mailing_state');
+		echo $this->Form->input('Address.mailing_zip');
+		echo $this->Form->input('Address.physical_address');
+		echo $this->Form->input('Address.physical_city');
+		echo $this->Form->input('Address.physical_state');
+		echo $this->Form->input('Address.physical_zip');
 	?>
 	</fieldset>
 <?php echo $this->Form->end(__('Submit')); // this will output the submit button and close the open form tag. ?>

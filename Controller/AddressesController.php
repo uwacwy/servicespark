@@ -48,7 +48,7 @@ class AddressesController extends AppController {
 	public function add() {
 		if ($this->request->is('post')) {
 			$this->Address->create();
-			if ($this->Address->save($this->request->data)) {
+			if ($this->Address->saveAll($this->request->data)) {
 				$this->Session->setFlash(__('The address has been saved.'));
 				return $this->redirect(array('action' => 'index'));
 			} else {
@@ -69,7 +69,7 @@ class AddressesController extends AppController {
 			throw new NotFoundException(__('Invalid address'));
 		}
 		if ($this->request->is(array('post', 'put'))) {
-			if ($this->Address->save($this->request->data)) {
+			if ($this->Address->saveAll($this->request->data)) {
 				$this->Session->setFlash(__('The address has been saved.'));
 				return $this->redirect(array('action' => 'index'));
 			} else {
