@@ -8,7 +8,21 @@
 		echo $this->Form->input('description');
 		echo $this->Form->input('start_time');
 		echo $this->Form->input('stop_time');
-		echo $this->Form->input('Address.mailing_address');
+
+
+		$i = 0;
+		foreach($this->request->data['Address'] as $address)
+		{
+			echo $this->Form->input("Address.$i.address_id");
+			foreach( array('mailing_address', 'mailing_city', 'mailing_state', 'mailing_zip','physical_address', 'physical_city', 'physical_state', 'physical_zip') as $field)
+			{
+				echo $this->Form->input("Address.$i.$field");
+			}
+
+			$i++;
+		}
+
+		debug($this->request->data);
 	?>
 	</fieldset>
 <?php echo $this->Form->end(__('Submit')); ?>

@@ -59,7 +59,7 @@ class EventsController extends AppController {
 			// get the address_id for the join table
 			$this->request->data['Address']['address_id'] = $this->Event->Address->id;
 
-			// create/save the event
+			// create and save the event
 			$this->Event->create();
 			if ($this->Event->save($this->request->data)) 
 			{
@@ -87,6 +87,11 @@ class EventsController extends AppController {
 		}
 		if ($this->request->is(array('post', 'put'))) 
 		{
+
+			foreach($this->request->data['Address'] as $address)
+			{
+				$this->Event->Address->save($address);
+			}
 
 			if ($this->Event->save($this->request->data)) {
 				$this->Session->setFlash(__('The event has been saved.'));
