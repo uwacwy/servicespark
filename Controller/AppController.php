@@ -20,6 +20,7 @@
  */
 
 App::uses('Controller', 'Controller');
+App::uses('SimplePasswordHasher', 'Controller/Component/Auth');
 
 /**
  * Application Controller
@@ -31,4 +32,57 @@ App::uses('Controller', 'Controller');
  * @link		http://book.cakephp.org/2.0/en/controllers.html#the-app-controller
  */
 class AppController extends Controller {
+
+	/*
+		App-Wide Components
+		Auth => used for username/password authentication
+	*/
+	public $components = array(
+        'Session',
+        'Auth' => array(
+            'loginRedirect' => array(
+                'controller' => 'users',
+                'action' => 'index'
+            ),
+            'logoutRedirect' => array(
+                'controller' => 'pages',
+                'action' => 'display',
+                'home'
+            )
+        )
+    );
+
+    public function _CurrentUserIsSuperAdmin()
+    {
+        App::uses('User', 'Model');
+        $user = new User();
+        $user->user_id = $this->Auth->user('user_id');
+        return $user->field('super_admin');
+    }
+
+    public function _CurrentUserCanPublish($organization_id)
+    {
+        App::uses('Permission', 'Model');
+
+        $permission = new Permission();
+        return $permission->_UserCanPublish( $this->Auth->user('user_id'), $organization_id);
+    }
+
+    public function _CurrentUserCanRead($organization_id)
+    {
+        App::uses('Permission', 'Model');
+
+        $permission = new Permission();
+        return $permission->_UserCanRead( $this->Auth->user('user_id'), $organization_id);
+    }
+
+    public function _CurrentUserCanWrite($organization_id)
+    {
+        App::uses('Permission', 'Model');
+
+        $permission = new Permission();
+        return $permission->_UserCanWrite( $this->Auth->user('user_id'), $organization_id);
+    }
+
+
 }
