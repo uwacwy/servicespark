@@ -131,6 +131,18 @@ class UsersController extends AppController {
 			}
 
 
+			// create address entry
+			$this->User->Address->create();
+			$address['Address'] = $this->request->data['Address'];
+			$this->User->Address->save($address);
+
+			unset($this->request->data['Address']);
+
+			// get the address_id for the join table
+			$this->request->data['Address']['address_id'] = $this->User->Address->id;
+
+
+
 			$this->User->create();
 
 			if ( $this->User->save($this->request->data) )

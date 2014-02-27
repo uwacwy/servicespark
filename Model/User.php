@@ -16,10 +16,6 @@ class User extends AppModel {
 
 	public function beforeSave($options = array())
 	{
-		if( $this->Address->exists($user_id) )
-		{
-			$this->Address->delete($user_id);
-		}
 		
 	    if (isset($this->data[ $this->alias ]['password']))
 	    {
@@ -38,6 +34,19 @@ class User extends AppModel {
 			'joinTable' => 'skills_users',
 			'foreignKey' => 'user_id',
 			'associationForeignKey' => 'skill_id',
+			'unique' => 'keepExisting',
+			'conditions' => '',
+			'fields' => '',
+			'order' => '',
+			'limit' => '',
+			'offset' => '',
+			'finderQuery' => '',
+		),		
+		'Address' => array(
+			'className' => 'Address',
+			'joinTable' => 'addresses_users',
+			'foreignKey' => 'user_id',
+			'associationForeignKey' => 'address_id',
 			'unique' => 'keepExisting',
 			'conditions' => '',
 			'fields' => '',
