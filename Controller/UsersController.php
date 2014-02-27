@@ -191,11 +191,17 @@ class UsersController extends AppController {
 					$this->request->data['User']['password'] = $this->request->data['User']['password_l'];
 				}
 			}
-
+			
+			foreach ($this->request->data['Address'] as $address) 
+			{
+				$this->User->Address->save($address);
+			}
+			
 			if ( $this->User->save($this->request->data) )
 			{
 				$this->Session->setFlash( __('The user has been saved.') );
-				$this->redirect( array('action' => 'index') );
+				debug($this->request->data);
+				//$this->redirect( array('action' => 'index') );
 			}
 			else
 			{
@@ -207,6 +213,8 @@ class UsersController extends AppController {
 			$this->request->data = $this->User->find('first', $options);
 			$skills = $this->User->Skill->find('list');
 			$this->set(compact('skills'));
+			$addresses = $this->User->Address->find('list');
+			$this->set(compact('addresses'));
 		}
 	}
 
