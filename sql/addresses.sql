@@ -1,12 +1,10 @@
 CREATE TABLE `addresses` (
   `address_id` int(11) NOT NULL AUTO_INCREMENT,
-  `mailing_address` varchar(120) COLLATE utf8_bin,
-  `mailing_city` varchar(100) COLLATE utf8_bin,
-  `mailing_state` char(2) COLLATE utf8_bin,
-  `mailing_zip` varchar(16) COLLATE utf8_bin,
-  `physical_address` varchar(120) COLLATE utf8_bin,
-  `physical_city` varchar(100) COLLATE utf8_bin,
-  `physical_state` char(2) COLLATE utf8_bin,
-  `physical_zip` varchar(16) COLLATE utf8_bin,
+  `address1` varchar(120) COLLATE utf8_bin DEFAULT NULL,
+  `address2` varchar(120) COLLATE utf8_bin DEFAULT NULL,
+  `city` varchar(100) COLLATE utf8_bin DEFAULT NULL,
+  `state` char(2) COLLATE utf8_bin DEFAULT NULL,
+  `zip` varchar(16) COLLATE utf8_bin DEFAULT NULL,
+  `type` enum('mailing','physical','both') COLLATE utf8_bin DEFAULT NULL,
   PRIMARY KEY (`address_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=0 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;

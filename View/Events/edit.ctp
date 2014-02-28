@@ -15,8 +15,20 @@
 		$i = 0;
 		foreach($this->request->data['Address'] as $address)
 		{
+			switch ($address['type'])
+			{
+				case 'physical':
+					echo '<h3>Physical Address</h3>';
+					break;
+				case 'mailing':
+					echo '<h3>Mailing Address</h3>';
+					break;
+				case 'both':
+					echo '<h3>Physical and Mailing Address</h3>';
+					break;
+			}
 			echo $this->Form->input("Address.$i.address_id");
-			foreach( array('mailing_address', 'mailing_city', 'mailing_state', 'mailing_zip','physical_address', 'physical_city', 'physical_state', 'physical_zip') as $field)
+			foreach( array('address1', 'address2', 'city', 'state', 'zip') as $field)
 			{
 				echo $this->Form->input("Address.$i.$field");
 			}
