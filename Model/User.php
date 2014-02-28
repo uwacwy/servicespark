@@ -81,6 +81,9 @@ class User extends AppModel {
 	public $hasMany = array(
 		'Permission' => array(
 			'dependent' => true // when the User is deleted, all Permission entries are deleted
+		),
+		'Time' => array(
+			'dependent' => true
 		)
 
 	);

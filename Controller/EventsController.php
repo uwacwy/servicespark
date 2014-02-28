@@ -61,7 +61,7 @@ class EventsController extends AppController {
 
 			// create and save the event
 			$this->Event->create();
-			if ($this->Event->save($this->request->data)) 
+			if ( $this->Event->save($this->request->data) ) 
 			{
 				$this->Session->setFlash(__('The event has been saved.'));
 				//debug($this->request->data);

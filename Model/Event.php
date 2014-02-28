@@ -44,7 +44,21 @@ class Event extends AppModel {
 			'limit' => '',
 			'offset' => '',
 			'finderQuery' => '',
+		),
+		'Skill' => array(
+			'className' => 'Skill',
+			'joinTable' => 'events_skills',
+			'foreignKey' => 'event_id',
+			'associationForeignKey' => 'skill_id',
+			'unique' => 'keepExisting'
 		)
+	);
+
+	public $hasMany = array(
+		'Time' => array(
+			'dependent' => true // when an event is deleted, related time will be dleted
+		)
+
 	);
 
 }
