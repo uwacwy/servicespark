@@ -72,8 +72,8 @@ class EventsController extends AppController {
 				$this->Session->setFlash(__('The event could not be saved. Please, try again.'));
 			}
 		}
-		$skills = $this->Event->Skill->find('list');
-		$this->set(compact('skills'));
+		$address = $this->Event->Address->find('all');
+		$this->set(compact('address'));
 
 	}
 
