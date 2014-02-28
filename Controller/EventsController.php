@@ -66,11 +66,7 @@ class EventsController extends AppController {
 
 			// create and save the event
 			$this->Event->create();
-<<<<<<< HEAD
-			if ( $this->Event->save($this->request->data) ) 
-=======
 			if ($this->Event->saveAll($this->request->data)) 
->>>>>>> Addresses
 			{
 				$this->Session->setFlash(__('The event has been saved.'));
 				//debug($this->request->data);
@@ -81,14 +77,10 @@ class EventsController extends AppController {
 				$this->Session->setFlash(__('The event could not be saved. Please, try again.'));
 			}
 		}
-<<<<<<< HEAD
 		$address = $this->Event->Address->find('all');
 		$this->set(compact('address'));
-
-=======
 		$skills = $this->Event->Skill->find('list');
 		$this->set( compact('skills') );
->>>>>>> Addresses
 	}
 
 /**
