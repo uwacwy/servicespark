@@ -47,7 +47,6 @@ class Event extends AppModel {
 		'Skill' => array(
 			'className' => 'Skill',
 			'joinTable' => 'events_skills',
-<<<<<<< HEAD
 			'foreignKey' => 'event_id',
 			'associationForeignKey' => 'skill_id',
 			'unique' => 'keepExisting'
@@ -57,10 +56,8 @@ class Event extends AppModel {
 	public $hasMany = array(
 		'Time' => array(
 			'dependent' => true // when an event is deleted, related time will be dleted
-=======
 			'foreign_key' => 'event_id',
 			'associationForeignKey' => 'skill_id',
->>>>>>> Addresses
 		)
 
 	);
