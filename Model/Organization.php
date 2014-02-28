@@ -27,5 +27,28 @@ class Organization extends AppModel {
 		)
 	);
 
+<<<<<<< HEAD
 
+=======
+/**
+ * hasAndBelongsToMany associations
+ *
+ * @var array
+ */
+	public $hasAndBelongsToMany = array(
+		'Address' => array(
+			'className' => 'Address',
+			'joinTable' => 'addresses_organizations',
+			'foreignKey' => 'organization_id',
+			'associationForeignKey' => 'address_id',
+			'unique' => 'keepExisting',
+			'conditions' => '',
+			'fields' => '',
+			'order' => '',
+			'limit' => '',
+			'offset' => '',
+			'finderQuery' => '',
+		)
+	);
+>>>>>>> Addresses
 }

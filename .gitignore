@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 Config/*
 tmp/*
 
@@ -15,3 +16,11 @@ Config/routes.php
 Config/routes.php
 
 Config/routes.php
+=======
+
+Config/core.php
+
+Config/database.php
+
+tmp/*
+>>>>>>> Addresses

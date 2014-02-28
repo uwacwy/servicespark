@@ -56,6 +56,19 @@ class Address extends AppModel {
 			'limit' => '',
 			'offset' => '',
 			'finderQuery' => '',
+		),
+		'Organization' => array(
+			'className' => 'Organization',
+			'joinTable' => 'addresses_organizations',
+			'foreignKey' => 'address_id',
+			'associationForeignKey' => 'organization_id',
+			'unique' => 'keepExisting',
+			'conditions' => '',
+			'fields' => '',
+			'order' => '',
+			'limit' => '',
+			'offset' => '',
+			'finderQuery' => '',
 		)
 	);
 
