@@ -5,9 +5,6 @@ CREATE TABLE IF NOT EXISTS `events` (
   `start_time` datetime NOT NULL,
   `stop_time` datetime NOT NULL,
   PRIMARY KEY (`event_id`)
-<<<<<<< HEAD
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
 
-=======
-) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
->>>>>>> Addresses
+

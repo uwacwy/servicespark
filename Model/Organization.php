@@ -27,9 +27,7 @@ class Organization extends AppModel {
 		)
 	);
 
-<<<<<<< HEAD
 
-=======
 /**
  * hasAndBelongsToMany associations
  *
@@ -50,5 +48,4 @@ class Organization extends AppModel {
 			'finderQuery' => '',
 		)
 	);
->>>>>>> Addresses
 }

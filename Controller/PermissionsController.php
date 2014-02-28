@@ -1,11 +1,4 @@
 <?php
-<<<<<<< HEAD
-
-class PermissionsController extends AppController
-{
-	var $scaffold;
-}
-=======
 App::uses('AppController', 'Controller');
 /**
  * Permissions Controller
@@ -113,5 +106,5 @@ class PermissionsController extends AppController {
 			$this->Session->setFlash(__('The permission could not be deleted. Please, try again.'));
 		}
 		return $this->redirect(array('action' => 'index'));
-	}}
->>>>>>> Addresses
+	}
+}

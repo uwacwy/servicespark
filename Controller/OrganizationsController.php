@@ -1,11 +1,4 @@
 <?php
-<<<<<<< HEAD
-
-class OrganizationsController extends AppController
-{
-	var $scaffold;
-}
-=======
 App::uses('AppController', 'Controller');
 /**
  * Organizations Controller
@@ -135,5 +128,5 @@ class OrganizationsController extends AppController {
 			$this->Session->setFlash(__('The organization could not be deleted. Please, try again.'));
 		}
 		return $this->redirect(array('action' => 'index'));
-	}}
->>>>>>> Addresses
+	}
+}

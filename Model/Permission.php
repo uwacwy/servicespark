@@ -43,11 +43,8 @@ class Permission extends AppModel {
 		This will delete existing records of permission
 		-> this is a kludge since CakePHP does not have comprehensive support for COMPOUND primary keys
 	*/
-<<<<<<< HEAD
-	public function beforeSave($options)
-=======
+
 	public function beforeSave($options = array())
->>>>>>> Addresses
 	{
 		// if user-organization pair exists
 		$conditions = array(
