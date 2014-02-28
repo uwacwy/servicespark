@@ -49,29 +49,36 @@ class EventsController extends AppController {
 
 		if ($this->request->is('post')) 
 		{
+
+			debug($this->request->data);
 			// create address entry
-			$this->Event->Address->create();
-			$address['Address'] = $this->request->data['Address'];
-			$this->Event->Address->save($address);
+			foreach($this->request->data['Address'] as $address)
+			{
+				$this->Event->Address->create();
+				$this->Event->Address->save($address);
+				// get the address_id for the join table
+				$addressIds['Address'][] = $this->Event->Address->id;
+			}
 
 			unset($this->request->data['Address']);
-
-			// get the address_id for the join table
-			$this->request->data['Address']['address_id'] = $this->Event->Address->id;
+			$this->request->data['Address'] = $addressIds;
+			debug($this->request->data);
 
 			// create and save the event
 			$this->Event->create();
-			if ($this->Event->save($this->request->data)) 
+			if ($this->Event->saveAll($this->request->data)) 
 			{
 				$this->Session->setFlash(__('The event has been saved.'));
 				//debug($this->request->data);
-				return $this->redirect(array('action' => 'index'));
+				//return $this->redirect(array('action' => 'index'));
 			} 
 			else 
 			{
 				$this->Session->setFlash(__('The event could not be saved. Please, try again.'));
 			}
 		}
+		$skills = $this->Event->Skill->find('list');
+		$this->set( compact('skills') );
 	}
 
 /**

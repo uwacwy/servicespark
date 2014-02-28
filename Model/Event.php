@@ -35,13 +35,18 @@ class Event extends AppModel {
 			'joinTable' => 'addresses_events',
 			'foreignKey' => 'event_id',
 			'associationForeignKey' => 'address_id',
-			'unique' => 'keepExisting',
 			'conditions' => '',
 			'fields' => '',
 			'order' => '',
 			'limit' => '',
 			'offset' => '',
 			'finderQuery' => '',
+		),
+		'Skill' => array(
+			'className' => 'Skill',
+			'joinTable' => 'events_skills',
+			'foreign_key' => 'event_id',
+			'associationForeignKey' => 'skill_id',
 		)
 	);
 
