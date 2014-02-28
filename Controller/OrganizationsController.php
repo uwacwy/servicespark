@@ -51,12 +51,7 @@ class OrganizationsController extends AppController {
 			$this->Organization->Address->create();
 			$address['Address'] = $this->request->data['Address'];
 			$this->Organization->Address->save($address);
-				//debug($this->Organization->validationErrors);
-
 			
-
-			//debug($this->request->data);
-
 			unset($this->request->data['Address']);
 
 			// get the address_id for the join table
@@ -66,7 +61,7 @@ class OrganizationsController extends AppController {
 
 			if ($this->Organization->save($this->request->data)) {
 				$this->Session->setFlash(__('The organization has been saved.'));
-				//return $this->redirect(array('action' => 'index'));
+				return $this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(__('The organization could not be saved. Please, try again.'));
 			}
