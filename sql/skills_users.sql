@@ -3,3 +3,4 @@ CREATE TABLE IF NOT EXISTS `skills_users` (
   `user_id` int(11) NOT NULL COMMENT 'fk: users',
   PRIMARY KEY (`skill_id`,`user_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
+

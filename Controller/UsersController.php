@@ -86,7 +86,8 @@ class UsersController extends AppController {
 			'contain' => array(
 				'Recovery', 
 				'Permission' => array('Organization'), // without this containable behavior, cake would have sent the related User back again
-				'Skill'
+				'Skill',
+				'Address'
 			)
 		);
 
