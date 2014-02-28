@@ -6,50 +6,37 @@ App::uses('AppModel', 'Model');
  * @property User $User
  * @property Event $Event
  */
-class Skill extends AppModel {
+class Skill extends AppModel
+{
 
 /**
- * Primary key field
- *
- * @var string
- */
+	General Model Behavior and Setup
+*/
+
 	public $primaryKey = 'skill_id';
+
 	public $displayField = 'skill';
 
-
-	//The Associations below have been created with all possible keys, those that are not needed can be removed
+	/*
+		skill not empty, not null
+	*/
+	public $validate = array();
 
 /**
- * hasAndBelongsToMany associations
- *
- * @var array
- */
+	Associations
+*/
 	public $hasAndBelongsToMany = array(
 		'User' => array(
 			'className' => 'User',
 			'joinTable' => 'skills_users',
 			'foreignKey' => 'skill_id',
-			'associationForeignKey' => 'user_id',
-			'unique' => 'keepExisting',
-			'conditions' => '',
-			'fields' => '',
-			'order' => '',
-			'limit' => '',
-			'offset' => '',
-			'finderQuery' => '',
+			'associationForeignKey' => 'user_id'
 		),
 		'Event' => array(
 			'className' => 'Event',
 			'joinTable' => 'events_skills',
 			'foreignKey' => 'skill_id',
-			'associationForeignKey' => 'event_id',
-			'unique' => 'keepExisting',
-			'conditions' => '',
-			'fields' => '',
-			'order' => '',
-			'limit' => '',
-			'offset' => '',
-			'finderQuery' => '',
+			'associationForeignKey' => 'event_id'
 		)
 	);
 

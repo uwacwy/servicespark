@@ -4,14 +4,22 @@ App::uses('AppModel', 'Model');
  * User Model
  *
  */
-class User extends AppModel {
+class User extends AppModel
+{
 
+/**
+	General Model Behavior and Setup
+*/
 	
 	public $primaryKey = 'user_id';
+
 	public $displayField = 'username';
+
+	public $actsAs = array('Containable');
+
 	public $virtualFields = array(
-	    'full_name' => 'CONCAT(User.first_name, " ", User.last_name)',
-	    'account_age' => 'TIMESTAMPDIFF( MINUTE, User.created, Now() )'
+		'full_name' => 'CONCAT(User.first_name, " ", User.last_name)',
+		'account_age' => 'TIMESTAMPDIFF( MINUTE, User.created, Now() )'
 	);
 
 	public $validate = array(
@@ -32,20 +40,9 @@ class User extends AppModel {
 		)
 	);
 
-
-	public $actsAs = array('Containable');
-
-	public function beforeSave($options = array())
-	{
-		
-	    if (isset($this->data[ $this->alias ]['password']))
-	    {
-	        $hasher = new SimplePasswordHasher();
-	        $this->data[ $this->alias ]['password'] = $hasher->hash( $this->data[ $this->alias ]['password'] );
-	    }
-	    return true;
-	}
-
+/**
+	Associations
+*/
 
 	public $hasOne = 'Recovery';
 
@@ -54,27 +51,13 @@ class User extends AppModel {
 			'className' => 'Skill',
 			'joinTable' => 'skills_users',
 			'foreignKey' => 'user_id',
-			'associationForeignKey' => 'skill_id',
-			'unique' => 'keepExisting',
-			'conditions' => '',
-			'fields' => '',
-			'order' => '',
-			'limit' => '',
-			'offset' => '',
-			'finderQuery' => '',
+			'associationForeignKey' => 'skill_id'
 		),		
 		'Address' => array(
 			'className' => 'Address',
 			'joinTable' => 'addresses_users',
 			'foreignKey' => 'user_id',
-			'associationForeignKey' => 'address_id',
-			'unique' => 'keepExisting',
-			'conditions' => '',
-			'fields' => '',
-			'order' => '',
-			'limit' => '',
-			'offset' => '',
-			'finderQuery' => '',
+			'associationForeignKey' => 'address_id'
 		)
 	);
 
@@ -83,10 +66,25 @@ class User extends AppModel {
 			'dependent' => true // when the User is deleted, all Permission entries are deleted
 		),
 		'Time' => array(
-			'dependent' => true
+			'dependent' => true // when the User is deleted, all Time entries are deleted
 		)
 
 	);
+
+/**
+	Overridden Methods
+ */
+
+	public function beforeSave($options = array())
+	{
+		
+		if ( isset($this->data[ $this->alias ]['password']) )
+		{
+			$hasher = new SimplePasswordHasher();
+			$this->data[ $this->alias ]['password'] = $hasher->hash( $this->data[ $this->alias ]['password'] );
+		}
+		return true;
+	}
 
 	
 

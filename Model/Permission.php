@@ -2,42 +2,38 @@
 App::uses('AppModel', 'Model');
 App::uses('Auth', 'Component');
 
-class Permission extends AppModel {
+class Permission extends AppModel
+{
 
 /**
- * Primary key field
- *
- * @var string
- */
-
+	General Model Behavior and Setup
+*/
 	public $primaryKey = 'permission_id';
 
 	public $actsAs = array('Containable');
 
-
-	//The Associations below have been created with all possible keys, those that are not needed can be removed
+	/*
+		all fields required; no null values
+	*/
+	public $validate = array();
 
 /**
- * belongsTo associations
- *
- * @var array
- */
+	Associations
+*/
 	public $belongsTo = array(
 		'Organization' => array(
 			'className' => 'Organization',
-			'foreignKey' => 'organization_id',
-			'conditions' => '',
-			'fields' => '',
-			'order' => ''
+			'foreignKey' => 'organization_id'
 		),
 		'User' => array(
 			'className' => 'User',
-			'foreignKey' => 'user_id',
-			'conditions' => '',
-			'fields' => '',
-			'order' => ''
+			'foreignKey' => 'user_id'
 		)
 	);
+
+/**
+	Overridden Methods
+ */
 
 	/*
 		This will delete existing records of permission

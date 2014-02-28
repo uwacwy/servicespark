@@ -5,59 +5,45 @@ App::uses('AppModel', 'Model');
  *
  * @property Skill $Skill
  */
-class Event extends AppModel {
+class Event extends AppModel
+{
 
 /**
- * Primary key field
- *
- * @var string
- */
+	General Model Behavior and Setup
+*/
 	public $primaryKey = 'event_id';
 
-/**
- * Display field
- *
- * @var string
- */
 	public $displayField = 'title';
 
 
-	/*public function beforeSave($options = array())
-	{
-		if( $this->Address->exists($event_id) )
-		{
-			$this->Address->delete($event_id);
-		}
-		return true;
-	}*/
+	/*
+		all fields required
+		start time < stop time
+	*/
+	public $validate = array();
+
+/**
+	Associations
+*/
 
 	public $hasAndBelongsToMany = array(
 		'Address' => array(
 			'className' => 'Address',
 			'joinTable' => 'addresses_events',
 			'foreignKey' => 'event_id',
-			'associationForeignKey' => 'address_id',
-			'conditions' => '',
-			'fields' => '',
-			'order' => '',
-			'limit' => '',
-			'offset' => '',
-			'finderQuery' => '',
+			'associationForeignKey' => 'address_id'
 		),
 		'Skill' => array(
 			'className' => 'Skill',
 			'joinTable' => 'events_skills',
 			'foreignKey' => 'event_id',
-			'associationForeignKey' => 'skill_id',
-			'unique' => 'keepExisting'
+			'associationForeignKey' => 'skill_id'
 		)
 	);
 
 	public $hasMany = array(
 		'Time' => array(
 			'dependent' => true, // when an event is deleted, related time will be dleted
-			'foreign_key' => 'event_id',
-			'associationForeignKey' => 'skill_id'
 		)
 
 	);

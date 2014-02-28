@@ -6,37 +6,35 @@ App::uses('AppModel', 'Model');
  * @property Event $Event
  * @property User $User
  */
-class Time extends AppModel {
+class Time extends AppModel
+{
 
 /**
- * Primary key field
- *
- * @var string
- */
+	General Model Behavior and Setup
+*/
 	public $primaryKey = 'time_id';
 
-
-	//The Associations below have been created with all possible keys, those that are not needed can be removed
+	/*
+		event_id required fk
+		user_id required fk
+		start_time required
+		stop_time NULLABLE
+		created
+		modified
+	*/
+	public $validate = array();
 
 /**
- * belongsTo associations
- *
- * @var array
- */
+	Associations
+*/
 	public $belongsTo = array(
 		'Event' => array(
 			'className' => 'Event',
-			'foreignKey' => 'event_id',
-			'conditions' => '',
-			'fields' => '',
-			'order' => ''
+			'foreignKey' => 'event_id'
 		),
 		'User' => array(
 			'className' => 'User',
-			'foreignKey' => 'user_id',
-			'conditions' => '',
-			'fields' => '',
-			'order' => ''
+			'foreignKey' => 'user_id'
 		)
 	);
 }

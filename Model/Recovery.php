@@ -5,31 +5,29 @@ App::uses('AppModel', 'Model');
  *
  * @property User $User
  */
-class Recovery extends AppModel {
+class Recovery extends AppModel
+{
 
 /**
- * Primary key field
- *
- * @var string
- */
+	General Model Behavior and Setup
+*/
 	public $primaryKey = 'user_id';
 
-/**
- * Display field
- *
- * @var string
- */
 	public $displayField = 'token';
 
-
-	//The Associations below have been created with all possible keys, those that are not needed can be removed
+	/*
+		expiration: date in future
+	*/
+	public $validate = array();
 
 /**
- * hasOne associations
- *
- * @var array
- */
-
+	Associations
+*/
+	/*
+		This model is restricted to returning valid recoveries only
+		--
+		this might prevent malicious behavior in the future unless explicitly overridden
+	*/
 	public $hasOne = array(
 		'User' => array(
 			'className' => 'User',
