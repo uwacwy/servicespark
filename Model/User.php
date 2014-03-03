@@ -24,10 +24,6 @@ class User extends AppModel
 
 	public $validate = array(
 		'username' => array(
-			'alphanumeric' => array(
-				'rule' => 'alphaNumeric',
-				'message' => 'Your username must consist of alphanumeric characters.'
-			),
 			'unique' => array(
 				'rule' => 'isUnique',
 				'message' => 'That username is taken.'
