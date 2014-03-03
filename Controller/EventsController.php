@@ -25,6 +25,28 @@ class EventsController extends AppController {
 		$this->set('events', $this->Paginator->paginate());
 	}
 
+
+	/*
+	 *
+	 * Validates time data. Returns false if stop time <= start time.
+	 * Used in the create and edit functions.
+	 *
+	*/
+	public function validTimes() {
+		if($this->request->data['Event']['stop_time'] <= $this->request->data['Event']['start_time']) {
+				$this->Session->setFlash( __('The end time of the event must be after the start time.') );
+				unset(
+					$this->request->data['Event']['stop_time'], 
+					$this->request->data['Event']['start_time']
+				); // this will blank the fields
+
+				return false;
+		}
+		else {
+			return true;
+		}
+	}
+
 /**
  * view method
  *
@@ -49,8 +71,10 @@ class EventsController extends AppController {
 
 		if ($this->request->is('post')) 
 		{
+			if(! $this->validTimes()) {
+				return false;
+			}
 
-			debug($this->request->data);
 			// create address entry
 			foreach($this->request->data['Address'] as $address)
 			{
@@ -62,7 +86,6 @@ class EventsController extends AppController {
 
 			unset($this->request->data['Address']);
 			$this->request->data['Address'] = $addressIds;
-			debug($this->request->data);
 
 			// create and save the event
 			$this->Event->create();
@@ -96,6 +119,9 @@ class EventsController extends AppController {
 		}
 		if ($this->request->is(array('post', 'put'))) 
 		{
+			if(! $this->validTimes()) {
+				return false;
+			}
 
 			foreach($this->request->data['Address'] as $address)
 			{
@@ -137,5 +163,8 @@ class EventsController extends AppController {
 		}
 		return $this->redirect(array('action' => 'index'));
 	}
+
+
+
 
 }

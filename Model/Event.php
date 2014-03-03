@@ -19,8 +19,59 @@ class Event extends AppModel
 	/*
 		all fields required
 		start time < stop time
+		Time content validation is handled in the controller, similar to UsersController.
 	*/
-	public $validate = array();
+	public $validate = array(
+		'title' => array(
+			'notEmpty' => array(
+				'rule' => 'notEmpty',
+				'message' => 'You must have an event title.'
+			),
+			'alphanumeric' => array(
+				'rule' => 'alphaNumeric',
+				'message' => 'Your title must consist of alphanumeric characters.'
+			)
+		),
+		'description' => array(
+			'notEmpty' => array(
+				'rule' => 'notEmpty',
+				'message' => 'You must add an event description.'
+			),
+			'alphanumeric' => array(
+				'rule' => 'alphaNumeric',
+				'message' => 'Your event description must consist of alphanumeric characters.'
+			)
+		),
+		'start_time' => array(
+			'notEmpty' => array(
+				'rule' => 'notEmpty',
+				'message' => 'You must enter a start time for an event.'
+			)
+		),
+		'stop_time' => array(
+			'notEmpty' => array(
+				'rule' => 'notEmpty',
+				'message' => 'You must enter an end time for an event.'
+			)
+		)
+	);
+
+
+	/*
+		Custom validation function
+	*/
+	function validateData($field=array(), $compare_field=null) {
+        foreach( $field as $key => $value ){ 
+            $v1 = $value; 
+            $v2 = $this->data[$this->name][ $compare_field ];                  
+            if($v1 !== $v2) { 
+                return FALSE; 
+            } else { 
+                continue; 
+            } 
+        } 
+        return TRUE; 
+	}
 
 /**
 	Associations
