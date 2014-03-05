@@ -18,7 +18,18 @@ class Recovery extends AppModel
 	/*
 		expiration: date in future
 	*/
-	public $validate = array();
+	public $validate = array(
+		'future' => array(
+            'rule' => array('checkFutureDate'),
+            'message' => 'The deadline must be not be in the past'
+        )
+	);
+
+
+	public function checkFutureDate($check) {
+	    $value = array_values($check);
+    	return CakeTime::fromString($value['0']) >= CakeTime::fromString(date('Y-m-d'));
+	}
 
 /**
 	Associations

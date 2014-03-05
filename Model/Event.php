@@ -26,20 +26,12 @@ class Event extends AppModel
 			'notEmpty' => array(
 				'rule' => 'notEmpty',
 				'message' => 'You must have an event title.'
-			),
-			'alphanumeric' => array(
-				'rule' => 'alphaNumeric',
-				'message' => 'Your title must consist of alphanumeric characters.'
 			)
 		),
 		'description' => array(
 			'notEmpty' => array(
 				'rule' => 'notEmpty',
 				'message' => 'You must add an event description.'
-			),
-			'alphanumeric' => array(
-				'rule' => 'alphaNumeric',
-				'message' => 'Your event description must consist of alphanumeric characters.'
 			)
 		),
 		'start_time' => array(
