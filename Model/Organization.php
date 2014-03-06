@@ -21,7 +21,14 @@ class Organization extends AppModel
 		name
 
 	*/	
-	public $validate = array();
+	public $validate = array(
+		'name' => array(
+			'notEmpty' => array(
+				'rule' => 'notEmpty',
+				'message' => 'An organization must have a name.'
+			)
+		)
+	);
 
 /**
 	Associations
@@ -29,9 +36,6 @@ class Organization extends AppModel
 	public $hasMany = array(
 		'Permission' => array(
 			'dependent' => true // when the Organization is deleted, Permissions are also deleted
-		),
-		'Event' => array(
-			'dependent' => true // when Organzation is deleted, events are also deleted
 		)
 	);
 

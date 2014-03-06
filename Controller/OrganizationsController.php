@@ -14,7 +14,6 @@ class OrganizationsController extends AppController {
  * @var array
  */
 	public $components = array('Paginator');
-	public $helpers = array('Address');
 
 /**
  * index method
@@ -46,37 +45,21 @@ class OrganizationsController extends AppController {
  *
  * @return void
  */
-	public function add()
-	{
-		if ($this->request->is('post'))
-		{
-
+	public function add() {
+		if ($this->request->is('post')) {
 			// create address entry
-			foreach($this->request->data['Address'] as $address)
-			{
-				// at a minimum, an address should have a line 1, city, state and zip
-				if( 
-					!empty( $address['address1'] ) && 
-					!empty( $address['city'] ) && 
-					!empty( $address['state'] ) &&
-					!empty( $address['zip'] ) )
-				{
-					$this->Organization->Address->create();
-					$this->Organization->Address->save($address);
-					// get the address_id for the join table
-					$address_ids['Address'][] = $this->Organization->Address->id;
-				}
-			}
+			$this->Organization->Address->create();
+			$address['Address'] = $this->request->data['Address'];
+			$this->Organization->Address->save($address);
+			
+			unset($this->request->data['Address']);
 
-			unset( $this->request->data['Address'] );
-
-			if( !empty($address_ids) )
-				$this->request->data['Address'] = $address_ids;
+			// get the address_id for the join table
+			$this->request->data['Address']['address_id'] = $this->Organization->Address->id;
 
 			$this->Organization->create();
 
-			if ($this->Organization->save($this->request->data))
-			{
+			if ($this->Organization->save($this->request->data)) {
 				$this->Session->setFlash(__('The organization has been saved.'));
 				return $this->redirect(array('action' => 'index'));
 			} else {

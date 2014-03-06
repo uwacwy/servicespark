@@ -13,28 +13,7 @@ class SkillsController extends AppController {
  *
  * @var array
  */
-	public $components = array('Paginator', 'RequestHandler');
-
-	public function beforeFilter()
-	{
-		parent::beforeFilter();
-		// Allow users to register and logout.
-		$this->Auth->allow('search');
-	}
-
-	public function search()
-	{
-		$q = null;
-		if( isset( $this->params->query['q'] ) )
-		{
-			$q = $this->params->query['q'];
-			$conditions = array('Skill.skill LIKE' => "%$q%" );
-			$skills = $this->Skill->find('list', array('conditions' => $conditions) );			
-		}
-		$this->set('query', $q);
-		$this->set('skills', $skills);
-		$this->set('_serialize', array('query', 'skills') );
-	}
+	public $components = array('Paginator');
 
 /**
  * index method
@@ -42,7 +21,6 @@ class SkillsController extends AppController {
  * @return void
  */
 	public function index() {
-
 		$this->Skill->recursive = 0;
 		$this->set('skills', $this->Paginator->paginate());
 	}

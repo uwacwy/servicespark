@@ -20,7 +20,18 @@ class Skill extends AppModel
 	/*
 		skill not empty, not null
 	*/
-	public $validate = array();
+	public $validate = array(
+		'skill' => array(
+			'notEmpty' => array(
+				'rule' => 'notEmpty',
+				'message' => 'You must enter a skill.'
+				),
+			'unique' => array(
+				'rule' => 'isUnique',
+				'message' => 'This skill already exists.'
+			)
+		)
+	);
 
 /**
 	Associations

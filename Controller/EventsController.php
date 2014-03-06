@@ -25,6 +25,28 @@ class EventsController extends AppController {
 		$this->set('events', $this->Paginator->paginate());
 	}
 
+
+	/*
+	 *
+	 * Validates time data. Returns false if stop time <= start time.
+	 * Used in the create and edit functions.
+	 *
+	*/
+	public function validTimes() {
+		if($this->request->data['Event']['stop_time'] <= $this->request->data['Event']['start_time']) {
+				$this->Session->setFlash( __('The end time of the event must be after the start time.') );
+				unset(
+					$this->request->data['Event']['stop_time'], 
+					$this->request->data['Event']['start_time']
+				); // this will blank the fields
+
+				return false;
+		}
+		else {
+			return true;
+		}
+	}
+
 /**
  * view method
  *
@@ -33,13 +55,9 @@ class EventsController extends AppController {
  * @return void
  */
 	public function view($id = null) {
-
-		if (!$this->Event->exists($id))
-		{
+		if (!$this->Event->exists($id)) {
 			throw new NotFoundException(__('Invalid event'));
 		}
-
-		
 		$options = array('conditions' => array('Event.' . $this->Event->primaryKey => $id));
 		$this->set('event', $this->Event->find('first', $options));
 	}
@@ -53,38 +71,21 @@ class EventsController extends AppController {
 
 		if ($this->request->is('post')) 
 		{
-			debug($this->request->data);
-			return;
+			if(! $this->validTimes()) {
+				return false;
+			}
+
 			// create address entry
 			foreach($this->request->data['Address'] as $address)
 			{
-				// at a minimum, an address should have a line 1, city, state and zip
-				if( 
-					!empty( $address['address1'] ) && 
-					!empty( $address['city'] ) && 
-					!empty( $address['state'] ) &&
-					!empty( $address['zip'] ) )
-				{
-					$this->Event->Address->create();
-					$this->Event->Address->save($address);
-					// get the address_id for the join table
-					$address_ids['Address'][] = $this->Event->Address->id;
-				}
+				$this->Event->Address->create();
+				$this->Event->Address->save($address);
+				// get the address_id for the join table
+				$addressIds['Address'][] = $this->Event->Address->id;
 			}
 
-			unset( $this->request->data['Address'] );
-
-			if( !empty($address_ids) )
-				$this->request->data['Address'] = $address_ids;
-
-			$hash = sha1( json_encode($this->request->data['Event']) ); // serializes the event and hashes it
-
-			/*
-				by choosing 9 characters from a base 16 hash, there are a total possible
-				 68,719,476,736 hashes.  this should be adequate.
-			*/
-			$this->request->data['Event']['start_token'] = substr($hash, 0, 9); // 9 starting characters
-			$this->request->data['Event']['stop_token'] = substr($hash, -9, 9); // 9 ending characters
+			unset($this->request->data['Address']);
+			$this->request->data['Address'] = $addressIds;
 
 			// create and save the event
 			$this->Event->create();
@@ -99,10 +100,10 @@ class EventsController extends AppController {
 				$this->Session->setFlash(__('The event could not be saved. Please, try again.'));
 			}
 		}
-		$organization = $this->Event->Organization->find('list');
 		$address = $this->Event->Address->find('all');
-		$skills = null;
-		$this->set( compact('skills', 'address', 'organization') );
+		$this->set(compact('address'));
+		$skills = $this->Event->Skill->find('list');
+		$this->set( compact('skills') );
 	}
 
 /**
@@ -118,6 +119,9 @@ class EventsController extends AppController {
 		}
 		if ($this->request->is(array('post', 'put'))) 
 		{
+			if(! $this->validTimes()) {
+				return false;
+			}
 
 			foreach($this->request->data['Address'] as $address)
 			{
@@ -159,5 +163,8 @@ class EventsController extends AppController {
 		}
 		return $this->redirect(array('action' => 'index'));
 	}
+
+
+
 
 }

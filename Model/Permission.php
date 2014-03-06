@@ -15,7 +15,26 @@ class Permission extends AppModel
 	/*
 		all fields required; no null values
 	*/
-	public $validate = array();
+	public $validate = array(
+		'publish' => array(
+			'notEmpty' => array(
+				'rule' => 'notEmpty',
+				'message' => 'Value required for publish permission.'
+			)
+		),
+		'read' => array(
+				'notEmpty' => array(
+				'rule' => 'notEmpty',
+				'message' => 'Value required for read permission.'
+			)
+		),
+		'write' => array(			
+			'notEmpty' => array(
+			'rule' => 'notEmpty',
+			'message' => 'Value required for publish permission.'
+			)
+		)
+	);
 
 /**
 	Associations
