@@ -22,31 +22,7 @@ class Time extends AppModel
 		created
 		modified
 	*/
-	public $validate = array(
-		'event_id' => array(
-			'rule' => 'event_id',
-			'required' => true,
-        	'allowEmpty' => false,
-        	'message' => 'Time object requires event id.'
-		),
-		'user_id' => array(
-			'rule' => 'user_id',
-			'required' => true,
-        	'allowEmpty' => false,
-        	'message' => 'Time object requires user id.'
-		),
-		'start_time' => array(
-			'rule' => 'start_time',
-			'required' => true,
-        	'allowEmpty' => false,
-        	'message' => 'Time object requires start time.'
-		),
-		'stop_time' => array(
-			'rule' => 'stop_time',
-			'required' => 'false',
-			'allowEmpty' => true,
-		)
-	);
+	public $validate = array();
 
 /**
 	Associations
