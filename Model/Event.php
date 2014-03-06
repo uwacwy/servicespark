@@ -47,20 +47,25 @@ class Event extends AppModel
 	);
 
 
-	/*
-		Custom validation function
+		/*
+	 *
+	 * Validates time data. Returns false if stop time <= start time.
+	 * Used in the create and edit functions.
+	 *
 	*/
-	function validateData($field=array(), $compare_field=null) {
-        foreach( $field as $key => $value ){ 
-            $v1 = $value; 
-            $v2 = $this->data[$this->name][ $compare_field ];                  
-            if($v1 !== $v2) { 
-                return FALSE; 
-            } else { 
-                continue; 
-            } 
-        } 
-        return TRUE; 
+	public function validTimes() {
+		if($this->request->data['Event']['stop_time'] <= $this->request->data['Event']['start_time']) {
+				$this->Session->setFlash( __('The end time of the event must be after the start time.') );
+				unset(
+					$this->request->data['Event']['stop_time'], 
+					$this->request->data['Event']['start_time']
+				); // this will blank the fields
+
+				return false;
+		}
+		else {
+			return true;
+		}
 	}
 
 /**
