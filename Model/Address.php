@@ -17,21 +17,6 @@ General Model Behavior and Setup
 
 	public $displayField = 'address1';
 
-<<<<<<< HEAD
-	public $validate = array(
-		'address1' => array(
-			'required' => 'true'
-		),
-		'city' => array(
-			'required' => 'true'
-		),
-		'state' => array(
-			'required' => 'true'
-		),
-		'zip' => array(
-			'required' => 'true',
-			'allowEmpty' => 'false'
-=======
 	/*
 		address1, city, state, zip, type required.
 	*/
@@ -69,7 +54,6 @@ General Model Behavior and Setup
 				'rule' => 'notEmpty',
 				'message' => 'This line required.'
 			)
->>>>>>> Model-Validation
 		)
 	);
 

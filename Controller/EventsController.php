@@ -26,26 +26,7 @@ class EventsController extends AppController {
 	}
 
 
-	/*
-	 *
-	 * Validates time data. Returns false if stop time <= start time.
-	 * Used in the create and edit functions.
-	 *
-	*/
-	public function validTimes() {
-		if($this->request->data['Event']['stop_time'] <= $this->request->data['Event']['start_time']) {
-				$this->Session->setFlash( __('The end time of the event must be after the start time.') );
-				unset(
-					$this->request->data['Event']['stop_time'], 
-					$this->request->data['Event']['start_time']
-				); // this will blank the fields
 
-				return false;
-		}
-		else {
-			return true;
-		}
-	}
 
 /**
  * view method
@@ -75,15 +56,9 @@ class EventsController extends AppController {
 
 		if ($this->request->is('post')) 
 		{
-<<<<<<< HEAD
-			debug($this->request->data);
-			return;
-=======
-			if(! $this->validTimes()) {
+			if(! $this->Event->validTimes()) {
 				return false;
 			}
-
->>>>>>> Model-Validation
 			// create address entry
 			foreach($this->request->data['Address'] as $address)
 			{
@@ -100,8 +75,6 @@ class EventsController extends AppController {
 					$address_ids['Address'][] = $this->Event->Address->id;
 				}
 			}
-
-<<<<<<< HEAD
 			unset( $this->request->data['Address'] );
 
 			if( !empty($address_ids) )
@@ -115,10 +88,6 @@ class EventsController extends AppController {
 			*/
 			$this->request->data['Event']['start_token'] = substr($hash, 0, 9); // 9 starting characters
 			$this->request->data['Event']['stop_token'] = substr($hash, -9, 9); // 9 ending characters
-=======
-			unset($this->request->data['Address']);
-			$this->request->data['Address'] = $addressIds;
->>>>>>> Model-Validation
 
 			// create and save the event
 			$this->Event->create();
@@ -152,7 +121,7 @@ class EventsController extends AppController {
 		}
 		if ($this->request->is(array('post', 'put'))) 
 		{
-			if(! $this->validTimes()) {
+			if(! $this->Event->validTimes()) {
 				return false;
 			}
 
