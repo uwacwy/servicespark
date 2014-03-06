@@ -17,6 +17,7 @@ General Model Behavior and Setup
 
 	public $displayField = 'address1';
 
+<<<<<<< HEAD
 	public $validate = array(
 		'address1' => array(
 			'required' => 'true'
@@ -30,6 +31,45 @@ General Model Behavior and Setup
 		'zip' => array(
 			'required' => 'true',
 			'allowEmpty' => 'false'
+=======
+	/*
+		address1, city, state, zip, type required.
+	*/
+	public $validate = array(
+		'address1' => array(
+			'notEmpty' => array(
+				'rule' => 'notEmpty',
+				'message' => 'This line required.'
+			)
+		),
+		'city' => array(
+			'notEmpty' => array(
+				'rule' => 'notEmpty',
+				'message' => 'This line required.'
+			)
+		),
+		'state' => array(
+			'notEmpty' => array(
+				'rule' => 'notEmpty',
+				'message' => 'This line required.'
+			)
+		),
+		'zip' => array(
+			'notEmpty' => array(
+				'rule' => 'notEmpty',
+				'message' => 'This line required.'
+			),
+			'postal' => array(
+				'rule' => array('postal', null, 'us'),
+				'message' => 'Only letters and numbers are allowed for an address.'
+			)
+		),
+		'type' => array(
+			'notEmpty' => array(
+				'rule' => 'notEmpty',
+				'message' => 'This line required.'
+			)
+>>>>>>> Model-Validation
 		)
 	);
 

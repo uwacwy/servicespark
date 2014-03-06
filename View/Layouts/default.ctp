@@ -224,7 +224,7 @@ $solution_name = "United Way of Albany County";
 		<?php else: ?>
 			<?php echo $this->Form->create('User', array('action'=> 'login', 'class' => 'navbar-form navbar-right', 'inputDefaults' => array('div' => 'form-group', 'wrapInput' => false, 'class' => 'form-control', 'label' => false))); ?>
 				<label>Login</label>
-				<?
+				<?php
 					echo $this->Form->input('username', array('placeholder' => 'username'));
 					echo $this->Form->input('password', array('placeholder' => 'password'));
 				?>

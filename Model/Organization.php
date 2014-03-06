@@ -21,7 +21,14 @@ class Organization extends AppModel
 		name
 
 	*/	
-	public $validate = array();
+	public $validate = array(
+		'name' => array(
+			'notEmpty' => array(
+				'rule' => 'notEmpty',
+				'message' => 'An organization must have a name.'
+			)
+		)
+	);
 
 /**
 	Associations
