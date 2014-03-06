@@ -4,25 +4,7 @@
 		<legend><?php echo __('Add Organization'); ?></legend>
 	<?php
 		echo $this->Form->input('name');
-
-		$fields = array('mailing_address', 'mailing_city', 'mailing_state', 'mailing_zip', 
-		'physical_address', 'physical_city', 'physical_state', 'physical_zip');
-
-		if(! empty($this->request->data['Address'])) {
-			$i = 0;
-			foreach ($this->request->data['Address'] as $address) {
-
-				foreach($fields as $field) {
-					echo $this->Form->input("Address.$field");
-				}
-
-				$i++;
-			}
-		} else {
-			foreach($fields as $field) {
-				echo $this->Form->input("Address.$field");
-			}
-		}
+		echo $this->Address->addBlock();
 
 	?>
 	</fieldset>

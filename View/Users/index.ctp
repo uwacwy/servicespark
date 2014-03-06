@@ -84,8 +84,8 @@
 		<td><?php echo h($user['User']['username']); ?>&nbsp;</td>
 		<td><?php echo h($user['User']['password']); ?>&nbsp;</td>
 		<td class="actions">
-			<?php echo $this->Html->link(__('View'), array('action' => 'view', $user['User']['user_id'])); ?>
-			<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $user['User']['user_id'])); ?>
+			<?php echo $this->Html->link(__('View'), array('action' => 'view', $user['User']['username'])); ?>
+			<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $user['User']['username'])); ?>
 			<?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $user['User']['user_id']), null, __('Are you sure you want to delete # %s?', $user['User']['user_id'])); ?>
 		</td>
 	</tr>

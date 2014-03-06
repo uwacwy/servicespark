@@ -12,9 +12,7 @@ class Event extends AppModel
 	General Model Behavior and Setup
 */
 	public $primaryKey = 'event_id';
-
 	public $displayField = 'title';
-
 
 	/*
 		all fields required
@@ -46,6 +44,13 @@ class Event extends AppModel
 			'dependent' => true, // when an event is deleted, related time will be dleted
 		)
 
+	);
+
+	public $belongsTo = array(
+		'Organization' => array(
+			'className' => 'Organization',
+			'foreignKey' => 'organization_id'
+		)
 	);
 
 }

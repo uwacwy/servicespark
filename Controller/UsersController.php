@@ -22,6 +22,7 @@ class UsersController extends AppController {
 
 	public function beforeFilter()
 	{
+		parent::beforeFilter();
 		// Allow users to register and logout.
 		$this->Auth->allow('register', 'login', 'logout');
 	}
@@ -55,59 +56,97 @@ class UsersController extends AppController {
 	{
 		return $this->redirect( $this->Auth->logout() );
 	}
+/**
+	index methods
+*/
 
-	/**
-	 * index method
-	 *
-	 * @return void
-	 */
-	public function index()
+	public function admin_index()
 	{
-		$this->User->recursive = 0;
-		$this->set('users', $this->Paginator->paginate());
+		/*
+			this fall-through pattern will make it easy to get users to the appropriate level of permissions
+		*/
+		if( $this->_CurrentUserIsSuperAdmin() )
+		{
+			$this->User->recursive = 0;
+			$this->set('users', $this->Paginator->paginate());
+		}
+		else
+		{
+			return $this->redirect( array('controller' => 'user', 'action' => 'index', 'prefix' => 'coordinator') );
+		}
 	}
 
+	public function coordinator_index()
+	{
+
+	}
+
+	public function supervisor_index()
+	{
+
+	}
+
+	public function volunteer_index()
+	{
+
+	}
+
+	public function index()
+	{
+
+	}
+
+/**
+	view methods
+*/
 	/**
 	 * view method
 	 *
 	 * @throws NotFoundException
-	 * @param string $id
+	 * @param string $username
 	 * @return void
 	 */
-	public function view($id = null)
+	public function view($username)
 	{
-		if ( !$this->User->exists($id) )
-		{
-				throw new NotFoundException(__('Invalid user'));
-		}
+		/*
+			cake's magic methods let us use cool methods to find stuff
+		*/
+		$user_id = $this->User->findByUsername($username);
+
+		debug($user_id);
 
 		$options = array(
-			'conditions' => array('User.' . $this->User->primaryKey => $id),
+			'conditions' => array('User.username'  => $username),
 			'contain' => array(
 				'Recovery', 
 				'Permission' => array('Organization'), // without this containable behavior, cake would have sent the related User back again
 				'Skill',
-				'Address'
+				'Address',
+				'Time' => array('Event')
 			)
 		);
 
-		$this->set('user', $this->User->find('first', $options));
+		$user = $this->User->find('first', $options);
+
+		$this->set( compact('user') );
 	}
 
-	public function admin_index()
+
+/**
+	register methods
+*/
+
+	public function admin_register()
 	{
-		$options = array(
-			'conditions' => array('User.' . $this->User->primaryKey => $this->Auth->user('user_id') ),
-			'contain' => array(
-				'Recovery', 
-				'Permission' => array('Organization'), // without this containable behavior, cake would have sent the related User back again
-				'Skill'
-			)
-		);
+		if( $this->_CurrentUserIsSuperAdmin() )
+		{
 
-		$this->set('user', $this->User->find('first', $options));
+		}
+		else
+		{
+			return $this->redirect( array('controller' => 'user', 'action' => 'register', 'prefix' => 'coordinator') );
+		}
 	}
-
 
 
 	/**
@@ -155,14 +194,24 @@ class UsersController extends AppController {
 
 
 			// create address entry
-			$this->User->Address->create();
-			$address['Address'] = $this->request->data['Address'];
-			$this->User->Address->save($address);
+			foreach($this->request->data['Address'] as $address)
+			{
+				// at a minimum, an address should have a line 1, city, state and zip
+				if( 
+					!empty( $address['address1'] ) && 
+					!empty( $address['city'] ) && 
+					!empty( $address['state'] ) &&
+					!empty( $address['zip'] ) )
+				{
+					$this->User->Address->create();
+					$this->User->Address->save($address);
+					// get the address_id for the join table
+					$address_ids['Address'][] = $this->User->Address->id;
+				}
+			}
 
-			unset($this->request->data['Address']);
-
-			// get the address_id for the join table
-			$this->request->data['Address']['address_id'] = $this->User->Address->id;
+			unset( $this->request->data['Address'] );
+			$this->request->data['Address'] = $address_ids;
 
 
 
@@ -193,6 +242,16 @@ class UsersController extends AppController {
 	{
 		unset( $this->request->data['User']['password'] );
 
+		if ( ! $this->_CurrentUserIsSuperAdmin() )
+		{
+			// only super administrators can edit other users
+			$id = $this->Auth->user('user_id');
+		}
+		elseif ( $id != $this->Auth->user('user_id') )
+		{
+			throw new ForbiddenException('You do not have permission to modify other users');
+		}
+
 		if (!$this->User->exists($id))
 		{
 			throw new NotFoundException( __('Invalid user') );
@@ -215,10 +274,27 @@ class UsersController extends AppController {
 				}
 			}
 			
-			foreach ($this->request->data['Address'] as $address) 
+			// create address entry
+			foreach($this->request->data['Address'] as $address)
 			{
-				$this->User->Address->save($address);
+				// at a minimum, an address should have a line 1, city, state and zip
+				if( 
+					!empty( $address['address1'] ) && 
+					!empty( $address['city'] ) && 
+					!empty( $address['state'] ) &&
+					!empty( $address['zip'] ) )
+				{
+					$this->User->Address->create();
+					$this->User->Address->save($address);
+					// get the address_id for the join table
+					$address_ids['Address'][] = $this->User->Address->id;
+				}
 			}
+
+			unset( $this->request->data['Address'] );
+
+			if( !empty($address_ids) )
+				$this->request->data['Address'] = $address_ids;
 			
 			if ( $this->User->save($this->request->data) )
 			{
@@ -231,14 +307,11 @@ class UsersController extends AppController {
 				$this->Session->setFlash( __('The user could not be saved. Please, try again.') );
 
 			}
-		} else {
-			$options = array('conditions' => array('User.' . $this->User->primaryKey => $id));
-			$this->request->data = $this->User->find('first', $options);
-			$skills = $this->User->Skill->find('list');
-			$this->set(compact('skills'));
-			$addresses = $this->User->Address->find('list');
-			$this->set(compact('addresses'));
 		}
+		
+		$options = array('conditions' => array('User.' . $this->User->primaryKey => $id));
+		$this->request->data = $this->User->find('first', $options);
+		$this->set(compact('addresses'));
 	}
 
 

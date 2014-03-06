@@ -37,52 +37,81 @@ class AppController extends Controller {
 		App-Wide Components
 		Auth => used for username/password authentication
 	*/
+	public $helpers = array(
+		'Js',
+		'Html' => array('className' => 'BoostCake.BoostCakeHtml'),
+		'Form' => array('className' => 'BoostCake.BoostCakeForm'),
+		'Paginator' => array('className' => 'BoostCake.BoostCakePaginator'),
+	);
+
 	public $components = array(
-        'Session',
-        'Auth' => array(
-            'loginRedirect' => array(
-                'controller' => 'users',
-                'action' => 'index'
-            ),
-            'logoutRedirect' => array(
-                'controller' => 'pages',
-                'action' => 'display',
-                'home'
-            )
-        )
-    );
+		'Session',
+		'Auth' => array(
+			'loginRedirect' => array(
+				'controller' => 'users',
+				'action' => 'view'
+			),
+			'logoutRedirect' => array(
+				'controller' => 'pages',
+				'action' => 'display',
+				'home'
+			)
+		)
+	);
 
-    public function _CurrentUserIsSuperAdmin()
-    {
-        App::uses('User', 'Model');
-        $user = new User();
-        $user->user_id = $this->Auth->user('user_id');
-        return $user->field('super_admin');
-    }
+	public function beforeFilter()
+	{
+		$this->set('super_admin', $this->_CurrentUserIsSuperAdmin() );
+		$this->set('form_defaults', array(
+				'inputDefaults' => array(
+					'div' => 'form-group',
+					'wrapInput' => false,
+					'class' => 'form-control'
+				)
+			)
+		);
+	}
 
-    public function _CurrentUserCanPublish($organization_id)
-    {
-        App::uses('Permission', 'Model');
+	public function _CurrentUserIsSuperAdmin()
+	{
+		App::uses('User', 'Model');
+		
+		if( AuthComponent::user('user_id') != null )
+		{
+			$user = new User();
 
-        $permission = new Permission();
-        return $permission->_UserCanPublish( $this->Auth->user('user_id'), $organization_id);
-    }
+			$user->user_id = $this->Auth->user('id');
+			return $user->field('super_admin');
+		}
+		else
+		{
+			return false;
+		}
+	}
 
-    public function _CurrentUserCanRead($organization_id)
-    {
-        App::uses('Permission', 'Model');
+	public function _CurrentUserCanPublish($organization_id)
+	{
+		App::uses('Permission', 'Model');
 
-        $permission = new Permission();
-        return $permission->_UserCanRead( $this->Auth->user('user_id'), $organization_id);
-    }
+		$permission = new Permission();
+		return $permission->_UserCanPublish( $this->Auth->user('user_id'), $organization_id);
+	}
 
-    public function _CurrentUserCanWrite($organization_id)
-    {
-        App::uses('Permission', 'Model');
+	public function _CurrentUserCanRead($organization_id)
+	{
+		App::uses('Permission', 'Model');
 
-        $permission = new Permission();
-        return $permission->_UserCanWrite( $this->Auth->user('user_id'), $organization_id);
-    }
+		$permission = new Permission();
+		return $permission->_UserCanRead( $this->Auth->user('user_id'), $organization_id);
+	}
+
+	public function _CurrentUserCanWrite($organization_id)
+	{
+		App::uses('Permission', 'Model');
+
+		$permission = new Permission();
+		return $permission->_UserCanWrite( $this->Auth->user('user_id'), $organization_id);
+	}
 
 
 }

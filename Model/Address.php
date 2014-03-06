@@ -17,6 +17,22 @@ General Model Behavior and Setup
 
 	public $displayField = 'address1';
 
+	public $validate = array(
+		'address1' => array(
+			'required' => 'true'
+		),
+		'city' => array(
+			'required' => 'true'
+		),
+		'state' => array(
+			'required' => 'true'
+		),
+		'zip' => array(
+			'required' => 'true',
+			'allowEmpty' => 'false'
+		)
+	);
+
 /**
 	Associations
 */

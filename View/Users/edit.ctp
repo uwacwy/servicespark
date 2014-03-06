@@ -12,26 +12,15 @@
 		echo $this->Form->input('email');
 		echo $this->Form->input('first_name');
 		echo $this->Form->input('last_name');
-		echo $this->Form->input('Skill');
+		echo $this->Form->input('skills', array('type' => 'text', 'class' => 'autocomplete skills'));
 
-		$fields = array('mailing_address', 'mailing_city', 'mailing_state', 'mailing_zip', 
-			'physical_address', 'physical_city', 'physical_state', 'physical_zip');
-
-		if(! empty($this->request->data['Address'])) {
-			$i = 0;
-			foreach ($this->request->data['Address'] as $address) {
-				echo $this->Form->input("Address.$i.address_id");
-
-				foreach($fields as $field) {
-					echo $this->Form->input("Address.$i.$field");
-				}
-
-				$i++;
-			}
-		} else {
-			foreach($fields as $field) {
-				echo $this->Form->input("Address.0.$field");
-			}
+		if($this->request->data['Address'])
+		{
+			echo $this->Address->editBlock($this->request->data['Address']);
+		}
+		else
+		{
+			echo $this->Address->addBlock();
 		}
 
 

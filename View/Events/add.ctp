@@ -1,4 +1,17 @@
 <div class="events form">
+<style>
+	.autocomplete-wrapper {
+		display: inline-block;
+		margin-right: 10px;
+		border-radius: 4px;
+		background: #eee;
+	}
+	.autocomplete-wrapper a
+	{
+		text-decoration: none;
+		margin: 0 5px;
+	}
+</style>
 <?php echo $this->Form->create('Event'); ?>
 	<fieldset>
 		<legend><?php echo __('Add Event'); ?></legend>
@@ -8,36 +21,11 @@
 		echo $this->Form->input('description');
 		echo $this->Form->input('start_time');
 		echo $this->Form->input('stop_time');
-		echo $this->Form->input('Skill');
+		echo $this->Form->input('skills', array('type' => 'text', 'class' => 'skills autocomplete'));
+		//echo $this->Form->input('Skill');
+		echo $this->Form->input('Organization');
 
-		$addressType = array('physical', 'mailing', 'both');
-
-
-		//echo $this->Form->input('Address');
-		$i = 0;
-		foreach($addressType as $type)
-		{
-			switch ($type)
-			{
-				case 'physical':
-					echo '<h3>Physical Address</h3>';
-					break;
-				case 'mailing':
-					echo '<h3>Mailing Address</h3>';
-					break;
-				case 'both':
-					echo '<h3>Physical and Mailing Address</h3>';
-					break;
-			}
-
-			echo $this->Form->input("Address.$i.type", array('type' => "hidden", 'value' => $type));
-			foreach( array('address1', 'address2', 'city', 'state', 'zip') as $field)
-			{
-				echo $this->Form->input("Address.$i.$field");
-			}
-
-			$i++;
-		}		
+		echo $this->Address->addBlock(); 
 		// echo $this->Form->input('Address.address_id');
 		// echo $this->Form->input('Address.mailing_address');
 		// echo $this->Form->input('Address.mailing_city');
