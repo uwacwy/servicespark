@@ -59,7 +59,7 @@ coordinator (publishing organization admin)
 	Time
 		coordinator_edit.ctp	adjust the details of a time punch
 		coordinator_delete.ctp	delete a time punch
-		coordinator_adjust.ctp
+		coordinator_adjust.ctp	bulk adjustment of an event's time punches
 			
 
 manager/report generator
@@ -99,3 +99,14 @@ guest
 	Time
 	User
 		register.ctp	create a new account
+
+Event Tom
+	8 views
+User Brad
+	3 views
+Organization Jamie
+	6 views
+Time Brad
+	5 views
+Recovery Brad
+	1 view

@@ -9,7 +9,7 @@ class TimesController extends AppController
 {
 	//var $scaffold;
 
-	public function in($token = null)
+	public function volunteer_in($token = null)
 	{
 		// find the event_id
 		$event = $this->Time->Event->findByStartToken($token);
@@ -60,7 +60,7 @@ class TimesController extends AppController
 		// create a time entry for now with $this->Auth->user('user_id')
 	}
 
-	public function out($token = null)
+	public function volunteer_out($token = null)
 	{
 		$event = $this->Time->Event->findByStopToken($token);
 
@@ -88,4 +88,66 @@ class TimesController extends AppController
 
 		$this->set( compact('event') );
 	}
+
+	public function coordinator_edit($time_id)
+	{
+		// fetch time id
+
+		// verify that the current user can read/write this organization's time entries
+
+		// post block
+			// verify start time < stop time
+			// save
+			// redirect to coordinator/event/edit/:event_id
+
+		// set data for view
+
+		throw new NotImplementedException('this method exists but has not been implemented');
+	}
+	
+	public function coordinator_delete($time_id)
+	{
+		// fetch time id
+		$time = $this->Time->findAllById($time_id);
+
+		// verify that the current user can read/write this organization's time entries
+		if( $this->_CurrentUserCanWrite($time['Time']['organization_id']) )
+		{
+
+		}
+		else
+		{
+			throw new ForbiddenException('You are not allowed to edit this organization\'s time entries');
+		}
+
+		// post block
+			// check a confirm variable
+			// redirect to coordinator/event/edit/:event_id
+		if( $this->request->is('post') )
+		{
+
+		}
+
+		// set data for view
+
+		throw new NotImplementedException('this method exists but has not been implemented');
+	}
+	
+	public function coordinator_adjust($adjustment, $event_id)
+	{
+		// verify adjustment is a valid thing to do (in|out|all)
+
+		// switch on adjustment
+			// in: find all entries with NULL clock in time
+			// out: find all entries with NULL clock out time
+			// both:
+
+		// saveAll
+
+		// set data for view
+
+		throw new NotImplementedException('this method exists but has not been implemented');
+	}
+
+
 }
