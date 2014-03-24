@@ -3,6 +3,8 @@
 	TimesController.php
 	--
 	manages time clock entries
+
+	@extends AppController
 */
 
 class TimesController extends AppController
@@ -11,12 +13,26 @@ class TimesController extends AppController
 
 	public function volunteer_in($token = null)
 	{
-		// find the event_id
-		$event = $this->Time->Event->findByStartToken($token);
+		$conditions = array(
+			'Event.start_token' => $token
+		);
+
+		$contain = array(
+			'Address',
+			'Organization' => array(
+				'Permission.write = 1' => array(
+					'User'
+				)
+			),
+			'Time' => array('conditions' => array('Time.stop_time' => NULL) ) // should show people actually at event
+		);
+
+		// find the event_id using Cake's magic methods
+		$event = $this->Time->Event->find('first', array('conditions' => $conditions, 'contain' => $contain));
 
 		if( empty($event) )
 		{
-			throw new NotImplementedException('Event does not exist, and this case has not been handled.');
+			throw new NotFoundException('Invalid token provided.  Contact your event coordinator for more assistance.');
 		}
 
 		$existing = $this->Time->find('count', array('conditions' =>
@@ -37,7 +53,7 @@ class TimesController extends AppController
 
 		if ($this->request->is('post'))
 		{
-			if( $this->request->data['Time']['confirm'] == '1' )
+			if( $this->request->data['Time']['confirm'] )
 			{
 				$entry['Time'] = array(
 					'user_id' => $this->Auth->user('user_id'),
@@ -45,7 +61,7 @@ class TimesController extends AppController
 					'start_time' => date('Y-m-d H:i:s')
 				);
 
-				if($this->Time->save($entry) )
+				if( $this->Time->save($entry) )
 				{
 					$this->Session->setFlash('You have been clocked in');
 					return $this->redirect( array('controller' => 'events', 'action' => 'view', $event['Event']['event_id']) );
@@ -55,21 +71,35 @@ class TimesController extends AppController
 
 		$this->set( compact('event') );
 
-		
-
-		// create a time entry for now with $this->Auth->user('user_id')
 	}
 
 	public function volunteer_out($token = null)
 	{
-		$event = $this->Time->Event->findByStopToken($token);
+		$conditions = array(
+			'Event.stop_token' => $token
+		);
+
+		$contain = array(
+			'Address',
+			'Organization' => array(
+				'Permission.write = 1' => array(
+					'User'
+				)
+			),
+			'Skill',
+			'Time'
+		);
+
+		// find the event_id using Cake's magic methods
+		$event = $this->Time->Event->find('first', array('conditions' => $conditions, 'contain' => $contain));
 
 		if( empty($event) )
 		{
-			throw new NotImplementedException('Event does not exist, and this case has not been handled.');
+			throw new NotImplementedException('Invalid token was provided.  Contact your event coordinator for more assistance.');
 		}
 
-		$existing = $this->Time->find('count', array('conditions' =>
+		$existing = $this->Time->find('count',
+			array('conditions' =>
 				array(
 					'Time.user_id' => $this->Auth->user('user_id'),
 					'Time.event_id' => $event['Event']['event_id'],
@@ -80,11 +110,15 @@ class TimesController extends AppController
 
 		if( $existing != 1 )
 		{
-			throw new NotFoundException('You are unable to clock out using this token');
+			throw new NotFoundException('You are unable to clock out using this token.  Contact your event coordinator for more assistance.');
 			return $this->redirect( array('controller' => 'events', 'action' => 'index') );
 		}
 
-		debug($existing);
+		if( $this->request->is('post') )
+		{
+			$this->Time->id = $event['Event']['event_id'];
+			$this->Time->saveField('stop_time', date('Y-m-d H:i:s') );
+		}
 
 		$this->set( compact('event') );
 	}
@@ -92,23 +126,50 @@ class TimesController extends AppController
 	public function coordinator_edit($time_id)
 	{
 		// fetch time id
+		$time = $this->Time->findByTimeId($time_id);
+
+		//debug($time);
 
 		// verify that the current user can read/write this organization's time entries
+		if( $this->_CurrentUserCanWrite($time['Event']['organization_id']) )
+		{
+			// edit views use request data, rather than set data when they prepopulating
+			$this->request->data = $time;
+			$this->set( compact('time') );
+		}
+		else
+		{
+			throw new ForbiddenException('You do not have permission to edit this organization\'s time entries');
+		}
 
-		// post block
-			// verify start time < stop time
-			// save
-			// redirect to coordinator/event/edit/:event_id
+		// This block will execute when data is posted in the request
+		if( $this->request->is('post') )
+		{
+			if( $this->request->data['Time']['stop_time']['null'] )
+			{
+				$this->request->data['Time']['stop_time'] = null;
+			}
 
-		// set data for view
+			$save['Time'] = $this->request->data['Time'];
 
-		throw new NotImplementedException('this method exists but has not been implemented');
+			if($this->Time->save($save) )
+			{
+				$this->redirect( array('coordinator' => true, 'controller' => 'event', 'action' => 'view', $time['Event']['event_id']) );
+			}
+		}
+
+		// throw new NotImplementedException('this method exists but has not been implemented');
 	}
 	
 	public function coordinator_delete($time_id)
 	{
+		if( !$this->Time->exists($time_id) )
+		{
+			throw new NotFoundException('Invalid time entry specified');
+		}
+
 		// fetch time id
-		$time = $this->Time->findAllById($time_id);
+		$time = $this->Time->findAllByTimeId($time_id);
 
 		// verify that the current user can read/write this organization's time entries
 		if( $this->_CurrentUserCanWrite($time['Time']['organization_id']) )

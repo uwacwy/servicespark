@@ -167,6 +167,7 @@ class UsersController extends AppController {
 
 		if ($this->request->is('post'))
 		{
+			$entry = $this->request->data;
 			/*
 				Process the password.
 				--
@@ -177,24 +178,24 @@ class UsersController extends AppController {
 				else
 					blank password_l and password_r and return false so the form is displayed again
 			*/
-			if( $this->request->data['User']['password_l'] != $this->request->data['User']['password_r'] )
+			if( $entry['User']['password_l'] != $entry['User']['password_r'] )
 			{
 				$this->Session->setFlash( __('The passwords did not match.  Please try again.') );
 				unset(
-					$this->request->data['User']['password_l'], 
-					$this->request->data['User']['password_r']
+					$entry['User']['password_l'], 
+					$entry['User']['password_r']
 				); // this will blank the fields
 
 				return false; // stops remaining processing
 			}
 			else
 			{
-				$this->request->data['User']['password'] = $this->request->data['User']['password_l'];
+				$entry['User']['password'] = $entry['User']['password_l'];
 			}
 
 
 			// create address entry
-			foreach($this->request->data['Address'] as $address)
+			foreach($entry['Address'] as $address)
 			{
 				// at a minimum, an address should have a line 1, city, state and zip
 				if( 
@@ -210,14 +211,14 @@ class UsersController extends AppController {
 				}
 			}
 
-			unset( $this->request->data['Address'] );
-			$this->request->data['Address'] = $address_ids;
+			unset( $entry['Address'] );
+			$entry['Address'] = $address_ids;
 
-
+			return;
 
 			$this->User->create();
 
-			if ( $this->User->save($this->request->data) )
+			if ( $this->User->save($entry) )
 			{
 				$this->Session->setFlash( __('This account has been created.  Login with your username and password.') );
 				$this->redirect(array('action' => 'login'));

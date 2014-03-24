@@ -50,14 +50,15 @@
 				<?php echo $this->Form->input('skill', array('class' => 'autocomplete skills form-control', 'data-target' => '#UserSkills') ); ?>
 				<div id="UserSkills">
 					<?php 
-						if( isset($this->request->data['Skill']) )
+						if( isset($this->request->data['Skill']['Skill']) )
 						{
-							for( $i = 0; $i < count($this->request->data['Skill']); $i++ )
+							for( $i = 0; $i < count($this->request->data['Skill']['Skill']); $i++ )
 							{
 								echo $this->element('skill', array('i' => $i) );
 							}
 						}
 					?>
+					<?php // TODO: this should fill full of skill elements if the page has a validation error ?>
 				</div>
 			</div>
 		</div>

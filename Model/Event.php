@@ -13,6 +13,7 @@ class Event extends AppModel
 */
 	public $primaryKey = 'event_id';
 	public $displayField = 'title';
+	public $actsAs = array('Containable');
 
 	/*
 		all fields required
