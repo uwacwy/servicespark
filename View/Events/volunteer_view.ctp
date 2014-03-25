@@ -24,14 +24,7 @@
 		  <td><?php $stopTime = new DateTime($event['Event']['stop_time']);
 			echo $stopTime->format('F j, Y, g:i a'); ?></td>
 		</tr>
-		<tr>
-		  <td><strong><?php echo __('Addresses'); ?></strong></td>
-		  <td>
-		  	<?php echo $this->Address->printAddress($this->request->data['Address']); ?>
-		  </td>
-		</tr>
 	</table>  -->
-
 <div class="row">
 	<div class="col-md-12">
 		<?php echo $this->Form->create('Event'); ?>
@@ -57,7 +50,7 @@
 		</div>
 	</div>
 </div>
-		
+
 </div>
 <div class="actions">
 	<h3><?php echo __('Actions'); ?></h3>

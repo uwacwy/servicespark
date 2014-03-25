@@ -23,7 +23,7 @@
 		echo $this->Form->input('stop_time');
 		echo $this->Form->input('skills', array('type' => 'text', 'class' => 'skills autocomplete'));
 		//echo $this->Form->input('Skill');
-		echo $this->Form->input('Organization');
+		echo $this->Form->input('organization_id');
 
 		echo $this->Address->addBlock(); 
 		// echo $this->Form->input('Address.address_id');
