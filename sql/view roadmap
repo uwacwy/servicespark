@@ -47,14 +47,14 @@ admin
 		admin_delete.ctp
 		admin_view.ctp
 
-coordinator (publishing organization admin)
+coordinator (publishing organization admin) 
 	Event
 		coordinator_index.ctp	
 		coordinator_add.ctp		create a new event
 		coordinator_edit.ctp	edit an existing event
 		coordinator_delete.ctp	set a 'deleted' bit or something like that
 	Organization
-		coordinator_index.ctp	list a user's organizations
+		DONE -- coordinator_index.ctp	list a user's organizations
 		coordinator_edit.ctp	remove/promote other users from organization
 	Time
 		coordinator_edit.ctp	adjust the details of a time punch
@@ -67,14 +67,15 @@ manager/report generator
 		manager_index.ctp	view past/present/future events for user's organization
 		manager_view.ctp	provide read-only insight into an event's activity
 	Organization
-		manager_view.ctp	view reports of all published volunteer activity
+		DONE -- supervisor_view.ctp	view reports of all published volunteer activity
 
 volunteer (user)
 	Address
 	Event
 	Organization
 		leave.ctp		removes a user's permissions from an organization
-		publish.ctp		user can opt in to publishing their activity to an organization
+		DONE -- join.ctp		user can opt in to publishing their activity to an organization
+		DONE -- create.ctp		user can create an organization and is automatically elevated to coordinator for that organization
 	Permissions
 	Recovery
 	Skill
@@ -91,7 +92,7 @@ guest
 		index.ctp	list future events
 		view.ctp	view future events
 	Organization
-		view.ctp	view organization and future events associated with organization
+		DONE -- view.ctp	view organization and future events associated with organization -- HELP! Need future events only.
 	Permissions
 	Recovery
 		user.ctp	initiate password recovery
