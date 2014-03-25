@@ -53,8 +53,9 @@ class Event extends AppModel
 	 * Used in the create and edit functions.
 	 *
 	*/
+		//CURRENTLY NOT WORKING... Set to always return true
 	public function validTimes() {
-		if($this->request->data['Event']['stop_time'] <= $this->request->data['Event']['start_time']) {
+		/*if($this->request->data['Event']['stop_time'] <= $this->request->data['Event']['start_time']) {
 				$this->Session->setFlash( __('The end time of the event must be after the start time.') );
 				unset(
 					$this->request->data['Event']['stop_time'], 
@@ -65,7 +66,8 @@ class Event extends AppModel
 		}
 		else {
 			return true;
-		}
+		}*/
+		return true;
 	}
 
 /**
