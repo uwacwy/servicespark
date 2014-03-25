@@ -8,7 +8,9 @@
 	?>
 	<div class="row">
 		<div class="col-md-12">
-			<?php echo $this->Form->input("Address.$i.type", array('options' => 
+			<?php echo $this->Form->input("Address.$i.type", array(
+				'label' => 'Address Type',
+				'options' => 
 					array(
 						'both' => 'Physical and Mailing', 
 						'mailing' => 'Mailing Address',
@@ -20,12 +22,12 @@
 	</div>
 	<div class="row">
 		<div class="col-md-12">
-			<?php echo $this->Form->input("Address.$i.address1"); ?>
+			<?php echo $this->Form->input("Address.$i.address1", array('label' => 'Address Line 1')); ?>
 		</div>
 	</div>
 	<div class="row">
 		<div class="col-md-12">
-			<?php echo $this->Form->input("Address.$i.address2"); ?>
+			<?php echo $this->Form->input("Address.$i.address2", array('label' => 'Address Line 2')); ?>
 		</div>
 	</div>
 	<div class="row">
@@ -37,6 +39,11 @@
 		</div>
 		<div class="col-md-3">
 			<?php echo $this->Form->input("Address.$i.zip"); ?>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-2">
+			<a href="#" class="btn btn-danger remove-address">Remove this address</a>
 		</div>
 	</div>
 	<hr>

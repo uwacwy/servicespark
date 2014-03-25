@@ -233,24 +233,21 @@ class UsersController extends AppController {
 
 
 	/**
-	 * edit method
+	 * profile method
 	 *
 	 * @throws NotFoundException
 	 * @param string $id
 	 * @return void
 	 */
-	public function edit($id = null)
+	public function profile($id = null)
 	{
 		unset( $this->request->data['User']['password'] );
 
-		if ( ! $this->_CurrentUserIsSuperAdmin() )
+		$id = $this->Auth->user('user_id');
+
+		if( $id == null )
 		{
-			// only super administrators can edit other users
-			$id = $this->Auth->user('user_id');
-		}
-		elseif ( $id != $this->Auth->user('user_id') )
-		{
-			throw new ForbiddenException('You do not have permission to modify other users');
+			throw new ForbiddenException( __('Please login before attempting to edit your profile.') );
 		}
 
 		if (!$this->User->exists($id))
@@ -270,49 +267,141 @@ class UsersController extends AppController {
 						$this->request->data['User']['password_r'] ); // this will blank the fields
 				}
 				else
-				{
+				{ 
 					$this->request->data['User']['password'] = $this->request->data['User']['password_l'];
 				}
 			}
-			
-			// create address entry
-			foreach($this->request->data['Address'] as $address)
-			{
-				// at a minimum, an address should have a line 1, city, state and zip
-				if( 
-					!empty( $address['address1'] ) && 
-					!empty( $address['city'] ) && 
-					!empty( $address['state'] ) &&
-					!empty( $address['zip'] ) )
-				{
-					$this->User->Address->create();
-					$this->User->Address->save($address);
-					// get the address_id for the join table
-					$address_ids['Address'][] = $this->User->Address->id;
-				}
-			}
 
-			unset( $this->request->data['Address'] );
+			/*
+				abstracted!
+				--
+				many methods use the skill and address parsers;  this will make them easier to maintain
+			*/
+			if( isset($this->request->data['Skill']) )
+				$skill_ids = $this->_ProcessSkills($this->request->data['Skill'], &$this->User->Skill);
+			if( isset($this->request->data['Address']) )
+				$address_ids = $this->_ProcessAddresses($this->request->data['Address'], &$this->User->Address);
+			
+			unset( $this->request->data['Address'], $this->request->data['Skill'] );
 
 			if( !empty($address_ids) )
 				$this->request->data['Address'] = $address_ids;
+			if( !empty($skill_ids) )
+				$this->request->data['Skill'] = $skill_ids;
+
+			
 			
 			if ( $this->User->save($this->request->data) )
 			{
 				$this->Session->setFlash( __('The user has been saved.') );
-				debug($this->request->data);
-				//$this->redirect( array('action' => 'index') );
+				//debug($this->request->data);
+				$this->redirect( array('controller' => 'pages', 'action' => 'index', 'admin' => false, 'coordinator' => false, 'volunteer' => false) );
 			}
 			else
 			{
 				$this->Session->setFlash( __('The user could not be saved. Please, try again.') );
+				
+			}
 
+			// returning the entire dictionary of skills is clunky
+			if( isset($skill_ids) )
+			{
+				$conditions = array('Skill.skill_id' => $skill_ids['Skill']);
+				$relevant_skills = $this->User->Skill->find('list', array('conditions' => $conditions) );
+				$this->set( compact('relevant_skills') );
 			}
 		}
-		
-		$options = array('conditions' => array('User.' . $this->User->primaryKey => $id));
+
+
+		$options = array('conditions' => array('User.user_id' => $id));
 		$this->request->data = $this->User->find('first', $options);
 		$this->set(compact('addresses'));
+	}
+
+	/**
+	 * activity method
+	 *
+	 * @throws 
+	 * @return void
+	 */
+	public function activity($period = null)
+	{
+		$sql_date_fmt = 'Y-m-d H:i:s';
+		$contain = array('Event');
+
+		if( $period != null)
+		{
+			$order = array(
+				'Event.stop_time DESC'
+			);
+			$conditions['Time.user_id'] = $this->Auth->user('user_id');
+
+			switch($period)
+			{
+				case 'month':
+					$conditions['Time.start_time >='] = date($sql_date_fmt, strtotime('1 month ago') );
+					break;
+				case 'year':
+					$conditions['Time.start_time >='] = date($sql_date_fmt, strtotime('1 year ago') );
+					break;
+				case 'ytd':
+					$conditions['Time.start_time >='] = date($sql_date_fmt, mktime(0,0,0,1,1, date('Y') ) );
+					break;
+				case 'custom':
+					break;
+			}
+
+			$time_data = $this->User->Time->find('all', array('conditions' => $conditions, 'contain' => $contain, 'order' => $order) );
+			$this->set( compact('time_data', 'period') );
+
+		}
+
+
+			// summary all time
+			$conditions = array(
+				'Time.user_id' => $this->Auth->user('user_id')
+			);
+			$fields = array(
+				'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as UserAllTime'
+			);
+			$summary_all_time = $this->User->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
+			$this->set( compact('summary_all_time') );
+
+			// summary month
+			$conditions = array(
+				'Time.user_id' => $this->Auth->user('user_id'),
+				'Time.start_time >=' => date($sql_date_fmt, strtotime('1 month ago') )
+			);
+			$fields = array(
+				'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as UserPastMonth'
+			);
+			$summary_past_month = $this->User->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
+			$this->set( compact('summary_past_month') );
+
+			// summary year
+			$conditions = array(
+				'Time.user_id' => $this->Auth->user('user_id'),
+				'Time.start_time >=' => date($sql_date_fmt, strtotime('1 year ago') )
+			);
+			$fields = array(
+				'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as UserPastYear'
+			);
+			$summary_past_year = $this->User->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
+			$this->set( compact('summary_past_year') );
+
+			// year-to-date
+			$conditions = array(
+				'Time.user_id' => $this->Auth->user('user_id'),
+				'Time.start_time >=' => date($sql_date_fmt, mktime(0,0,0,1,1, date('Y') ) )
+			);
+			$fields = array(
+				'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as UserYTD'
+			);
+			$summary_ytd = $this->User->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
+			$this->set( compact('summary_ytd') );
+
+
+
 	}
 
 

@@ -9,7 +9,9 @@
 <div class="row">
 	<div class="col-md-12">
 		<?php echo $this->Form->create('User', $form_defaults); ?>
-		<h1>Welcome!  <small>Let's create your volunteer account.</small></h1>
+		<?php echo $this->Form->input('user_id'); ?>
+		<?php debug($this->request->data); ?>
+		<h1>Editing your profile.  <small>Let's get this up-to-date.</small></h1>
 		<p>We need to know a little information before you can start managing your volunteer opportunities.</p>
 		<hr>
 
@@ -19,7 +21,6 @@
 			<div class="col-md-12">
 				<div class="well">
 					<?php
-						echo $this->Form->input('username', array('class' => 'form-control username') );
 						echo $this->Form->input('password_l', array('type' => 'password', 'label' => "Password") );
 						echo $this->Form->input('password_r', array('type' => 'password', 'label' => "Confirm Password") );
 					?>
@@ -49,13 +50,35 @@
 			<div class="col-md-12">
 				<?php echo $this->Form->input('skill', array('class' => 'autocomplete skills form-control', 'data-target' => '#UserSkills') ); ?>
 				<div id="UserSkills">
-					<?php 
-						if( isset($this->request->data['Skill']['Skill']) )
+					<?php
+
+						$skill_sprint = '<span class="autocomplete-wrapper"><a class="autocomplete-cancel" href="#">&times</a>%s<input type="hidden" name="data[Skill][Skill][]" value="%u"></span>';
+						
+						// this is done to keep state in the event of validation errors
+						// skills are created whether or not they are valid
+						if( isset($relevant_skills) )
 						{
-							for( $i = 0; $i < count($this->request->data['Skill']['Skill']); $i++ )
+							foreach($relevant_skills as $skill_id => $skill)
 							{
-								echo $this->element('skill', array('i' => $i) );
+								echo sprintf(
+									$skill_sprint,
+									$skill,
+									$skill_id
+								);
 							}
+						}
+
+						if( isset($this->request->data['Skill']) )
+						{
+							foreach($this->request->data['Skill'] as $skill)
+							{
+								echo sprintf(
+									$skill_sprint,
+									$skill['skill'],
+									$skill['skill_id']
+								);
+							}
+							//debug($this->request->data['Skill']);
 						}
 					?>
 					<?php // TODO: this should fill full of skill elements if the page has a validation error ?>
@@ -69,7 +92,7 @@
 		<div class="row">
 			<div class="col-md-12">
 				<p><a href="#" class="add-address btn btn-success" data-target="#UserAddresses"><i class="glyphicon glyphicon-plus"></i> Add An Address</a></p>
-				<div id="UserAddresses">
+				<div id="UserAddresses" class="address-container">
 					<?php
 						// this form will be reshown to users if there was a validation error;
 						// as a result, we need to render html elements that were generated
@@ -88,9 +111,8 @@
 		<hr>
 
 		<h2>Does Everything Look Good?</h2>
-		<p>This is the moment of truth.</p>
 
-		<?php echo $this->Form->end(array('label' => "Create My Account", 'class' => 'btn btn-lg btn-primary')); ?>
+		<?php echo $this->Form->end(array('label' => "Save Profile", 'class' => 'btn btn-lg btn-primary')); ?>
 
 	</div>
 </div>

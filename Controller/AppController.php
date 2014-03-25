@@ -73,6 +73,67 @@ class AppController extends Controller {
 		);
 	}
 
+	/**
+	 * ProcessAddresses
+	 * 
+	 * cutting back on code duplication by handling this outside of each individual controller
+	 * @param addresses contains an array of addresses
+	 * @param model 	rather than redefine or reinstantiate the Address model every time this is called, pass one that is already attached to the controller
+	 * @return CakePHP-shaped array of address id's
+	 */
+	public function _ProcessAddresses($addresses, $model)
+	{
+		foreach($addresses as $address)
+		{
+			// at a minimum, an address should have a line 1, city, state and zip
+			if( 
+				!empty( $address['address1'] ) && 
+				!empty( $address['city'] ) && 
+				!empty( $address['state'] ) &&
+				!empty( $address['zip'] ) )
+			{
+				$model->create();
+				$model->save($address);
+				// get the address_id for the join table
+				$address_ids['Address'][] = $model->id;
+			}
+		}
+
+		return $address_ids;
+	}
+
+	/**
+	 * ProcessSkills
+	 *
+	 * processes skills and returns an array of skill id's that can be used for whatever
+	 *
+	 * @param skills 	an array of skills
+	 * @param model 	a pre-instantiated skill model so we don't have to do that inside the function
+	 */
+	public function _ProcessSkills($skills, $model)
+	{
+		if( isset($skills['New']) )
+		{
+			foreach($skills['New'] as $new_skill)
+			{
+				$save['Skill']['skill'] = $new_skill;
+				$model->create();
+				$model->save( $save );
+				$skill_ids['Skill'][] = $model->id;
+			}
+		}
+
+		if( isset($skills['Skill']) )
+		{
+			foreach($skills['Skill'] as $existing)
+			{
+				$skill_ids['Skill'][] = $existing;
+			}
+		}
+
+		return $skill_ids;
+	}
+
 	public function _CurrentUserIsSuperAdmin()
 	{
 		App::uses('User', 'Model');

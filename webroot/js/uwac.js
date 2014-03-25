@@ -51,11 +51,22 @@ $(document).ready(function(){
 			};
 			console.log( Mustache.render('Adding address {{idx}} to {{tgt}}', data));
 
-			$( Mustache.render(mustaches.address, data) ).appendTo($tgt);
+			$( Mustache.render(mustaches.address, data) ).prependTo($tgt);
 
 			return false;
 		});
 	});
+
+	$('.address-container').on( 'click', '.remove-address', function(e)
+		{
+			e.preventDefault();
+
+			// jQuery will delete the node before the slide toggle completes unless you use a callback
+			$(this).parent().parent().parent().slideToggle( function(){ $(this).remove(); } );
+
+			return false;
+		}
+	);
 
 	$('.autocomplete.skills').each(function(){
 		var $parent = $(this).parent().addClass('ui-widget');

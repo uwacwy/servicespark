@@ -94,7 +94,10 @@ class Time extends AppModel
 		),
 		'User' => array(
 			'className' => 'User',
-			'foreignKey' => 'user_id'
+			'foreignKey' => 'user_id',
+			'counterCache' => array(
+				'missed_punches' => array('Time.stop_time' => null)
+			)
 		)
 	);
 }

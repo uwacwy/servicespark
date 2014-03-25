@@ -18,7 +18,8 @@
 
 $cakeDescription = __d('cake_dev', 'CakePHP: the rapid development php framework');
 
-$solution_name = "United Way of Albany County";
+global $solution_name;
+$solution_name= "[Solution Name Here]";
 ?>
 <!DOCTYPE html>
 <html>
@@ -26,11 +27,11 @@ $solution_name = "United Way of Albany County";
 	<?php echo $this->Html->charset(); ?>
 	<meta name="viewport" content="width=device-width, user-scalable=no">
 	<title>
-		<?php echo $cakeDescription ?>:
 		<?php echo $title_for_layout; ?>
 	</title>
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1/jquery-ui.min.js"></script>
+	<style>.stat{font-weight:bold; font-size: 48px;display: block;}</style>
 	<?php
 
 		echo $this->Html->meta('icon');
