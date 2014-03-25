@@ -193,23 +193,7 @@ class UsersController extends AppController {
 				$entry['User']['password'] = $entry['User']['password_l'];
 			}
 
-
-			// create address entry
-			foreach($entry['Address'] as $address)
-			{
-				// at a minimum, an address should have a line 1, city, state and zip
-				if( 
-					!empty( $address['address1'] ) && 
-					!empty( $address['city'] ) && 
-					!empty( $address['state'] ) &&
-					!empty( $address['zip'] ) )
-				{
-					$this->User->Address->create();
-					$this->User->Address->save($address);
-					// get the address_id for the join table
-					$address_ids['Address'][] = $this->User->Address->id;
-				}
-			}
+			$address_ids = $this->_ProcessAddresses($this->request->data['Address'], &$this->User->Address);
 
 			unset( $entry['Address'] );
 			$entry['Address'] = $address_ids;
