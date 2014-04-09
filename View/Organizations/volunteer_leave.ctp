@@ -8,28 +8,29 @@
 
 <div class="row">
 	<div class="col-md-12">
-		<?php echo $this->Form->create('Organization', $form_defaults); ?>
 		<h1>Are you no longer affiliated with an organization? </h1>
 		<h1><small>Leave any organization you belong to. </small></h1>
 		<hr>
 
-		<h2>Organizations</h2>
+		<h2> Here are your organizations</h2>
 		<table class="table table-striped">
-			<thead>  
-          		<tr>  
-            		<th> Organization </th>  
-          		</tr>  
-        	</thead>
+			<thead>
+				<th>Organization</th>
+				<th>Action</th>
+			</thead>
         	<?php foreach ($data as $organization):?>
     			<tr>
 					<td>
-						<input type="checkbox" class="large"/> 
-						<?php echo h($organization['Organization']['name']); ?>
+						
+						<?php 
+							echo h( $organization['Organization']['name'] ); 
+						?>
+					</td>
+					<td>
+<?php echo $this->Html->link('Leave this Organzation', array( $organization['Organization']['organization_id']), array('class' => 'btn btn-danger btn-sm'), 'Are you sure you want to leave this organization?'); ?>
 					</td>
     			</tr>
 			<?php endforeach; ?>
 		</table>
-
-		<?php echo $this->Form->end(array('label' => "Leave These Organizations", 'class' => 'btn btn-lg btn-primary')); ?>
 	</div>
 </div>

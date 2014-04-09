@@ -55,7 +55,7 @@ coordinator (publishing organization admin)
 		coordinator_delete.ctp	set a 'deleted' bit or something like that
 	Organization
 		DONE -- coordinator_index.ctp	list a user's organizations
-		coordinator_edit.ctp	remove/promote other users from organization
+		coordinator_edit.ctp	remove/promote other users from organization - Talk with Brad to see what I can do about this
 	Time
 		coordinator_edit.ctp	adjust the details of a time punch
 		coordinator_delete.ctp	delete a time punch
@@ -73,7 +73,7 @@ volunteer (user)
 	Address
 	Event
 	Organization
-		leave.ctp		removes a user's permissions from an organization
+		DONE -- leave.ctp		removes a user's permissions from an organization
 		DONE -- join.ctp		user can opt in to publishing their activity to an organization
 		DONE -- create.ctp		user can create an organization and is automatically elevated to coordinator for that organization
 	Permissions

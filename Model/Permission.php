@@ -63,8 +63,8 @@ class Permission extends AppModel
 	{
 		// if user-organization pair exists
 		$conditions = array(
-			'Permission.user_id' => $this->data[ $this->alias ]['user_id'],
-			'Permission.organization_id' => $this->data[ $this->alias ]['organization_id']
+			'Permission.user_id' => $this->data[ 'Permission']['user_id'],
+			'Permission.organization_id' => $this->data[ 'Permission']['organization_id']
 		);
 		$existing = $this->field('permission_id', $conditions);
 

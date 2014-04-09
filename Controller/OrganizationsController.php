@@ -44,7 +44,7 @@ class OrganizationsController extends AppController {
 			throw new NotFoundException(__('Invalid organization'));
 		}
 		$organizationOptions = array('conditions' => array('Organization.' . $this->Organization->primaryKey => $id));
-		$eventOptions = array('conditions' => array('Event.start_time >' => date('m/d/Y h:i:s a', time()),
+		$eventOptions = array('conditions' => array('Event.start_time >' => date('Y-m-d H:i:s'),
 													'Event.' . $this->Organization->primaryKey => $id) );
 		$this->set('organization', $this->Organization->find('first', $organizationOptions));
 		$events = $this->Organization->Event->find('all', $eventOptions);
@@ -287,68 +287,80 @@ class OrganizationsController extends AppController {
  * @param string $id
  * @return void
 */
-	public function supervisor_view($id = null) 
+	public function supervisor_view($period = null) 
 	{
-		// Get the organization to edit.
-		$organization = $this->Organization->findAllByOrganizationId($id);
+		$sql_date_fmt = 'Y-m-d H:i:s';
+		$contain = array('Event');
 
-		// Check user permissions.
-		// if($this->_CurrentUserCanRead($organization['Organization']['organization_id'])) 
-		// {
-			if (!$this->Organization->exists($id)) 
-			{
-				throw new NotFoundException(__('Invalid organization'));
-			}
-
-			$options = array('conditions' => array('Organization.' . $this->Organization->primaryKey => $id));
-			$this->set('organization', $this->Organization->find('first', $options));
-
-			$organization = $this->Organization->Event->find('first', $options);
-
-			// Find total time volunteered at the organization
-			$organizationTime = array('hours' => 0, 'minutes' => 0);
-			foreach ($organization['Time'] as $data) 
-			{
-				$start = new DateTime($data['start_time']);
-				$stop = new DateTime($data['stop_time']);
-				
-				$time = $start->diff($stop);
-				$time->format("%H");
-				$organizationTime['hours'] += $time->h;
-				$organizationTime['minutes'] += $time->i;
-			}
-
-			// Correctly set hours and minutes.
-			if($organizationTime['minutes'] >= 60) 
-			{
-				$hours = intval($organizationTime['minutes'] / 60);
-				$minutes = intval($organizationTime['minutes'] % 60);
-				$organizationTime['hours'] += $hours;
-				$organizationTime['minutes'] = $minutes;
-			}
-
-			$this->set('organizationTime', $organizationTime);
-
-			// Create an array with users and total volunteer time.
-			$conditions = array(
-				'Permission.user_id' => $this->Auth->user('user_id')
+		if( $period != null)
+		{
+			$order = array(
+				'Event.stop_time DESC'
 			);
-			// get a list of user's organizations
-			$data = $this->Organization->Permission->find('all', array('conditions' => $conditions));
+			$conditions['Time.user_id'] = $this->Auth->user('user_id');
 
-			foreach($data as $user) {
-				debug($user);
-				debug($organization['Time']);
-				// $userConditions = array(
-				// 	'Time.user_id' => $user->primaryKey)
-				// $userInfo = $organization['Time']->find('first', array('conditions' => $userConditions));
+			switch($period)
+			{
+				case 'month':
+					$conditions['Time.start_time >='] = date($sql_date_fmt, strtotime('1 month ago') );
+					break;
+				case 'year':
+					$conditions['Time.start_time >='] = date($sql_date_fmt, strtotime('1 year ago') );
+					break;
+				case 'ytd':
+					$conditions['Time.start_time >='] = date($sql_date_fmt, mktime(0,0,0,1,1, date('Y') ) );
+					break;
+				case 'custom':
+					break;
 			}
 
-		// }
-		// else 
-		// {
-			// 	throw new ForbiddenException("You are not allowed to view this organization");
-			// }
+			$time_data = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'contain' => $contain, 'order' => $order) );
+			$this->set( compact('time_data', 'period') );
+
+		}
+
+		// summary all time
+		$conditions = array(
+			'Time.user_id' => $this->Auth->user('user_id')
+		);
+		$fields = array(
+			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as OrganizationAllTime'
+		);
+		$summary_all_time = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
+		$this->set( compact('summary_all_time') );
+
+		// summary month
+		$conditions = array(
+			'Time.user_id' => $this->Auth->user('user_id'),
+			'Time.start_time >=' => date($sql_date_fmt, strtotime('1 month ago') )
+		);
+		$fields = array(
+			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as OrganizationPastMonth'
+		);
+		$summary_past_month = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
+		$this->set( compact('summary_past_month') );
+
+		// summary year
+		$conditions = array(
+			'Time.user_id' => $this->Auth->user('user_id'),
+			'Time.start_time >=' => date($sql_date_fmt, strtotime('1 year ago') )
+		);
+		$fields = array(
+			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as OrganizationPastYear'
+		);
+		$summary_past_year = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
+		$this->set( compact('summary_past_year') );
+
+		// year-to-date
+		$conditions = array(
+			'Time.user_id' => $this->Auth->user('user_id'),
+			'Time.start_time >=' => date($sql_date_fmt, mktime(0,0,0,1,1, date('Y') ) )
+		);
+		$fields = array(
+			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as OrganizationYTD'
+		);
+		$summary_ytd = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
+		$this->set( compact('summary_ytd') );
 	}
 
 
@@ -359,19 +371,33 @@ class OrganizationsController extends AppController {
  * @param string $id
  * @return void
 */
-	public function volunteer_leave() 
+	public function volunteer_leave($organization_id = null) 
 	{
+
+		if ($organization_id != null) 
+		{
+			$conditions = array(
+				'Permission.user_id' => $this->Auth->user('user_id'),
+				'Permission.organization_id' => $organization_id
+			);
+			$this->Organization->Permission->deleteAll($conditions);
+		}
+
 		$conditions = array(
 			'Permission.user_id' => $this->Auth->user('user_id')
 		);
-		// get a list of user's organizations
-		$data = $this->Organization->Permission->find('all', array('conditions' => $conditions));
-		$this->set(compact('data'));
 
-		if ($this->request->is(array('post', 'put'))) 
-		{
-			debug($this->request->data);
-		}
+		$contain = array(
+			// 'Address',
+			'Organization',
+			// 'Skill',
+			// 'Time'
+		);
+
+		// get a list of user's organizations
+		$data = $this->Organization->Permission->find('all', array('conditions' => $conditions, 
+																   'contain' => $contain));
+		$this->set(compact('data'));
 	}
 
 
@@ -412,7 +438,6 @@ class OrganizationsController extends AppController {
 		}
 
 		$organizations = $this->Organization->find('list');
-		//debug($organizations);
 		$this->set(compact('organizations'));
 	}
 
@@ -458,6 +483,17 @@ class OrganizationsController extends AppController {
 			if ($this->Organization->save($this->request->data))
 			{
 				$this->Session->setFlash(__('The organization has been created.'));
+
+				$conditions['Permission'] = array( 
+					'user_id' => $this->Auth->user('user_id'),
+					'organization_id' => $this->Organization->id,
+					'write' => true
+				);
+
+				debug($this->Organization->id);
+				$this->Organization->Permission->save($conditions);
+
+
 				return $this->redirect(array('action' => 'index'));
 			} 
 			else 

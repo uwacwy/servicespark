@@ -1,0 +1,22 @@
+TO DO:
+
+	Event:
+		Permissions
+		DONE - Delete
+		Manager Functions
+
+	Organization:	
+		Coordinator_Edit
+		Supervisor_view - paginate, add individual user data, custom range
+		Volunteer_leave - paginate
+		volunteer_create - add permissions
+		view - paginate
+
+	Time:
+		adjust
+
+	User:
+		Activity - paginate, custom range export
+
+	Recovery:
+		?
