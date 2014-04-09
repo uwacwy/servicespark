@@ -27,6 +27,20 @@ class UsersController extends AppController {
 		$this->Auth->allow('register', 'login', 'logout');
 	}
 
+	public function volunteer_login()
+	{
+		$this->redirect(array('controller' => 'users', 'action' => 'login', 'admin' => false, 'coordinator' => false, 'manager' => false));
+	}
+
+		public function coordinator_login()
+	{
+		$this->redirect(array('controller' => 'users', 'action' => 'login', 'admin' => false, 'coordinator' => false, 'manager' => false));
+	}
+		public function manager_login()
+	{
+		$this->redirect(array('controller' => 'users', 'action' => 'login', 'admin' => false, 'coordinator' => false, 'manager' => false));
+	}
+
 	public function login()
 	{
 		if ($this->request->is('post'))

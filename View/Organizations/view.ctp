@@ -17,7 +17,7 @@
 					<td><?php echo h($event['Event']['title']); ?></td>
 					<td><?php echo h($event['Event']['start_time']); ?></td>
 					<td>
-						<?php echo $this->Html->link(__('View Details'), array('action' => 'view', $event['Event']['event_id'])); ?>
+						<?php echo $this->Html->link(__('View Details'), array('controller' => 'events', 'action' => 'view', $event['Event']['event_id'])); ?>
 					</td>
     			</tr>
 			<?php endforeach; ?>

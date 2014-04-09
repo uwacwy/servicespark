@@ -11,6 +11,21 @@ class TimesController extends AppController
 {
 	//var $scaffold;
 
+	public function volunteer_index()
+	{
+		if( $this->request->is('post') )
+		{
+			$this->redirect(
+				array(
+					'volunteer' => true, 
+					'controller' => 'times', 
+					'action' => $this->request->data['locus'], 
+					$this->request->data['Time']['token']
+				)
+			);
+		}
+	}
+
 	public function volunteer_in($token = null)
 	{
 		$conditions = array(
@@ -98,7 +113,7 @@ class TimesController extends AppController
 			throw new NotImplementedException('Invalid token was provided.  Contact your event coordinator for more assistance.');
 		}
 
-		$existing = $this->Time->find('count',
+		$existing = $this->Time->find('first',
 			array('conditions' =>
 				array(
 					'Time.user_id' => $this->Auth->user('user_id'),
@@ -108,7 +123,9 @@ class TimesController extends AppController
 			)
 		);
 
-		if( $existing != 1 )
+		//debug($existing);
+
+		if( $existing['Time']['stop_time'] != null )
 		{
 			throw new NotFoundException('You are unable to clock out using this token.  Contact your event coordinator for more assistance.');
 			return $this->redirect( array('controller' => 'events', 'action' => 'index') );
@@ -116,8 +133,9 @@ class TimesController extends AppController
 
 		if( $this->request->is('post') )
 		{
-			$this->Time->id = $event['Event']['event_id'];
+			$this->Time->id = $existing['Time']['time_id'];
 			$this->Time->saveField('stop_time', date('Y-m-d H:i:s') );
+			$this->redirect( array('controller' => 'events', 'action'));
 		}
 
 		$this->set( compact('event') );

@@ -19,7 +19,6 @@
 $cakeDescription = __d('cake_dev', 'CakePHP: the rapid development php framework');
 
 global $solution_name;
-$solution_name= "[Solution Name Here]";
 ?>
 <!DOCTYPE html>
 <html>
@@ -61,7 +60,7 @@ $solution_name= "[Solution Name Here]";
 		<span class="icon-bar"></span>
 		<span class="icon-bar"></span>
 	  </button>
-	  <a class="navbar-brand" href="<? echo $this->Html->url('/'); ?>"><?php echo h($solution_name); ?></a>
+	  <a class="navbar-brand" href="<? echo $this->Html->url('/'); ?>"><?php echo Configure::read('Solution.name'); ?></a>
 	</div>
 
 	<!-- Collect the nav links, forms, and other content for toggling -->
@@ -166,7 +165,7 @@ $solution_name= "[Solution Name Here]";
 				<li class="dropdown">
 					<?php
 						echo sprintf('<a href="%s" class="dropdown-toggle" data-toggle="dropdown">%s <b class="caret"></b></a>',
-							$this->Html->url( array('controller' => $controller, 'action' => 'index', 'admin' => false) ),
+							$this->Html->url( array('controller' => $controller, 'action' => 'index', 'admin' => false, 'coordinator' => true) ),
 							h($properties['label'])
 						);
 					?>
@@ -175,7 +174,7 @@ $solution_name= "[Solution Name Here]";
 							foreach($properties['actions'] as $action => $label)
 							{
 								echo sprintf('<li><a href="%s">%s</a></li>',
-									$this->Html->url( array('controller' => $controller, 'action' => $action, 'admin' => false) ),
+									$this->Html->url( array('controller' => $controller, 'action' => $action, 'admin' => false, 'coordinator' => true) ),
 									h($label)
 								);
 							}
@@ -184,6 +183,20 @@ $solution_name= "[Solution Name Here]";
 				</li>
 			<?php endforeach; ?>
 		<?php endif; ?>
+			<li class="dropdown">
+				<?php
+					echo sprintf('<a href="%S" class="dropdown-toggle" data-toggle="dropdown">%s <b class="caret"></b></a>',
+						$this->Html->url( array('controller' => 'organizations', 'action' => 'index', 'coordinator' => true) ),
+						'Coordinate'
+					);
+				?>
+				<ul class="dropdown-menu">
+					<li><?php echo $this->Html->link(__('My Organizations'), array('controller'=>'organizations', 'action' => 'index', 'coordinator' => true)); ?></li>
+					<li class="divider"></li>
+	<li><?php echo $this->Html->link(__('My Events'), array('controller' => 'events', 'action' => 'index', 'coordinator' => true) ); ?></li>
+	<li><?php echo $this->Html->link(__('New Event'), array('controller' => 'events', 'action' => 'add', 'coordinator' => true) ); ?> </li>
+				</ul>
+			</li>
 		</ul>
 
 		<?php if(AuthComponent::user('user_id') ) : ?>
@@ -194,7 +207,9 @@ $solution_name= "[Solution Name Here]";
 								'label' => sprintf('Hello, %s', AuthComponent::user('full_name') ),
 								'actions' => array(
 									'profile' => "Edit My Profile",
+									'activity' => 'View Activity',
 									'logout' => "Logout"
+
 								)
 						)
 					);

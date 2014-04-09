@@ -322,27 +322,25 @@ class EventsController extends AppController {
 			if(! $this->Event->validTimes()) {
 				return false;
 			}
-			// create address entry
-			foreach($this->request->data['Address'] as $address)
-			{
-				// at a minimum, an address should have a line 1, city, state and zip
-				if( 
-					!empty( $address['address1'] ) && 
-					!empty( $address['city'] ) && 
-					!empty( $address['state'] ) &&
-					!empty( $address['zip'] ) )
-				{
-					$this->Event->Address->create();
-					$this->Event->Address->save($address);
-					// get the address_id for the join table
-					$address_ids['Address'][] = $this->Event->Address->id;
-				}
-			}
-			unset( $this->request->data['Address'] );
+
+			/*
+				process relations
+			*/
+			if( isset($this->request->data['Skill']) )
+				$skill_ids = $this->_ProcessSkills($this->request->data['Skill'], $this->Event->Skill);
+			if( isset($this->request->data['Address']) )
+				$address_ids = $this->_ProcessAddresses($this->request->data['Address'], $this->Event->Address);
+			
+			unset( $this->request->data['Address'], $this->request->data['Skill'] );
 
 			if( !empty($address_ids) )
 				$this->request->data['Address'] = $address_ids;
+			if( !empty($skill_ids) )
+				$this->request->data['Skill'] = $skill_ids;
 
+			/*
+				process the event hashes
+			*/
 			$hash = sha1( json_encode($this->request->data['Event']) ); // serializes the event and hashes it
 
 			/*
@@ -358,7 +356,7 @@ class EventsController extends AppController {
 			{
 				$this->Session->setFlash(__('The event has been saved.'));
 				//debug($this->request->data);
-				//return $this->redirect(array('action' => 'index'));
+				return $this->redirect(array('controller' => 'events', 'action' => 'view', $this->Event->id, 'coordinator' => true));
 			} 
 			else 
 			{

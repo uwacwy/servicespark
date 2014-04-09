@@ -137,5 +137,5 @@ if( !empty($time_data) && $period ):
 	</table>
 	<p><em>Missed punches?</em>  You will need to talk to an event coordinator to fix these.  Visit the event page to find your event coordinator.</p>
 <?php else : ?>
-	<em>You have no volunteer activity in the specified time period.</em>
+	<p><em>You have no volunteer activity in the specified time period.</em></p>
 <?php endif; ?>

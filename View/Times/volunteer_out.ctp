@@ -13,7 +13,6 @@
 		<?php echo $this->element('volunteer_time_actions'); ?>
 	</div>
 	<div class="col-md-9">
-		<?php debug($event); ?>
 		<?php echo $this->Form->Create('Time'); ?>
 
 			<div>
@@ -30,7 +29,7 @@
 
 					if( $now < $event_start || $now > $event_stop )
 					{
-						echo '<p>You are attempting to clock in to an event that is not currently scheduled as in progress.  Are you sure?</p>';
+						echo '<p>You are attempting to clock out of an event that is not currently scheduled as in progress.  Are you sure?</p>';
 					}
 
 					echo $this->Form->input('confirm', array('type' => 'hidden', 'value' => true) );
