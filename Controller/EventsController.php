@@ -160,32 +160,37 @@ class EventsController extends AppController {
 // 		$this->set(compact('address'));
 // 	}
 
-// /**
-//  * delete method
-//  *
-//  * @throws NotFoundException
-//  * @param string $id
-//  * @return void
-//  */
-// 	public function delete($id = null) {
-// 		$this->Event->id = $id;
-// 		if (!$this->Event->exists()) {
-// 			throw new NotFoundException(__('Invalid event'));
-// 		}
-// 		$this->request->onlyAllow('post', 'delete');
-// 		if ($this->Event->delete()) {
-// 			$this->Session->setFlash(__('The event has been deleted.'));
-// 		} else {
-// 			$this->Session->setFlash(__('The event could not be deleted. Please, try again.'));
-// 		}
-// 		return $this->redirect(array('action' => 'index'));
-// 	}
+/**
+ * delete method
+ *
+ * @throws NotFoundException
+ * @param string $id
+ * @return void
+ */
+	public function delete($id = null) {
+		$this->Event->id = $id;
+		if (!$this->Event->exists()) {
+			throw new NotFoundException(__('Invalid event'));
+		}
+		$this->request->onlyAllow('post', 'delete');
+		if ($this->Event->delete()) {
+			$this->Session->setFlash(__('The event has been deleted.'));
+		} else {
+			$this->Session->setFlash(__('The event could not be deleted. Please, try again.'));
+		}
+		return $this->redirect(array('action' => 'index'));
+	}
 
 
 	/**
 			ADMIN
 			URL: localhost/admin/events/...
 	*/
+	public function admin_delete($id = null)
+	{
+		$this->delete($id);
+	}
+
 	public function admin_add($id = null)
 	{
 		if ($this->request->is('post')) 
@@ -305,6 +310,11 @@ class EventsController extends AppController {
 			COORDINATOR
 			URL: localhost/coordinator/events/...
 	*/
+	public function coordinator_delete($id = null)
+	{
+		$this->delete($id);
+	}
+
 	public function coordinator_add($id = null)
 	{
 		if ($this->request->is('post')) 
