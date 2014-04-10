@@ -178,12 +178,19 @@ class OrganizationsController extends AppController {
 */
 	public function coordinator_index() 
 	{
+		$user_co_organizations = $this->_GetUserOrganizationsByPermission('write');
+		$this->Paginator->settings['conditions'] = array(
+			'Organization.organization_id' => $user_co_organizations
+		);
+
+		$pag_organizations = $this->Paginator->paginate();
+
 		$conditions = array(
 			'Permission.user_id' => $this->Auth->user('user_id')
 		);
 		// get a list of user's organizations
 		$organizations = $this->Organization->Permission->find('all', array('conditions' => $conditions));
-		$this->set(compact('organizations'));
+		$this->set(compact('organizations', 'pag_organizations'));
 	}
 
 

@@ -42,7 +42,7 @@ class UsersController extends AppController {
 		$this->go_login();
 	}
 	
-	public function manager_login()
+	public function supervisor_login()
 	{
 		$this->go_login();
 	}
@@ -355,8 +355,14 @@ class UsersController extends AppController {
 					break;
 			}
 
+			$this->Paginator->settings['limit'] = 10;
+			$this->Paginator->settings['conditions'] = $conditions;
+			$this->Paginator->settings['contain'] = 'Event';
+
+			$pag_time_data = $this->Paginator->paginate('Time');
+
 			$time_data = $this->User->Time->find('all', array('conditions' => $conditions, 'contain' => $contain, 'order' => $order) );
-			$this->set( compact('time_data', 'period') );
+			$this->set( compact('time_data', 'period', 'pag_time_data') );
 
 		}
 

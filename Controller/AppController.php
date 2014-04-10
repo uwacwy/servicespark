@@ -53,9 +53,6 @@ class AppController extends Controller {
 				'controller' => 'pages',
 				'action' => 'display',
 				'home'
-			),
-			'flash' => array(
-				'element' => 'flash_auth'
 			)
 		)
 	);
@@ -108,6 +105,22 @@ class AppController extends Controller {
 		$permission = new Permission();
 
 		return $permission->find('list', array('conditions' => $conditions, 'fields' => array('Permission.organization_id') ) );
+	}
+
+	/**
+	 * GetSkillsByEventID
+	 *
+	 * @param event_id
+	 * @return list $skill_id => $skill pairs
+	 */
+	public function _GetSkillsByEventID($event_id)
+	{
+		App::uses('Skills', 'Model');
+		$skill = new Skill();
+
+		return $skill->find('list', array('conditions' => array('Event.id' => $event_id) ) );
+
+		throw new NotImplementedException('The stub for GetSkillsByEventID is created, but the function has not been implemented yet');
 	}
 
 	/**

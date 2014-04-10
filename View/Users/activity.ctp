@@ -3,6 +3,7 @@ $periods = array('month' => "Past Month", 'year' => 'Past Year', 'ytd' => "Year-
 ?>
 <h1>Your Activity</h1>
 
+
 <h2>Overview</h2>
 <div class="row">
 	<div class="col-md-3">
@@ -67,20 +68,20 @@ if( !empty($time_data) && $period ):
 	<table class="table table-striped">
 		<thead>
 			<tr>
-				<th>Event</th>
-				<th>In</th>
-				<th>Out</th>
+				<th><?php echo $this->Paginator->sort('Event.title', 'Event'); ?></th>
+				<th><?php echo $this->Paginator->sort('Time.start_time', 'In'); ?></th>
+				<th><?php echo $this->Paginator->sort('Time.stop_time', 'Out'); ?></th>
 				<th>Total</th>
 			</tr>
 		</thead>
 		<tbody>
 		<?php 
-			foreach($time_data as $time_entry):
+			foreach($pag_time_data as $time_entry):
 			$row_total = 0;
 		?>
 			<tr>
 				<td>
-					<strong><?php echo h($time_entry['Event']['title']); ?>&nbsp;</strong>
+					<strong><?php echo $this->Html->link( $time_entry['Event']['title'], array('volunteer' => true, 'controller' => 'events', 'action' => 'view', $time_entry['Event']['event_id']) );?>&nbsp;</strong>
 					<br><?php echo h($time_entry['Event']['description']); ?>&nbsp;
 					<br>
 						<?php echo h( date($datetime_fmt, strtotime($time_entry['Event']['start_time']) ) ); ?> - 
@@ -127,7 +128,7 @@ if( !empty($time_data) && $period ):
 		<tfoot>
 			<tr>
 				<th colspan="3">
-					<?php echo h($periods[$period]); ?> Total
+					Page Total
 				</th>
 				<th>
 					<?php echo number_format($duration_total, 2); ?> hr&nbsp;

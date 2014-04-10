@@ -30,7 +30,25 @@ global $solution_name;
 	</title>
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1/jquery-ui.min.js"></script>
-	<style>.stat{font-weight:bold; font-size: 48px;display: block;}</style>
+	<style>
+		.stat{font-weight:bold; font-size: 48px;display: block;}
+		a.asc:after { content: "\e155"; }
+		a.desc:after { content: "\e156"; }
+		a.asc:after,
+		a.desc:after {
+			position: relative;
+			top: 1px;
+			display: inline-block;
+			font-family: 'Glyphicons Halflings';
+			font-style: normal;
+			font-weight: normal;
+			color: #000;
+			margin-left: 7px;
+			line-height: 1;
+			-webkit-font-smoothing: antialiased;
+			-moz-osx-font-smoothing: grayscale;
+		}
+	</style>
 	<?php
 
 		echo $this->Html->meta('icon');
