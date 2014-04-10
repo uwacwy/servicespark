@@ -27,18 +27,24 @@ class UsersController extends AppController {
 		$this->Auth->allow('register', 'login', 'logout');
 	}
 
-	public function volunteer_login()
+	public function go_login()
 	{
 		$this->redirect(array('controller' => 'users', 'action' => 'login', 'admin' => false, 'coordinator' => false, 'manager' => false));
 	}
 
-		public function coordinator_login()
+	public function volunteer_login()
 	{
-		$this->redirect(array('controller' => 'users', 'action' => 'login', 'admin' => false, 'coordinator' => false, 'manager' => false));
+		$this->go_login();
 	}
-		public function manager_login()
+
+	public function coordinator_login()
 	{
-		$this->redirect(array('controller' => 'users', 'action' => 'login', 'admin' => false, 'coordinator' => false, 'manager' => false));
+		$this->go_login();
+	}
+	
+	public function manager_login()
+	{
+		$this->go_login();
 	}
 
 	public function login()
@@ -62,7 +68,7 @@ class UsersController extends AppController {
 
 	        	$this->redirect($this->Auth->redirect());
 	    	}
-	    	$this->Session->setFlash(__('Invalid username or password, try again'));
+	    	$this->Session->setFlash(__('Invalid username or password, try again'), 'danger');
 		}
 	}
 

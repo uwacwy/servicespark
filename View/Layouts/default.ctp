@@ -253,7 +253,9 @@ global $solution_name;
 
 	<div class="container">
 		<div id="content">
-			<?php echo $this->Session->flash(); ?>
+			<?php
+				echo $this->Session->flash( );
+			?>
 			<?php echo $this->fetch('content'); ?>
 		</div>
 	</div>
@@ -264,7 +266,7 @@ global $solution_name;
 				&copy; <?php echo date('Y'); ?> United Way of Albany County
 			</div>
 		</div>
-		<?php // echo $this->element('sql_dump'); ?>
+		<?php  echo $this->element('sql_dump'); ?>
 	</div>
 </body>
 </html>

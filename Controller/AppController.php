@@ -45,6 +45,7 @@ class AppController extends Controller {
 	);
 
 	public $components = array(
+		'Paginator',
 		'Session',
 		'Auth' => array(
 			'loginRedirect' => '/users/activity',
@@ -52,6 +53,9 @@ class AppController extends Controller {
 				'controller' => 'pages',
 				'action' => 'display',
 				'home'
+			),
+			'flash' => array(
+				'element' => 'flash_auth'
 			)
 		)
 	);
@@ -68,6 +72,42 @@ class AppController extends Controller {
 				)
 			)
 		);
+	}
+
+	/**
+	 * GetUserOrganizationsByPermission
+	 *
+	 * @param permission
+	 * @param user_id	can be null; null will attempt to get
+	 * @return $permission_id => $organization_id indexed pairs
+	 */
+	public function _GetUserOrganizationsByPermission($permission, $user_id = null)
+	{
+		if( !$user_id )
+		{
+			$user_id = AuthComponent::user('user_id');
+		}
+
+		$conditions['Permission.user_id'] = $user_id;
+
+		// switch block keeps things nice and tidy
+		switch($permission)
+		{
+			case 'publish':
+				$conditions['Permission.publish'] = true;
+				break;
+			case 'read':
+				$conditions['Permission.read'] = true;
+				break;
+			case 'write':
+				$conditions['Permission.write'] = true;
+				break;
+		}
+		
+		App::uses('Permission', 'Model');
+		$permission = new Permission();
+
+		return $permission->find('list', array('conditions' => $conditions, 'fields' => array('Permission.organization_id') ) );
 	}
 
 	/**
@@ -143,7 +183,7 @@ class AppController extends Controller {
 		{
 			// always recheck the database if our session says we are a super admin
 			$user = new User();
-			$user->id = $this->Auth->user('id');
+			$user->id = $this->Auth->user('user_id');
 			return $user->field('super_admin');
 		}
 		else
