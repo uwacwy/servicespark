@@ -107,6 +107,46 @@ class AppController extends Controller {
 		return $permission->find('list', array('conditions' => $conditions, 'fields' => array('Permission.organization_id') ) );
 	}
 
+
+	/**
+	 * GetUsersByOrganization
+	 *
+	 * @param org_id
+	 * @return $user_id for organization.
+	**/
+	public function _GetUsersByOrganization($org_id) 
+	{
+		App::uses('Permission', 'Model');
+		$permission = new Permission();
+
+		$conditions = array(
+			'organization_id' => $org_id,
+			'publish' => true
+		);
+
+		return $permission->find('list', array('conditions' => $conditions, 'fields' => array('Permission.user_id')));
+	}
+
+
+	/**
+	 * GetOrganizationEvents
+	 *
+	 * @param org_id
+	 * @return $event_id for organization.
+	**/
+	public function _GetOrganizationEvents($org_id)
+	{
+		App::uses('Event', 'Model');
+		$event = new Event();
+
+		$conditions = array(
+			'organization_id' => $org_id
+		);
+
+		return $event->find('list', array('conditions' => $conditions, 'fields' => array('Event.event_id')));
+	}
+
+
 	/**
 	 * GetSkillsByEventID
 	 *

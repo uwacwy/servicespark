@@ -308,82 +308,29 @@ class OrganizationsController extends AppController {
  * @param string $id
  * @return void
 */
-	public function supervisor_view($period = null) 
+	public function supervisor_view($id = null) 
 	{
 		$sql_date_fmt = 'Y-m-d H:i:s';
 		$contain = array('Event');
 
-		if( $period != null)
-		{
-			$order = array(
-				'Event.stop_time DESC'
-			);
-			$conditions['Time.user_id'] = $this->Auth->user('user_id');
-
-			switch($period)
-			{
-				case 'month':
-					$conditions['Time.start_time >='] = date($sql_date_fmt, strtotime('1 month ago') );
-					break;
-				case 'year':
-					$conditions['Time.start_time >='] = date($sql_date_fmt, strtotime('1 year ago') );
-					break;
-				case 'ytd':
-					$conditions['Time.start_time >='] = date($sql_date_fmt, mktime(0,0,0,1,1, date('Y') ) );
-					break;
-				case 'custom':
-					break;
-			}
-
-			$time_data = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'contain' => $contain, 'order' => $order) );
-			$this->set( compact('time_data', 'period') );
-
-		}
-
 		// summary all time
-		$users = $this->Organization->Permission->find('all');
-		debug($users);
-		$conditions = array(
-			'Time.user_id' => $this->Auth->user('user_id')
-		);
-		$fields = array(
-			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as OrganizationAllTime'
-		);
-		$summary_all_time = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
-		$this->set( compact('summary_all_time') );
+		$users = $this->_GetUsersByOrganization($id);
 
-		// summary month
 		$conditions = array(
-			'Time.user_id' => $this->Auth->user('user_id'),
-			'Time.start_time >=' => date($sql_date_fmt, strtotime('1 month ago') )
+			'Time.user_id' => $users
 		);
 		$fields = array(
-			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as OrganizationPastMonth'
+			'Time.*',
+			'User.*',
+			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) )/60 as OrganizationAllTime',
+			'COUNT( Time.time_id ) as TimeEntryCount'
 		);
-		$summary_past_month = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
-		$this->set( compact('summary_past_month') );
+		$group = array(
+			'Time.user_id'
+		);
 
-		// summary year
-		$conditions = array(
-			'Time.user_id' => $this->Auth->user('user_id'),
-			'Time.start_time >=' => date($sql_date_fmt, strtotime('1 year ago') )
-		);
-		$fields = array(
-			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as OrganizationPastYear'
-		);
-		$summary_past_year = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
-		$this->set( compact('summary_past_year') );
-
-		// year-to-date
-		$conditions = array(
-			'Time.user_id' => $this->Auth->user('user_id'),
-			'Time.start_time >=' => date($sql_date_fmt, mktime(0,0,0,1,1, date('Y') ) )
-		);
-		$fields = array(
-			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as OrganizationYTD'
-		);
-		$summary_ytd = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
-		$this->set( compact('summary_ytd') );
+		$user_total_hours = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
+		debug($user_total_hours);
 	}
 
 
