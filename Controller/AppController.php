@@ -80,23 +80,31 @@ class AppController extends Controller {
 	 */
 	public function _ProcessAddresses($addresses, $model)
 	{
-		foreach($addresses as $address)
+		if($addresses != null) 
 		{
-			// at a minimum, an address should have a line 1, city, state and zip
-			if( 
-				!empty( $address['address1'] ) && 
-				!empty( $address['city'] ) && 
-				!empty( $address['state'] ) &&
-				!empty( $address['zip'] ) )
+			foreach($addresses as $address)
 			{
-				$model->create();
-				$model->save($address);
-				// get the address_id for the join table
-				$address_ids['Address'][] = $model->id;
+				// at a minimum, an address should have a line 1, city, state and zip
+				if( 
+					!empty( $address['address1'] ) && 
+					!empty( $address['city'] ) && 
+					!empty( $address['state'] ) &&
+					!empty( $address['zip'] ) )
+				{
+					$model->create();
+					$model->save($address);
+					// get the address_id for the join table
+					$address_ids['Address'][] = $model->id;
+				}
 			}
+
+			return $address_ids;
+		}
+		else
+		{
+			return null;
 		}
 
-		return $address_ids;
 	}
 
 	/**
