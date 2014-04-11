@@ -188,121 +188,164 @@ class EventsController extends AppController {
 	*/
 	public function admin_delete($id = null)
 	{
-		$this->delete($id);
+		if( AuthComponent::user('super_admin')  )
+		{
+			$this->delete($id);
+		}
+		else
+		{
+			return $this->redirect(array('coordinator' => true,
+				'controller' => 'events', 'action' => 'delete'));
+		}
 	}
 
 	public function admin_add($id = null)
 	{
-		if ($this->request->is('post')) 
+		if( AuthComponent::user('super_admin')  )
 		{
-			if(! $this->Event->validTimes()) {
-				return false;
-			}
-			// create address entry
-			foreach($this->request->data['Address'] as $address)
+			if ($this->request->is('post')) 
 			{
-				// at a minimum, an address should have a line 1, city, state and zip
-				if( 
-					!empty( $address['address1'] ) && 
-					!empty( $address['city'] ) && 
-					!empty( $address['state'] ) &&
-					!empty( $address['zip'] ) )
+				if(! $this->Event->validTimes()) {
+					return false;
+				}
+				// create address entry
+				foreach($this->request->data['Address'] as $address)
 				{
-					$this->Event->Address->create();
-					$this->Event->Address->save($address);
-					// get the address_id for the join table
-					$address_ids['Address'][] = $this->Event->Address->id;
+					// at a minimum, an address should have a line 1, city, state and zip
+					if( 
+						!empty( $address['address1'] ) && 
+						!empty( $address['city'] ) && 
+						!empty( $address['state'] ) &&
+						!empty( $address['zip'] ) )
+					{
+						$this->Event->Address->create();
+						$this->Event->Address->save($address);
+						// get the address_id for the join table
+						$address_ids['Address'][] = $this->Event->Address->id;
+					}
+				}
+				unset( $this->request->data['Address'] );
+
+				if( !empty($address_ids) )
+					$this->request->data['Address'] = $address_ids;
+
+				$hash = sha1( json_encode($this->request->data['Event']) ); // serializes the event and hashes it
+
+				/*
+					by choosing 9 characters from a base 16 hash, there are a total possible
+					 68,719,476,736 hashes.  this should be adequate.
+				*/
+				$this->request->data['Event']['start_token'] = substr($hash, 0, 9); // 9 starting characters
+				$this->request->data['Event']['stop_token'] = substr($hash, -9, 9); // 9 ending characters
+
+				// create and save the event
+				$this->Event->create();
+				if ($this->Event->saveAll($this->request->data)) 
+				{
+					$this->Session->setFlash(__('The event has been saved.'));
+					//debug($this->request->data);
+					//return $this->redirect(array('action' => 'index'));
+				} 
+				else 
+				{
+					$this->Session->setFlash(__('The event could not be saved. Please, try again.'));
 				}
 			}
-			unset( $this->request->data['Address'] );
+			
+			$organization = $this->Event->Organization->find('list');
+			$address = $this->Event->Address->find('all');
+			$skills = null;
+			$this->set( compact('skills', 'address', 'organization') );
 
-			if( !empty($address_ids) )
-				$this->request->data['Address'] = $address_ids;
-
-			$hash = sha1( json_encode($this->request->data['Event']) ); // serializes the event and hashes it
-
-			/*
-				by choosing 9 characters from a base 16 hash, there are a total possible
-				 68,719,476,736 hashes.  this should be adequate.
-			*/
-			$this->request->data['Event']['start_token'] = substr($hash, 0, 9); // 9 starting characters
-			$this->request->data['Event']['stop_token'] = substr($hash, -9, 9); // 9 ending characters
-
-			// create and save the event
-			$this->Event->create();
-			if ($this->Event->saveAll($this->request->data)) 
-			{
-				$this->Session->setFlash(__('The event has been saved.'));
-				//debug($this->request->data);
-				//return $this->redirect(array('action' => 'index'));
-			} 
-			else 
-			{
-				$this->Session->setFlash(__('The event could not be saved. Please, try again.'));
-			}
+			$this->set('organizations', $this->Event->Organization->find(
+	            'list',
+	            array(
+	                'fields' => array('Organization.name'),
+	                'order' => array('Organization.name')
+	            )));
 		}
-		
-		$organization = $this->Event->Organization->find('list');
-		$address = $this->Event->Address->find('all');
-		$skills = null;
-		$this->set( compact('skills', 'address', 'organization') );
-
-		$this->set('organizations', $this->Event->Organization->find(
-            'list',
-            array(
-                'fields' => array('Organization.name'),
-                'order' => array('Organization.name')
-            )));
+		else
+		{
+			return $this->redirect(array('coordinator' => true,
+				'controller' => 'events', 'action' => 'add'));
+		}
 	}
 
 	public function admin_edit($id = null)
 	{
-		if (!$this->Event->exists($id)) {
-			throw new NotFoundException(__('Invalid event'));
-		}
-		if ($this->request->is(array('post', 'put'))) 
+		if( AuthComponent::user('super_admin')  )
 		{
-			if(! $this->Event->validTimes()) {
-				return false;
+			if (!$this->Event->exists($id)) {
+			throw new NotFoundException(__('Invalid event'));
 			}
-
-			foreach($this->request->data['Address'] as $address)
+			if ($this->request->is(array('post', 'put'))) 
 			{
-				$this->Event->Address->save($address);
-			}
+				if(! $this->Event->validTimes()) {
+					return false;
+				}
 
-			if ($this->Event->save($this->request->data)) {
-				$this->Session->setFlash(__('The event has been saved.'));
-				return $this->redirect(array('action' => 'index'));
+				if($this->request->data['Address'] != null)
+				{
+					foreach($this->request->data['Address'] as $address)
+					{
+						$this->Event->Address->save($address);
+					}
+				}
+
+				if ($this->Event->save($this->request->data)) {
+					$this->Session->setFlash(__('The event has been saved.'));
+					return $this->redirect(array('action' => 'index'));
+				} else {
+					$this->Session->setFlash(__('The event could not be saved. Please, try again.'));
+				}
 			} else {
-				$this->Session->setFlash(__('The event could not be saved. Please, try again.'));
+				$options = array('conditions' => array('Event.' . $this->Event->primaryKey => $id));
+				$this->request->data = $this->Event->find('first', $options);
 			}
-		} else {
-			$options = array('conditions' => array('Event.' . $this->Event->primaryKey => $id));
-			$this->request->data = $this->Event->find('first', $options);
+
+			$organization = $this->Event->Organization->find('list');
+			$address = $this->Event->Address->find('all');
+			$skills = null;
+			$this->set( compact('skills', 'address', 'organization') );
+
+			$this->set('organizations', $this->Event->Organization->find(
+	            'list',
+	            array(
+	                'fields' => array('Organization.name'),
+	                'order' => array('Organization.name')
+	            )));
 		}
-
-		$organization = $this->Event->Organization->find('list');
-		$address = $this->Event->Address->find('all');
-		$skills = null;
-		$this->set( compact('skills', 'address', 'organization') );
-
-		$this->set('organizations', $this->Event->Organization->find(
-            'list',
-            array(
-                'fields' => array('Organization.name'),
-                'order' => array('Organization.name')
-            )));
+		else
+		{
+			return $this->redirect(array('coordinator' => true,
+				'controller' => 'events', 'action' => 'edit', $id));
+		}
 	}
 
 	public function admin_index($id = null)
 	{
-		$this->index($id);
+		if( AuthComponent::user('super_admin')  )
+		{
+			$this->index($id);
+		}
+		else
+		{
+			return $this->redirect(array('coordinator' => true,
+				'controller' => 'events', 'action' => 'index'));
+		}
 	}
 
 	public function admin_view($id = null)
 	{
-		$this->view($id);
+		if( AuthComponent::user('super_admin')  )
+		{
+			$this->view($id);
+		}
+		else
+		{
+			return $this->redirect(array('coordinator' => true,
+				'controller' => 'events', 'action' => 'view', $id));
+		}
 	}
 
 
@@ -312,175 +355,247 @@ class EventsController extends AppController {
 	*/
 	public function coordinator_delete($id = null)
 	{
-		$this->delete($id);
+		$events = $this->Event->findByEventId($id);
+		if( $this->_CurrentUserCanWrite($events['Event']['organization_id']) )
+		{
+			$this->delete($id);
+		}
+		else
+		{
+			//throw new ForbiddenException('You do not have permission...');
+			$this->Session->setFlash('You do not have permission.');
+			return $this->redirect(array('coordinator' => true,
+				'controller' => 'events', 'action' => 'index'));
+		}
 	}
 
 	public function coordinator_add($id = null)
 	{
-		if ($this->request->is('post')) 
+		$user_organizations = $this->Event->Organization->Permission->find('list',
+				array(
+					'fields' => array('Permission.organization_id'),
+					'conditions' => array(
+						'Permission.write' => true
+					)
+				)
+			);
+
+		if( $this->_CurrentUserCanWrite($user_organizations) )
 		{
-			if(! $this->Event->validTimes()) {
-				return false;
-			}
+			if ($this->request->is('post')) 
+			{
+				if(! $this->Event->validTimes()) {
+					return false;
+				}
 
-			/*
-				process relations
-			*/
-			if( isset($this->request->data['Skill']) )
-				$skill_ids = $this->_ProcessSkills($this->request->data['Skill'], $this->Event->Skill);
-			if( isset($this->request->data['Address']) )
-				$address_ids = $this->_ProcessAddresses($this->request->data['Address'], $this->Event->Address);
+				/*
+					process relations
+				*/
+				if( isset($this->request->data['Skill']) )
+					$skill_ids = $this->_ProcessSkills($this->request->data['Skill'], $this->Event->Skill);
+				if( isset($this->request->data['Address']) )
+					$address_ids = $this->_ProcessAddresses($this->request->data['Address'], $this->Event->Address);
+				
+				unset( $this->request->data['Address'], $this->request->data['Skill'] );
+
+				if( !empty($address_ids) )
+					$this->request->data['Address'] = $address_ids;
+				if( !empty($skill_ids) )
+					$this->request->data['Skill'] = $skill_ids;
+
+				/*
+					process the event hashes
+				*/
+				$hash = sha1( json_encode($this->request->data['Event']) ); // serializes the event and hashes it
+
+				/*
+					by choosing 9 characters from a base 16 hash, there are a total possible
+					 68,719,476,736 hashes.  this should be adequate.
+				*/
+				$this->request->data['Event']['start_token'] = substr($hash, 0, 9); // 9 starting characters
+				$this->request->data['Event']['stop_token'] = substr($hash, -9, 9); // 9 ending characters
+
+				// create and save the event
+				$this->Event->create();
+				if ($this->Event->saveAll($this->request->data)) 
+				{
+					$this->Session->setFlash(__('The event has been saved.'));
+					//debug($this->request->data);
+					return $this->redirect(array('controller' => 'events', 'action' => 'view', $this->Event->id, 'coordinator' => true));
+				} 
+				else 
+				{
+					$this->Session->setFlash(__('The event could not be saved. Please, try again.'));
+				}
+			}
 			
-			unset( $this->request->data['Address'], $this->request->data['Skill'] );
+			$address = $this->Event->Address->find('all');
+			$skills = null;
+			$this->set( compact('skills', 'address', 'organization') );
 
-			if( !empty($address_ids) )
-				$this->request->data['Address'] = $address_ids;
-			if( !empty($skill_ids) )
-				$this->request->data['Skill'] = $skill_ids;
+			//debug($user_organizations);
 
-			/*
-				process the event hashes
-			*/
-			$hash = sha1( json_encode($this->request->data['Event']) ); // serializes the event and hashes it
-
-			/*
-				by choosing 9 characters from a base 16 hash, there are a total possible
-				 68,719,476,736 hashes.  this should be adequate.
-			*/
-			$this->request->data['Event']['start_token'] = substr($hash, 0, 9); // 9 starting characters
-			$this->request->data['Event']['stop_token'] = substr($hash, -9, 9); // 9 ending characters
-
-			// create and save the event
-			$this->Event->create();
-			if ($this->Event->saveAll($this->request->data)) 
-			{
-				$this->Session->setFlash(__('The event has been saved.'));
-				//debug($this->request->data);
-				return $this->redirect(array('controller' => 'events', 'action' => 'view', $this->Event->id, 'coordinator' => true));
-			} 
-			else 
-			{
-				$this->Session->setFlash(__('The event could not be saved. Please, try again.'));
-			}
+			$this->set('organizations', $this->Event->Organization->find(
+	            'list',
+	            array(
+	            	'conditions' => array(
+	            		'Organization.organization_id' => $user_organizations
+	            	),
+	                'order' => array('Organization.name')
+	            )));
 		}
-		
-		$organization = $this->Event->Organization->find('list');
-		$address = $this->Event->Address->find('all');
-		$skills = null;
-		$this->set( compact('skills', 'address', 'organization') );
-
-		$this->set('organizations', $this->Event->Organization->find(
-            'list',
-            array(
-                'fields' => array('Organization.name'),
-                'order' => array('Organization.name')
-            )));
+		else
+		{
+			//throw new ForbiddenException('You do not have permission...');
+			$this->Session->setFlash('You do not have permission.');
+			return $this->redirect(array('supervisor' => true,
+				'controller' => 'events', 'action' => 'index'));
+		}
 	}
 
 	public function coordinator_edit($id = null)
 	{
-		if (!$this->Event->exists($id)) {
-			throw new NotFoundException(__('Invalid event'));
-		}
-		if ($this->request->is(array('post', 'put'))) 
+		$events = $this->Event->findByEventId($id);
+		if( $this->_CurrentUserCanWrite($events['Event']['organization_id']) )
 		{
-			if(! $this->Event->validTimes()) {
-				return false;
+			if (!$this->Event->exists($id)) {
+				throw new NotFoundException(__('Invalid event'));
 			}
-
-			foreach($this->request->data['Address'] as $address)
+			if ($this->request->is(array('post', 'put'))) 
 			{
-				$this->Event->Address->save($address);
-			}
+				if(! $this->Event->validTimes()) {
+					return false;
+				}
 
-			if ($this->Event->save($this->request->data)) {
-				$this->Session->setFlash(__('The event has been saved.'));
-				return $this->redirect(array('action' => 'index'));
+				if($this->request->data['Address'] != null)
+				{
+					foreach($this->request->data['Address'] as $address)
+					{
+						$this->Event->Address->save($address);
+					}
+				}
+
+				if ($this->Event->save($this->request->data)) {
+					$this->Session->setFlash(__('The event has been saved.'));
+					return $this->redirect(array('action' => 'index'));
+				} else {
+					$this->Session->setFlash(__('The event could not be saved. Please, try again.'));
+				}
 			} else {
-				$this->Session->setFlash(__('The event could not be saved. Please, try again.'));
+				$options = array('conditions' => array('Event.' . $this->Event->primaryKey => $id));
+				$this->request->data = $this->Event->find('first', $options);
 			}
-		} else {
-			$options = array('conditions' => array('Event.' . $this->Event->primaryKey => $id));
-			$this->request->data = $this->Event->find('first', $options);
+
+			$organization = $this->Event->Organization->find('list');
+			$address = $this->Event->Address->find('all');
+			$skills = null;
+			$this->set( compact('skills', 'address', 'organization') );
+
+			$this->set('organizations', $this->Event->Organization->find(
+	            'list',
+	            array(
+	                'fields' => array('Organization.name'),
+	                'order' => array('Organization.name')
+	            )));
 		}
-
-		$organization = $this->Event->Organization->find('list');
-		$address = $this->Event->Address->find('all');
-		$skills = null;
-		$this->set( compact('skills', 'address', 'organization') );
-
-		$this->set('organizations', $this->Event->Organization->find(
-            'list',
-            array(
-                'fields' => array('Organization.name'),
-                'order' => array('Organization.name')
-            )));
+		else
+		{
+			$this->Session->setFlash('You do not have permission.');
+			return $this->redirect(array('coordinator' => true,
+				'controller' => 'events', 'action' => 'index'));
+		}
 	}
 
 	public function coordinator_index($id = null)
 	{
-		$this->index($id);
+		$user_organizations = $this->Event->Organization->Permission->find('list',
+				array(
+					'fields' => array('Permission.organization_id'),
+					'conditions' => array(
+						'Permission.write' => true
+					)
+				)
+			);
 
-		// if(! $this->Event->exists($event_id) )
-		// {
-		// 	throw new NotFoundException("Event id does not exist!");
-		// }
-
-		// // fetch event id
-		// $event = $this->Event->findAllById($event_id);
-
-		// // verify that the current user can read/write this organization's event entries
-		// if( $this->_CurrentUserCanWrite($event['Event']['organization_id']) )
-		// {
-
-		// }
-		// else
-		// {
-		// 	throw new ForbiddenException('You are not allowed to edit this organization\'s event entries');
-		// }
-
-		// // post block
-		// 	// check a confirm variable
-		// 	// redirect to coordinator/event/edit/:event_id
-		// if( $this->request->is('post') )
-		// {
-
-		// }
-
-		// // set data for view
-
-		// throw new NotImplementedException('this method exists but has not been implemented');
+		if( $this->_CurrentUserCanWrite($user_organizations) )
+		{
+			$this->index($id);
+		}
+		else
+		{
+			$this->Session->setFlash('You do not have permission.');
+			return $this->redirect(array('supervisor' => true,
+				'controller' => 'events', 'action' => 'index'));
+		}
 	}
 
 	public function coordinator_view($id = null)
 	{
-		$this->view($id);
+		$events = $this->Event->findByEventId($id);
+		if( $this->_CurrentUserCanWrite($events['Event']['organization_id']) )
+		{
+			$this->view($id);
+		}
+		else
+		{
+			$this->Session->setFlash('You do not have permission.');
+			return $this->redirect(array('supervisor' => true,
+				'controller' => 'events', 'action' => 'view', $id));
+		}
 	}
 
 	/**
-			MANAGER
-			URL: localhost/manager/events/...
+			supervisor
+			URL: localhost/supervisor/events/...
 	*/
-	public function manager_add($id = null)
+	public function supervisor_add($id = null)
 	{
-		$this->Session->setFlash(__('You are not authorized to create events.'));
-		$this->redirect('index');
+		return $this->redirect(array('coordinator' => true,
+				'controller' => 'events', 'action' => 'add'));
 	}
 
-	public function manager_edit($id = null)
+	public function supervisor_edit($id = null)
 	{
-		$this->Session->setFlash(__('You are not authorized to edit events.'));
-		$this->redirect('index'); 
+		return $this->redirect(array('coordinator' => true,
+				'controller' => 'events', 'action' => 'edit', $id));
 	}
 
-	public function manager_index($id = null)
+	public function supervisor_index($id = null)
 	{
-		$this->index($id);
+		$user_organizations = $this->Event->Organization->Permission->find('list',
+			array(
+				'fields' => array('Permission.organization_id'),
+				'conditions' => array(
+					'Permission.write' => true
+				)
+			)
+		);
+
+		if( $this->_CurrentUserCanRead($user_organizations) )
+		{
+			$this->index($id);
+		}
+		else
+		{
+			$this->Session->setFlash('You do not have permission.');
+			return $this->redirect(array('volunteer' => true,
+				'controller' => 'events', 'action' => 'index'));
+		}
 	}
 
-	public function manager_view($id = null)
+	public function supervisor_view($id = null)
 	{
-		$this->view($id);
+		$events = $this->Event->findByEventId($id);
+		if( $this->_CurrentUserCanRead($events['Event']['organization_id']) )
+		{
+			$this->view($id);
+		}
+		else
+		{
+			$this->Session->setFlash('You do not have permission.');
+			return $this->redirect(array('volunteer' => true,
+				'controller' => 'events', 'action' => 'view', $id));
+		}
 	}
 
 	/**
@@ -489,24 +604,51 @@ class EventsController extends AppController {
 	*/
 	public function volunteer_add($id = null)
 	{
-		$this->Session->setFlash(__('You are not authorized to create events.'));
-		$this->redirect('index');
+		return $this->redirect(array('coordinator' => true,
+			'controller' => 'events', 'action' => 'add'));
 	}
 
 	public function volunteer_edit($id = null)
 	{
-		$this->Session->setFlash(__('You are not authorized to edit events.'));
-		$this->redirect('index'); 
+		return $this->redirect(array('coordinator' => true,
+			'controller' => 'events', 'action' => 'edit', $id));
 	}
 
 	public function volunteer_index($id = null)
 	{
-		$this->index($id);
+		$user_organizations = $this->Event->Organization->Permission->find('list',
+			array(
+				'fields' => array('Permission.organization_id'),
+				'conditions' => array(
+					'Permission.write' => true
+				)
+			)
+		);
+
+		if( $this->_CurrentUserCanPublish($user_organizations) )
+		{
+			$this->index($id);
+		}
+		else
+		{
+			$this->Session->setFlash('You do not have permission.');
+			return $this->redirect("../../events");
+		}
 	}
 
 	public function volunteer_view($id = null)
 	{
-		$this->view($id);
+		$events = $this->Event->findByEventId($id);
+		if( $this->_CurrentUserCanPublish($events['Event']['organization_id']) )
+		{
+			$this->view($id);
+		}
+		else
+		{
+			$this->Session->setFlash('You do not have permission.');
+			return $this->redirect(array('volunteer' => true,
+				'controller' => 'events', 'action' => 'index'));
+		}
 	}
 
 	/**

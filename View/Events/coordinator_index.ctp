@@ -1,5 +1,12 @@
 <div class="events index">
 	<h2><?php echo __('Events'); ?></h2>
+	
+	<div style="text-align: right">
+		<?php echo $this->Html->link(__('Create Event'), array('action' => 'add'), array('class' => 'btn btn-primary')); ?>
+	</div>
+	
+	</br>
+
 	<table cellpadding="0" cellspacing="0" class="table table-striped">
 	<tr>
 			<!-- <th><?php echo $this->Paginator->sort('event_id'); ?></th> -->
@@ -49,12 +56,4 @@
 	?>
 	</div>
 </div>
-<div class="actions">
-	<h3><?php echo __('Actions'); ?></h3>
-	<ul>
-		<li><?php echo $this->Html->link(__('New Event'), array('action' => 'add')); ?></li>
 
-		<li><?php echo $this->Html->link(__('List Skills'), array('controller' => 'skills', 'action' => 'index')); ?> </li>
-		<li><?php echo $this->Html->link(__('New Skill'), array('controller' => 'skills', 'action' => 'add')); ?> </li>
-	</ul>
-</div>
