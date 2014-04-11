@@ -1,17 +1,18 @@
 <div class="row">
 	<div class="col-md-12">
 		<?php echo $this->Form->create('Organization', $form_defaults); ?>
-		<h1> Organizations </h1>
-		<p>These are the organizations you are affiliated with.</p>
-		<hr>	
+		<h1><small>Coordinator</small><br>Organizations </h1>
+		<p>You can coordinate events for these organizations.</p>
+		<?php if ( count($pag_organizations) > 1) : ?>
 		<table class="table table-striped"> 
 			<thead>  
           		<tr>  
-            		<th> Name </th>
+            		<th><?php echo $this->Paginator->sort('Organization.name', 'Organization'); ?></th>
             		<th>Actions</th>
           		</tr>  
         	</thead>
-        		<?php foreach ($organizations as $organization): ?>
+        	<tbody>
+        		<?php foreach ($pag_organizations as $organization): ?>
 					<tr>
 						<td><?php echo h($organization['Organization']['name']); ?>&nbsp;</td>
 						<td>
@@ -28,6 +29,10 @@
 						</td>
 					</tr>
 				<?php endforeach; ?>
+			</tbody>
 		</table>
+	<?php else: ?>
+		<p><em>You are not a coordinator for any organizations.</em></p>
+	<?php endif; ?>
 	</div>
 </div>

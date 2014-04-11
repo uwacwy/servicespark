@@ -11,6 +11,13 @@ class TimesController extends AppController
 {
 	//var $scaffold;
 
+	public $paginate = array(
+		'limit' => 25,
+		'order' => array(
+			'Time.start_time' => 'asc'
+		)
+	);
+
 	public function volunteer_index()
 	{
 		if( $this->request->is('post') )
@@ -143,40 +150,45 @@ class TimesController extends AppController
 
 	public function coordinator_edit($time_id)
 	{
+		if( !$this->Time->exists($time_id) )
+		{
+			throw new NotFoundException('Invalid time entry specified');
+		}
+
 		// fetch time id
 		$time = $this->Time->findByTimeId($time_id);
 
-		//debug($time);
-
 		// verify that the current user can read/write this organization's time entries
-		if( $this->_CurrentUserCanWrite($time['Event']['organization_id']) )
+		if( !$this->_CurrentUserCanWrite($time['Event']['organization_id']) )
 		{
-			// edit views use request data, rather than set data when they prepopulating
-			$this->request->data = $time;
-			$this->set( compact('time') );
-		}
-		else
-		{
+
 			throw new ForbiddenException('You do not have permission to edit this organization\'s time entries');
 		}
 
 		// This block will execute when data is posted in the request
-		if( $this->request->is('post') )
+		if( $this->request->is( array('post', 'put') ) )
 		{
-			if( $this->request->data['Time']['stop_time']['null'] )
+
+			if( $this->request->data['Time']['blank'] )
 			{
-				$this->request->data['Time']['stop_time'] = null;
+				unset( $this->request->data['Time']['stop_time'], $this->request->data['Time']['blank'] );
+				$this->request->data['Time']['stop_time'] = "";
 			}
 
 			$save['Time'] = $this->request->data['Time'];
 
-			if($this->Time->save($save) )
+			debug($save);
+
+			if( $this->Time->save($save) )
 			{
-				$this->redirect( array('coordinator' => true, 'controller' => 'event', 'action' => 'view', $time['Event']['event_id']) );
+				$this->Session->setFlash( sprintf(__('Time entry %1$u was successfully updated.'), $this->Time->id), 'success');
+				return $this->redirect( array('coordinator' => true, 'controller' => 'event', 'action' => 'view', $time['Event']['event_id']) );
 			}
 		}
 
-		// throw new NotImplementedException('this method exists but has not been implemented');
+		$this->request->data = $time;
+		$this->set( compact('time') );
+		
 	}
 	
 	public function coordinator_delete($time_id)
@@ -204,7 +216,10 @@ class TimesController extends AppController
 			// redirect to coordinator/event/edit/:event_id
 		if( $this->request->is('post') )
 		{
-
+			if( $this->Time->delete($time_id) )
+			{
+				return $this->rediirect( array('coordinator' => true, 'controller' => 'event', 'action' => 'view', $time['Event']['event_id']) );
+			}
 		}
 
 		// set data for view
@@ -212,20 +227,53 @@ class TimesController extends AppController
 		throw new NotImplementedException('this method exists but has not been implemented');
 	}
 	
-	public function coordinator_adjust($adjustment, $event_id)
+	public function coordinator_adjust( $event_id )
 	{
-		// verify adjustment is a valid thing to do (in|out|all)
+		$conditions = array(
+			'Event.event_id' => $event_id
+		);
 
-		// switch on adjustment
-			// in: find all entries with NULL clock in time
-			// out: find all entries with NULL clock out time
-			// both:
+		$contain = array('Organization');
+		$event = $this->Time->Event->find( 'first', array('conditions' => $conditions, 'contain' => $contain) );
 
-		// saveAll
+		// verify that the current user can read/write this organization's time entries
+		if( $this->_CurrentUserCanWrite($event['Organization']['organization_id']) )
+		{
 
-		// set data for view
+		}
+		else
+		{
+			throw new ForbiddenException('You are not allowed to edit this organization\'s time entries');
+		}
 
-		throw new NotImplementedException('this method exists but has not been implemented');
+
+		if($this->request->is('post') )
+		{
+			$new = array(
+				'Time.stop_time' => sprintf("'%s'", date('Y-m-d H:i:s', strtotime($event['Event']['stop_time']) ) ) // this is disgusting syntax
+			);
+
+			$where = array(
+				'Event.event_id' => $event_id
+			);
+
+			if( $this->Time->updateAll( $new, $where ) )
+			{
+				$this->Session->setFlash( __('Time entries for this event have been adjusted.'), 'success');
+			}
+			else
+			{
+				$this->Session->setFlash( __('Something went wrong with automatic time entry adjustment.  Please contact a site administrator'), 'danger');
+			}
+		}
+
+		$this->Paginator->settings['conditions'] = array('Time.event_id' => $event_id);
+		$this->Paginator->settings['contain'] = array('User');
+		$times = $this->Paginator->paginate();
+
+		$this->set( compact('event', 'times') );
+
+		//throw new NotImplementedException('this method exists but has not been implemented');
 	}
 
 
