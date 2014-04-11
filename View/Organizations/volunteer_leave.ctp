@@ -27,7 +27,10 @@
 						?>
 					</td>
 					<td>
-<?php echo $this->Html->link('Leave this Organzation', array( $organization['Organization']['organization_id']), array('class' => 'btn btn-danger btn-sm'), 'Are you sure you want to leave this organization?'); ?>
+						<?php echo $this->Html->link('Leave this Organzation', 
+							array( $organization['Organization']['organization_id']), 
+							array('class' => 'btn btn-danger btn-sm'), 'Are you sure you want to leave this organization?'); 
+						?>
 					</td>
     			</tr>
 			<?php endforeach; ?>

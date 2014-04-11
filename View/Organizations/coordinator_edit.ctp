@@ -48,17 +48,77 @@
             		<th>Supervisor</th> 
           		</tr>  
         	</thead>
-        	<?php foreach ($data as $organization):?>
+        	<?php
+        		$i=0; 
+        		foreach ($data as $organization):
+        	?>
     			<tr>
-    				<td><?php echo h($organization['User']['first_name'] . ' ' . $organization['User']['last_name']); ?></td>
-					<td><input type="checkbox" class="large"/> </td>
-					<td><input type="checkbox" class="large"/> </td>
-					<td><input type="checkbox" class="large"/> </td>
+    				<td>
+    					<?php echo $this->Form->input(
+    						"Permission.$i.user_id",
+    						array('value' => $organization['User']['user_id'], 'type' => 'hidden')
+    					); ?>
+    					<?php echo h( $organization['User']['full_name'] ); ?>
+    				</td>
+					<td>
+						<?php 
+							echo $this->Form->input("Permission.$i.publish",
+								array(
+									'checked' => $organization['Permission']['publish'],
+									'type' => 'checkbox',
+									'class' => 'checkbox'
+								)
+							); 
+						?>
+					</td>
+					<td>
+						<?php
+							echo $this->Form->input("Permission.$i.write", 
+								array(
+									'checked' => $organization['Permission']['write'],
+									'type' => 'checkbox', 
+									'class' => 'checkbox'
+								)
+							);
+						?>
+					</td>
+					<td>
+						<?php
+							echo $this->Form->input("Permission.$i.read", 
+								array(
+									'checked' => $organization['Permission']['read'],
+									'type' => 'checkbox', 
+									'class' => 'checkbox'
+								)
+							);
+						?>
+					</td>
     			</tr>
-			<?php endforeach; ?>
+			<?php
+				$i++;
+			 	endforeach;
+			 ?>
 		</table>
 
 		<h2>Does Everything Look Good?</h2>
-		<?php echo $this->Form->end(array('label' => "Update this organization", 'class' => 'btn btn-lg btn-primary')); ?>
+		<div>
+			<?php echo $this->Form->button('Update this organization', array('type' => 'button', 'class' => 'btn btn-primary')); ?>
+
+			<?php
+				echo $this->Html->link('Delete this Organzation', 
+									array(
+											'coordinator' => true,
+											'controller' => 'organizations',
+											'action' => 'delete',
+											$organization['Organization']['organization_id']
+										), 
+										array(
+											'class' => 'btn btn-danger'
+										),
+										'Are you sure you want to permanently delete this organization?'
+									); 
+			?>
+		</div>
+		<?php echo $this->Form->end(null); ?> 
 	</div>
 </div>

@@ -149,7 +149,7 @@ class OrganizationsController extends AppController {
  * @param string $id
  * @return void
  */
-	public function delete($id = null) 
+	private function delete($id = null) 
 	{
 		$this->Organization->id = $id;
 		if (!$this->Organization->exists()) 
@@ -196,55 +196,51 @@ class OrganizationsController extends AppController {
 */
 	public function coordinator_edit($id = null) 
 	{
-		// if (!$this->Organization->exists($id)) 
-		// {
-		// 	throw new NotFoundException(__('Invalid organization'));
-		// }
+		if (!$this->Organization->exists($id)) 
+		{
+			throw new NotFoundException(__('Invalid organization'));
+		}
 
 		// Get the organization to edit.
 		$organization = $this->Organization->findByOrganizationId($id);
 	
-		// Check user permissions.
-		// if($this->_CurrentUserCanWrite($organization['Organization']['organization_id'])) 
-		// {
+		//Check user permissions.
+		if($this->_CurrentUserCanWrite($organization['Organization']['organization_id'])) 
+		{
 			if ($this->request->is(array('post', 'put'))) 
 			{
 				$entry = $this->request->data;
 
-				foreach($entry['Address'] as $address)
+				// create address entry
+				if( !empty($entry['Address'])) 
 				{
-					// at a minimum, an address should have a line 1, city, state and zip
-					if( 
-						!empty( $address['address1'] ) && 
-						!empty( $address['city'] ) && 
-						!empty( $address['state'] ) &&
-						!empty( $address['zip'] ) )
-					{
-						$this->Organization->Address->create();
-
-						if($this->Organization->Address->save($address))
-						{
-							$this->Session->setFlash(__('The address has been saved.'));
-						}
-						else 
-						{
-							$this->Session->setFlash(__('The address has not been saved.'));
-						}
-						//return;
-						// get the address_id for the join table
-						$address_ids['Address'][] = $this->Organization->Address->id;
-					}
+					$address_ids = $this->_ProcessAddresses($entry['Address'], $this->Organization->Address);
 				}
+				
+
+				if( !empty($this->request->data['Address']) )
+				{
+					unset( $this->request->data['Address'] );
+				}
+				
 
 				if( !empty($address_ids) )
 				{
 					$this->request->data['Address'] = $address_ids;
-					debug($address_ids);
 				}
-					
 
-				if ($this->Organization->save($entry)) 
+				if ($this->Organization->save($entry['Organization'])) 
 				{
+					foreach($entry['Permission'] as $permission) {
+						$permissions = array(
+							'user_id' => $permission['user_id'],
+							'organization_id' => $id,
+							'publish' => $permission['publish']	,
+							'write' => $permission['write'],
+							'read' => $permission['read']				
+						);
+						$this->Organization->Permission->saveAll($permissions);
+					}
 					$this->Session->setFlash(__('The organization has been saved.'));
 					return $this->redirect(array('action' => 'coordinator_index'));
 				} 
@@ -258,14 +254,17 @@ class OrganizationsController extends AppController {
 				$options = array('conditions' => array('Organization.' . $this->Organization->primaryKey => $id));
 				$this->request->data = $this->Organization->find('first', $options);
 			}
-		//}
-		// else 
-		// {
-		// 	throw new ForbiddenException("You are not allowed to edit this organization.");
-		// }
+		}
+		else 
+		{
+			return $this->redirect(array('supervisor' => true,
+										 'controller' => 'organizations',
+										 'action' => 'view',
+										 $id));
+		}
 
 		$conditions = array(
-			'Permission.user_id' => $this->Auth->user('user_id')
+			'Permission.organization_id' => $id
 		);
 		// get a list of user's organizations
 		$data = $this->Organization->Permission->find('all', array('conditions' => $conditions));
@@ -275,13 +274,28 @@ class OrganizationsController extends AppController {
 		$this->set(compact('addresses'));
 	}
 
-	public function _find_organization_time($array) 
+
+	public function coordinator_delete($id = null) 
 	{
-		debug($array);
+		if (!$this->Organization->exists($id)) 
+		{
+			throw new NotFoundException(__('Invalid organization'));
+		}
+
+		$this->Organization->delete($id);
+
+		$this->redirect(
+			array(
+				'volunteer' => false,
+				'controller' => 'users',
+				'action' => 'activity'
+			)
+		);
 	}
 
+
 /**
- * manager_view
+ * supervisor_view
  *
  * @throws ForbiddenException, NotFoundException
  * @param string $id
@@ -320,6 +334,8 @@ class OrganizationsController extends AppController {
 		}
 
 		// summary all time
+		$users = $this->Organization->Permission->find('all');
+		debug($users);
 		$conditions = array(
 			'Time.user_id' => $this->Auth->user('user_id')
 		);
@@ -417,12 +433,14 @@ class OrganizationsController extends AppController {
 			foreach($this->request->data['Organization']['Organization'] as $organization)
 			{
 				$entry['Permission'] = array(
-				'user_id' => $this->Auth->user('user_id'),
-				'organization_id' => $this->request->data['Organization']['Organization'][$i]);
+					'user_id' => $this->Auth->user('user_id'),
+					'organization_id' => $this->request->data['Organization']['Organization'][$i],
+					'publish' => true
+				);
 
 				$this->Organization->Permission->create();
 				$this->Organization->Permission->save($entry);
-
+				
 				$organization_ids['Organization']['Organization'][] = $this->Organization->id;
 
 				$i++;
@@ -451,55 +469,50 @@ class OrganizationsController extends AppController {
 */
 	public function volunteer_create() 
 	{
-		if ($this->request->is('post'))
+		if($this->Auth->user('user_id') ) 
 		{
-
-			// create address entry
-			foreach($this->request->data['Address'] as $address)
+			if ($this->request->is('post'))
 			{
-				// at a minimum, an address should have a line 1, city, state and zip
-				if( 
-					!empty( $address['address1'] ) && 
-					!empty( $address['city'] ) && 
-					!empty( $address['state'] ) &&
-					!empty( $address['zip'] ) )
+				// create address entry
+				$address_ids = $this->_ProcessAddresses($this->request->data['Address'], $this->Organization->Address);
+
+				unset( $this->request->data['Address'] );
+
+				if( !empty($address_ids) )
 				{
-					$this->Organization->Address->create();
-					$this->Organization->Address->save($address);
-					// get the address_id for the join table
-					$address_ids['Address'][] = $this->Organization->Address->id;
+					$this->request->data['Address'] = $address_ids;
+				}
+				
+				$this->Organization->create();
+
+				if ($this->Organization->save($this->request->data))
+				{
+					$this->Session->setFlash(__('The organization has been created.'));
+
+					$conditions['Permission'] = array( 
+						'user_id' => $this->Auth->user('user_id'),
+						'organization_id' => $this->Organization->id,
+						'write' => true
+					);
+
+					$this->Organization->Permission->save($conditions);
+
+					return $this->redirect(array('action' => 'index'));
+				} 
+				else 
+				{
+					$this->Session->setFlash(__('The organization could not be created. Please, try again.'));
 				}
 			}
-
-			unset( $this->request->data['Address'] );
-
-			if( !empty($address_ids) )
-			{
-				$this->request->data['Address'] = $address_ids;
-			}
-			
-			$this->Organization->create();
-
-			if ($this->Organization->save($this->request->data))
-			{
-				$this->Session->setFlash(__('The organization has been created.'));
-
-				$conditions['Permission'] = array( 
-					'user_id' => $this->Auth->user('user_id'),
-					'organization_id' => $this->Organization->id,
-					'write' => true
-				);
-
-				debug($this->Organization->id);
-				$this->Organization->Permission->save($conditions);
-
-
-				return $this->redirect(array('action' => 'index'));
-			} 
-			else 
-			{
-				$this->Session->setFlash(__('The organization could not be created. Please, try again.'));
-			}
+		}
+		else 
+		{
+			return $this->redirect(array(
+											'volunteer' => false,
+											'controller' => $organizations,
+											'action' => 'index'
+										)
+								);
 		}
 	}
 }
