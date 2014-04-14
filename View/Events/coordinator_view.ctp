@@ -76,39 +76,3 @@
 		<li><?php echo $this->Html->link(__('New Event'), array('action' => 'add')); ?> </li>
 	</ul>
 </div>
-
-<!-- <div class="related">
-	<h3><?php echo __('Related Events'); ?></h3>
-	<?php if (!empty($event['Event'])): ?>
-	<table cellpadding = "0" cellspacing = "0">
-	<tr>
-		<th><?php echo __('Event Id'); ?></th>
-		<th><?php echo __('Title'); ?></th>
-		<th><?php echo __('Description'); ?></th>
-		<th><?php echo __('Start Time'); ?></th>
-		<th><?php echo __('Stop Time'); ?></th>
-		<th class="actions"><?php echo __('Actions'); ?></th>
-	</tr>
-	<?php foreach ($event['Event'] as $event): ?>
-		<tr>
-			<td><?php echo $event['event_id']; ?></td>
-			<td><?php echo $event['title']; ?></td>
-			<td><?php echo $event['description']; ?></td>
-			<td><?php echo $event['start_time']; ?></td>
-			<td><?php echo $event['stop_time']; ?></td>
-			<td class="actions">
-				<?php echo $this->Html->link(__('View'), array('controller' => 'events', 'action' => 'view', $event['event_id'])); ?>
-				<?php echo $this->Html->link(__('Edit'), array('controller' => 'events', 'action' => 'edit', $event['event_id'])); ?>
-				<?php echo $this->Form->postLink(__('Delete'), array('controller' => 'events', 'action' => 'delete', $event['event_id']), null, __('Are you sure you want to delete # %s?', $event['event_id'])); ?>
-			</td>
-		</tr>
-	<?php endforeach; ?>
-	</table>
-<?php endif; ?>
-
-	<div class="actions">
-		<ul>
-			<li><?php echo $this->Html->link(__('New Event'), array('controller' => 'events', 'action' => 'add')); ?> </li>
-		</ul>
-	</div>
-</div> -->
