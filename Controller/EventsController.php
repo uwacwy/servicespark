@@ -333,13 +333,9 @@ class EventsController extends AppController {
 					return false;
 				}
 
-				if($this->request->data['Address'] != null)
-				{
-					foreach($this->request->data['Address'] as $address)
-					{
-						$this->Event->Address->save($address);
-					}
-				}
+				$address_ids = $this->_ProcessAddresses($this->request->data['Address'], $this->Event->Address);
+				unset($this->request->data['Address']);
+				$this->request->data['Address'] = $address_ids;
 
 				if ($this->Event->save($this->request->data)) {
 					$this->Session->setFlash(__('The event has been saved.'));
@@ -484,7 +480,17 @@ class EventsController extends AppController {
 			'Time.user_id'
 		);
 
-		$times = $this->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
+		// juxtapose this with the actual Time->find('all', $options) syntax
+		$this->Paginator->settings = array(
+			'conditions' => $conditions,
+			'fields' => $fields,
+			'group' => $group
+		);
+		$times = $this->Paginator->paginate('Time');
+
+		// versus
+
+//		$times = $this->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
 		
 		$this->set( compact('times', 'event') );
 	}

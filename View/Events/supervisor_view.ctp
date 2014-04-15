@@ -1,3 +1,5 @@
+<?php debug($pag_times); ?>
+
 <div class="events view">
 	<div style="text-align: right">
 		<?php echo $this->Html->link(__('Back to Events'), array('action' => 'index'), array('class' => 'btn btn-primary')); ?>
@@ -49,38 +51,40 @@
 		?>
 	</div>
 
-	<div class="row well">
-		<h3>Volunteer Report</h3>
-		<table cellpadding="0" cellspacing="0" class="table table-striped">
-		<tr>
-				<th>First Name</th>
-				<th>Last Name</th>
-				<th>Clocked In</th>
-				<th>Clocked Out</th>
-				<th>Total Time</th>
-		</tr>
-		<?php
-			$grand_total_time = 0;
-			foreach($times as $time)
-			{
-				echo "<tr>";
-				echo "<td>" . $time['User']['first_name'] . "</td>";
-				echo "<td>" . $time['User']['last_name'] . "</td>";
-				$clock_in = new DateTime($time['Time']['start_time']);
-				echo "<td>" . $clock_in->format('F j, Y, g:i a') . "</td>";
-				$clock_out = new DateTime($time['Time']['stop_time']);
-				echo "<td>" . $clock_out->format('F j, Y, g:i a') . "</td>";
+	<div class="row">
+		<div class="col-md-12">
+			<h3>Volunteer Report</h3>
+			<table cellpadding="0" cellspacing="0" class="table table-striped">
+			<tr>
+					<th><?php echo $this->Paginator->sort('User.first_name', "First Name"); ?></th>
+					<th>Last Name</th>
+					<th>Clocked In</th>
+					<th>Clocked Out</th>
+					<th>Total Time</th>
+			</tr>
+			<?php
+				$grand_total_time = 0;
+				foreach($times as $time)
+				{
+					echo "<tr>";
+					echo "<td>" . $time['User']['first_name'] . "</td>";
+					echo "<td>" . $time['User']['last_name'] . "</td>";
+					$clock_in = new DateTime($time['Time']['start_time']);
+					echo "<td>" . $clock_in->format('F j, Y, g:i a') . "</td>";
+					$clock_out = new DateTime($time['Time']['stop_time']);
+					echo "<td>" . $clock_out->format('F j, Y, g:i a') . "</td>";
 
-				$total_time = $time[0]['OrganizationAllTime'];
-				$hours = floor($total_time);
-				$minutes = round(60*($total_time-$hours));
-				echo "<td>" . $hours . ' Hour(s) ' . $minutes . " Minute(s)</td>";
-				$grand_total_time += $total_time;
-				echo "</tr>";
-			}
-			echo "</table>";
-			$hours = floor($grand_total_time);
-			$minutes = round(60*($grand_total_time-$hours));
-			echo '<h5 align="right">Total Event Time: ' . $hours . ' Hour(s) ' . $minutes . ' Minute(s)</h5>';
-		?>
+					$total_time = $time[0]['OrganizationAllTime'];
+					$hours = floor($total_time);
+					$minutes = round(60*($total_time-$hours));
+					echo "<td>" . $hours . ' Hour(s) ' . $minutes . " Minute(s)</td>";
+					$grand_total_time += $total_time;
+					echo "</tr>";
+				}
+				echo "</table>";
+				$hours = floor($grand_total_time);
+				$minutes = round(60*($grand_total_time-$hours));
+				echo '<h5 align="right">Total Event Time: ' . $hours . ' Hour(s) ' . $minutes . ' Minute(s)</h5>';
+			?>
+		</div>
 	</div>
