@@ -18,11 +18,11 @@ $(document).ready(function(){
 		return split( term ).pop();
 	}
 
-	function injectFormControl ( parent, val, key = null )
+	function injectFormControl ( parent, val, key )
 	{
 
 		console.log('injecting form control to parent ' + parent.attr('id'))
-		if(key == null)
+		if( typeof key == "undefined" )
 		{
 			$input = $('<input type="hidden" name="data[Skill][New][]" />').attr('value', val);
 		}
@@ -94,7 +94,7 @@ $(document).ready(function(){
 		}).bind('autocompleteclose', function( event ){
 			$body.addClass('autocomplete-closed').removeClass('autocomplete-open');
 		}).autocomplete({
-			delay: 250,
+			delay: 125,
 			source: function ( request, response )
 			{
 				$.ajax(
