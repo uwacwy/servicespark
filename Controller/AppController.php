@@ -49,17 +49,21 @@ class AppController extends Controller {
 		'Session',
 		'Auth' => array(
 			'loginRedirect' => '/users/activity',
-			'logoutRedirect' => array(
-				'controller' => 'pages',
-				'action' => 'display',
-				'home'
-			)
+			'logoutRedirect' => '/',
+			'flashElement' => 'danger'
 		)
 	);
 
 	public function beforeFilter()
 	{
 		$this->set('super_admin', $this->_CurrentUserIsSuperAdmin() );
+
+		if( !$this->Session->check('can_coordinate') )
+			$this->Session->write('can_coordinate', (count($this->_GetUserOrganizationsByPermission('write') ) > 0 ) );
+
+		if( !$this->Session->check('can_supervise') )
+			$this->Session->write('can_supervise', (count($this->_GetUserOrganizationsByPermission('read') ) > 0 ) );
+
 		$this->set('form_defaults', array(
 				'class' => 'form',
 				'inputDefaults' => array(
@@ -69,6 +73,34 @@ class AppController extends Controller {
 				)
 			)
 		);
+	}
+
+	/**
+	 * Redirector
+	 * 
+	 * convenience method to cut down on too-verbose url arrays
+	 *
+	 **/
+	public function _Redirector($prefix, $controller, $action, $id = null)
+	{
+		$redirect = array(
+			$prefix => true,
+			'controller' => $controller,
+			'action' => $action,
+			$id
+		);
+
+		if($prefix == null)
+		{
+			unset( $redirect[$prefix] );
+		}
+
+		if($id == null)
+		{
+			unset( $redirect[$id] );
+		}
+
+		return $redirect;
 	}
 
 	/**
@@ -226,7 +258,7 @@ class AppController extends Controller {
 		App::uses('Permission', 'Model');
 
 		$permission = new Permission();
-		return $permission->_UserCanRead( $this->Auth->user('user_id'), $organization_id) || $this->_CurrentUserIsSuperAdmin();
+		return $permission->_UserCanRead( $this->Auth->user('user_id'), $organization_id) || $this->_CurrentUserCanWrite($organization_id) || $this->_CurrentUserIsSuperAdmin();
 	}
 
 	public function _CurrentUserCanWrite($organization_id)

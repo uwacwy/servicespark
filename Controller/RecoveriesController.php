@@ -11,7 +11,7 @@ class RecoveriesController extends AppController
 {
 	public function beforeFilter()
 	{
-	    	//parent::beforeFilter();
+	    parent::beforeFilter();
 	    // Allow users to register and logout.
 	    $this->Auth->allow( array('token', 'user') );
 	}

@@ -48,7 +48,7 @@
 		<p>If we know what you're good at, we can connect you to volunteer opportunities that interest you and challenge you.</p>
 		<div class="row">
 			<div class="col-md-12">
-				<?php echo $this->Form->input('skill', array('class' => 'autocomplete skills form-control', 'data-target' => '#UserSkills') ); ?>
+				<?php echo $this->Form->input('skill', array('class' => 'autocomplete skills form-control', 'data-target' => '#UserSkills', 'placeholder' => __('type a skill and press enter to add it to your profile...') ) ); ?>
 				<div id="UserSkills">
 					<?php
 

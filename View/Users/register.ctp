@@ -7,7 +7,16 @@
 ?>
 
 <div class="row">
-	<div class="col-md-12">
+	<div class="col-md-3">
+		<h3>Welcome to ServiceSpark</h3>
+		<div class="list-group">
+			<?php
+				echo $this->Html->link( __('Login'), array('action' => 'register'), array('class' => 'list-group-item') );
+				echo $this->Html->link( __('Forgot Password'), array('controller' => 'recoveries', 'action' => 'user'), array('class' => 'list-group-item') );
+			?>
+		</div>
+	</div>
+	<div class="col-md-9">
 		<?php echo $this->Form->create('User', $form_defaults); ?>
 		<h1>Welcome!  <small>Let's create your volunteer account.</small></h1>
 		<p>We need to know a little information before you can start managing your volunteer opportunities.</p>
@@ -47,7 +56,7 @@
 		<p>If we know what you're good at, we can connect you to volunteer opportunities that interest you and challenge you.</p>
 		<div class="row">
 			<div class="col-md-12">
-				<?php echo $this->Form->input('skill', array('class' => 'autocomplete skills form-control', 'data-target' => '#UserSkills') ); ?>
+				<?php echo $this->Form->input('skill', array('class' => 'autocomplete skills form-control', 'data-target' => '#UserSkills', 'placeholder' => __('type a skill and press enter to add it to your skills list...') ) ); ?>
 				<div id="UserSkills">
 					<?php 
 						if( isset($this->request->data['Skill']) )

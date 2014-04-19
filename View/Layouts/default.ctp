@@ -26,7 +26,7 @@ global $solution_name;
 	<?php echo $this->Html->charset(); ?>
 	<meta name="viewport" content="width=device-width, user-scalable=no">
 	<title>
-		<?php echo $title_for_layout; ?>
+		<?php echo $title_for_layout; ?> &ndash; <?php echo Configure::read('Solution.name'); ?>
 	</title>
 	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
 	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.js"></script>
@@ -48,14 +48,50 @@ global $solution_name;
 			-webkit-font-smoothing: antialiased;
 			-moz-osx-font-smoothing: grayscale;
 		}
+
+		.form-inline .form-group label,
+		.form-inline .form-group input,
+		.form-inline .form-group select
+		{
+			margin-right: 10px;
+		}
+
+		.append-bottom
+		{
+			margin-bottom: 1.5em;
+		}
+		.append-top
+		{
+			margin-top: 1.5em;
+		}
+		.prepend-left
+		{
+			margin-left: 20px;
+		}
+		.collapse-top
+		{
+			margin-top: 0 !important;
+			padding-top: 0 !important;
+		}
 	</style>
-	<?php
-
-		echo $this->Html->meta('icon');
-
-		echo $this->Html->css('https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css');
+	<?php		
 		echo $this->Html->css('autocomplete');
-		echo $this->Html->script('https://netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js');
+		
+
+		if( Configure::read('debug') > 0 )
+		{
+			echo $this->Html->script('//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.js');
+			echo $this->Html->script('//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.js');
+			echo $this->Html->script('//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.js');
+			echo $this->Html->css('//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.css');
+		}
+		else
+		{
+			echo $this->Html->script('//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js');
+			echo $this->Html->script('//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js');
+			echo $this->Html->script('//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js');
+			echo $this->Html->css('//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css');
+		}
 		echo $this->Html->script('mustaches');
 		echo $this->Html->script('mustache');
 		echo $this->Html->script('uwac');
@@ -72,7 +108,7 @@ global $solution_name;
   <div class="container-fluid">
 	<!-- Brand and toggle get grouped for better mobile display -->
 	<div class="navbar-header">
-	  <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+	  <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#ss-navbar">
 		<span class="sr-only">Toggle navigation</span>
 		<span class="icon-bar"></span>
 		<span class="icon-bar"></span>
@@ -82,7 +118,7 @@ global $solution_name;
 	</div>
 
 	<!-- Collect the nav links, forms, and other content for toggling -->
-	<div class="collapse navbar-collapse">
+	<div class="collapse navbar-collapse" id="ss-navbar">
 
 	  <ul class="nav navbar-nav">
 		<?php if( $super_admin ) : ?>
@@ -90,42 +126,50 @@ global $solution_name;
 
 			$admin_menu = array(
 				'users' => array(
-					'label' => "Manage Users",
+					'label' => __('Users'),
 					'actions' => array(
-						'register' => "Register New User"
+						'register' => __('Register New User'),
+						'find' => __('Search Users')
+					)
+				),
+				'organizations' => array(
+					'label' => __('Organizations'),
+					'actions' => array(
+						'add' => __('Create Organization'),
+						'search' => __('Search Organizations')
 					)
 				),
 				'events' => array(
-					'label' => "Manage Events",
+					'label' => __('Events'),
 					'actions' => array(
-						'add' => "New Event",
-						'index' => "List Events"
+						'add' => __('New Event'),
+						'index' => __('List Events')
 					)
 				),
 				'addresses' => array(
-					'label' => "Manage Addresses",
+					'label' => __('Addresses'),
 					'actions' => array(
-						'index' => "List Addresses",
-						'add' => "Add Address"
+						'index' => __('List Addresses'),
+						'add' => __('Add Address')
 					)
 				),
 				'skills' => array(
-					'label' => "Manage Skills",
+					'label' => __('Skills'),
 					'actions' => array(
-						'index' => "List Skills",
-						'add' => "Add a Skill"
+						'index' => __('List Skills'),
+						'add' => __('Add a Skill')
 					)
 				),
 				'times' => array(
-					'label' => "Manage Time",
+					'label' => __('Time'),
 					'actions' => array(
-						'index' => "List Time Punches"
+						'index' => __('List Time Punches')
 					)
 				),
 				'permissions' => array(
-					'label' => "Manage Permissions",
+					'label' => __('Permissions'),
 					'actions' => array(
-						'add' => "Grant New Permission"
+						'add' => __('Grant New Permission')
 					)
 				)
 			);
@@ -156,25 +200,19 @@ global $solution_name;
 			
 			$user_menu = array(
 				'organizations' => array(
-					'label' => "Organizations",
+					'label' => __('Organizations'),
 					'actions' => array(
-						'add' => "Create an Organization",
-						'index' => "Manage my Organizations"
+						'add' => __('New Organization'),
+						'index' => __('Manage my Organizations')
 					)
 				),
 				'events' => array(
-					'label' => "Events",
+					'label' => __('Events'),
 					'actions' => array(
-						'add' => "New Event",
-						'index' => "List Events",
-						'search' => "Search Events"
-					)
-				),
-				'users' => array(
-					'label' => "Me",
-					'actions' => array(
-						'profile' => "Edit My Profile",
-						'activity' => "View Volunteer Activity"
+						'add' => __('New Event'),
+						'index' => __('List Events'),
+						'search' => __('Search Events'),
+						'matches' => __('Events For Me')
 					)
 				)
 			);
@@ -192,7 +230,7 @@ global $solution_name;
 							foreach($properties['actions'] as $action => $label)
 							{
 								echo sprintf('<li><a href="%s">%s</a></li>',
-									$this->Html->url( array('controller' => $controller, 'action' => $action, 'admin' => false, 'coordinator' => true) ),
+									$this->Html->url( array('controller' => $controller, 'action' => $action, 'go' => true) ),
 									h($label)
 								);
 							}
@@ -224,9 +262,9 @@ global $solution_name;
 						'users' => array(
 								'label' => sprintf('Hello, %s', AuthComponent::user('full_name') ),
 								'actions' => array(
-									'profile' => "Edit My Profile",
+									'profile' => __('Edit My Profile'),
 									'activity' => 'View Activity',
-									'logout' => "Logout"
+									'logout' => __('Logout')
 
 								)
 						)
@@ -281,7 +319,14 @@ global $solution_name;
 	<div class="container">
 		<div class="row">
 			<div class="col-md-12">
-				&copy; <?php echo date('Y'); ?> United Way of Albany County
+				<p><?php echo h(Configure::read('Solution.name') ); ?> &copy; <?php echo date('Y'); ?> United Way of Albany County</p>
+				<p>Proudly powered by CakePHP, Bootstrap, jQuery, MediaTemple, PHP, Apache and MySQL.</p>
+				<!--
+					<?php echo h( Configure::read('Solution.name') ); ?> was built by Brad Kovach, Jamie Wiggins, and Thomas Wolf for a University of Wyoming Computer Science Senior Design project
+					for the 2013-2014 academic year.  <?php echo h( Configure::read('Solution.name') ); ?> is deliberately built on open-source technologies to pave the way for
+					wide-spread use in non-profit environments.  To inquire about licensing <?php echo h( Configure::read('Solution.name') ); ?> for your community, 
+					please contact volunteer@unitedwayalbanycounty.org
+				-->
 			</div>
 		</div>
 		<?php  echo $this->element('sql_dump'); ?>

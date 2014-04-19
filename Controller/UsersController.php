@@ -54,6 +54,12 @@ class UsersController extends AppController {
 	    	if ($this->Auth->login())
 			{
 				/*
+					Refreshing this session data upon login is crucial
+				*/
+				$this->Session->delete('can_coordinate');
+				$this->Session->delete('can_supervise');
+
+				/*
 					delete recoveries
 					--
 					if a user successfully logs in, they should have any password
@@ -66,7 +72,7 @@ class UsersController extends AppController {
 					$this->User->Recovery->delete( $this->Auth->user('user_id') );
 				}	
 
-	        	$this->redirect($this->Auth->redirect());
+	        	$this->redirect( $this->Auth->redirect() );
 	    	}
 	    	$this->Session->setFlash(__('Invalid username or password, try again'), 'danger');
 		}
@@ -74,6 +80,9 @@ class UsersController extends AppController {
 
 	public function logout()
 	{
+		$this->Session->delete('can_coordinate');
+		$this->Session->delete('can_supervise');
+		
 		return $this->redirect( $this->Auth->logout() );
 	}
 /**
@@ -156,18 +165,6 @@ class UsersController extends AppController {
 	register methods
 */
 
-	public function admin_register()
-	{
-		if( $this->_CurrentUserIsSuperAdmin() )
-		{
-
-		}
-		else
-		{
-			return $this->redirect( array('controller' => 'user', 'action' => 'register', 'prefix' => 'coordinator') );
-		}
-	}
-
 
 	/**
 	 * register method
@@ -200,7 +197,7 @@ class UsersController extends AppController {
 			*/
 			if( $entry['User']['password_l'] != $entry['User']['password_r'] )
 			{
-				$this->Session->setFlash( __('The passwords did not match.  Please try again.') );
+				$this->Session->setFlash( __('The passwords did not match.  Please try again.'), 'danger' );
 				unset(
 					$entry['User']['password_l'], 
 					$entry['User']['password_r']
@@ -214,25 +211,31 @@ class UsersController extends AppController {
 			}
 
 			$address_ids = $this->_ProcessAddresses($this->request->data['Address'], $this->User->Address);
+			$skill_ids = $this->_ProcessSkills($this->request->data['Skill'], $this->User->Skill);
 
-			unset( $entry['Address'] );
+			unset( $entry['Address'], $entry['Skill'] );
+
 			$entry['Address'] = $address_ids;
+			$entry['Skill'] = $skill_ids;
 
-			return;
+			//return;
 
 			$this->User->create();
 
 			if ( $this->User->save($entry) )
 			{
-				$this->Session->setFlash( __('This account has been created.  Login with your username and password.') );
-				$this->redirect(array('action' => 'login'));
+				$this->Session->setFlash( __('This account has been created.  Login with your username and password.'), 'success' );
+				$this->redirect( $this->_Redirector(null, 'users', 'login') );
 
 			}
 			else
 			{
-				$this->Session->setFlash(__('The user could not be saved. Please, try again.'));
+				$this->Session->setFlash( __('The user could not be saved. Please, try again.'), 'danger');
 			}
 		}
+
+		$this->set( 'title_for_layout', __('Create An Account') );
+
 	}
 
 
@@ -243,18 +246,14 @@ class UsersController extends AppController {
 	 * @param string $id
 	 * @return void
 	 */
-	public function profile($id = null)
+	public function profile()
 	{
-		unset( $this->request->data['User']['password'] );
+		unset( $this->request->data['User']['password'], $this->request->data['User']['username'] );
 
-		$id = $this->Auth->user('user_id');
+		$user_id = $this->Auth->user('user_id');
 
-		if( $id == null )
-		{
-			throw new ForbiddenException( __('Please login before attempting to edit your profile.') );
-		}
 
-		if (!$this->User->exists($id))
+		if ( !$this->User->exists($user_id) )
 		{
 			throw new NotFoundException( __('Invalid user') );
 		} 
@@ -265,7 +264,7 @@ class UsersController extends AppController {
 			{
 				if( $this->request->data['User']['password_l'] != $this->request->data['User']['password_r'] )
 				{
-					$this->Session->setFlash( __('The passwords did not match.  They were not changed.') );
+					$this->Session->setFlash( __('The passwords did not match.  They were not changed.'), 'warning' );
 					unset(
 						$this->request->data['User']['password_l'], 
 						$this->request->data['User']['password_r'] ); // this will blank the fields
@@ -297,13 +296,12 @@ class UsersController extends AppController {
 			
 			if ( $this->User->save($this->request->data) )
 			{
-				$this->Session->setFlash( __('The user has been saved.') );
-				//debug($this->request->data);
-				$this->redirect( array('controller' => 'pages', 'action' => 'index', 'admin' => false, 'coordinator' => false, 'volunteer' => false) );
+				$this->Session->setFlash( __('Your profile has been updated.'), 'success' );
+				$this->redirect( $this->_Redirector(null, 'users', 'activity') );
 			}
 			else
 			{
-				$this->Session->setFlash( __('The user could not be saved. Please, try again.') );
+				$this->Session->setFlash( __('The user could not be saved. Please, try again.'), 'danger' );
 				
 			}
 
@@ -314,12 +312,13 @@ class UsersController extends AppController {
 				$relevant_skills = $this->User->Skill->find('list', array('conditions' => $conditions) );
 				$this->set( compact('relevant_skills') );
 			}
-		}
+		} // end if post|delete
 
 
-		$options = array('conditions' => array('User.user_id' => $id));
+		$options = array('conditions' => array('User.user_id' => $user_id));
 		$this->request->data = $this->User->find('first', $options);
-		$this->set(compact('addresses'));
+		$this->set( 'title_for_layout', __('Editing My Profile') );
+		$this->set( compact('addresses') ); // unneeded?
 	}
 
 	/**
@@ -333,82 +332,127 @@ class UsersController extends AppController {
 		$sql_date_fmt = 'Y-m-d H:i:s';
 		$contain = array('Event');
 
-		if( $period != null)
+		if( $period == null)
+			$period = "month";
+
+		$order = array(
+			'Event.stop_time DESC'
+		);
+		$conditions['Time.user_id'] = $this->Auth->user('user_id');
+
+		switch($period)
 		{
-			$order = array(
-				'Event.stop_time DESC'
-			);
-			$conditions['Time.user_id'] = $this->Auth->user('user_id');
+			case 'month':
+				$sub_title = "Past Month";
+				$conditions['Time.start_time >='] = date($sql_date_fmt, strtotime('1 month ago') );
+				break;
+			case 'year':
+				$sub_title = "Past Year";
+				$conditions['Time.start_time >='] = date($sql_date_fmt, strtotime('1 year ago') );
+				break;
+			case 'ytd':
+				$sub_title = "Year-To-Date";
+				$conditions['Time.start_time >='] = date($sql_date_fmt, mktime(0,0,0,1,1, date('Y') ) );
+				break;
+			case 'custom':
+				$sub_title = "Custom Report";
+				if( isset($this->request->query['start']) && isset($this->request->query['stop']) )
+				{
+					$start = $this->request->query['start'];
+					$stop = $this->request->query['stop'];
+					$date_start = mktime(0, 0, 0, $start['month'], $start['day'], $start['year']);
+					$date_stop = mktime(0, 0, 0, $stop['month'], $stop['day'], $stop['year']);
+					$conditions['Time.start_time >='] = date($sql_date_fmt, $date_start);
+					$conditions['Time.stop_time <='] = date($sql_date_fmt, $date_stop);
 
-			switch($period)
-			{
-				case 'month':
-					$conditions['Time.start_time >='] = date($sql_date_fmt, strtotime('1 month ago') );
-					break;
-				case 'year':
-					$conditions['Time.start_time >='] = date($sql_date_fmt, strtotime('1 year ago') );
-					break;
-				case 'ytd':
-					$conditions['Time.start_time >='] = date($sql_date_fmt, mktime(0,0,0,1,1, date('Y') ) );
-					break;
-				case 'custom':
-					break;
-			}
+					$sub_title = sprintf("%s - %s", date('F j, Y', $date_start), date('F j, Y', $date_stop) );
 
-			$this->Paginator->settings['limit'] = 10;
-			$this->Paginator->settings['conditions'] = $conditions;
-			$this->Paginator->settings['contain'] = 'Event';
+					$this->request->data['Custom']['start'] = $start;
+					$this->request->data['Custom']['stop'] = $stop;
 
-			$pag_time_data = $this->Paginator->paginate('Time');
-
-			$time_data = $this->User->Time->find('all', array('conditions' => $conditions, 'contain' => $contain, 'order' => $order) );
-			$this->set( compact('time_data', 'period', 'pag_time_data') );
-
+					
+				}
+				break;
 		}
 
+		$this->Paginator->settings['limit'] = 10;
+		$this->Paginator->settings['conditions'] = $conditions;
+		$this->Paginator->settings['contain'] = 'Event';
 
-			// summary all time
-			$conditions = array(
-				'Time.user_id' => $this->Auth->user('user_id')
-			);
-			$fields = array(
-				'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as UserAllTime'
-			);
-			$summary_all_time = $this->User->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
-			$this->set( compact('summary_all_time') );
+		$time_data = $this->Paginator->paginate('Time');
 
-			// summary month
-			$conditions = array(
-				'Time.user_id' => $this->Auth->user('user_id'),
-				'Time.start_time >=' => date($sql_date_fmt, strtotime('1 month ago') )
-			);
-			$fields = array(
-				'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as UserPastMonth'
-			);
-			$summary_past_month = $this->User->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
-			$this->set( compact('summary_past_month') );
+		$fields = array(
+			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) )/60 as PeriodTotal'
+		);
+		$period_total = $this->User->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
+		$this->set( compact('period', 'time_data', 'period_total') );
+	
 
-			// summary year
-			$conditions = array(
-				'Time.user_id' => $this->Auth->user('user_id'),
-				'Time.start_time >=' => date($sql_date_fmt, strtotime('1 year ago') )
-			);
-			$fields = array(
-				'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as UserPastYear'
-			);
-			$summary_past_year = $this->User->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
-			$this->set( compact('summary_past_year') );
+		// connected organizations
+		$contain = array('Permission.permission_id');
+		$publish_conditions = array(
+			'Organization.organization_id' => $this->_GetUserOrganizationsByPermission('publish')
+		);
 
-			// year-to-date
-			$conditions = array(
-				'Time.user_id' => $this->Auth->user('user_id'),
-				'Time.start_time >=' => date($sql_date_fmt, mktime(0,0,0,1,1, date('Y') ) )
-			);
-			$fields = array(
-				'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as UserYTD'
-			);
-			$summary_ytd = $this->User->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
-			$this->set( compact('summary_ytd') );
+		$publishing = $this->User->Permission->Organization->find('all', array('conditions' => $publish_conditions, 'contain' => array() ) );
+
+		$supervise_conditions = array(
+			'Organization.organization_id' => $this->_GetUserOrganizationsByPermission('read')
+		);
+		$supervising = $this->User->Permission->Organization->find('all', array('conditions' => $supervise_conditions, 'contain' => array() ) );
+
+		$coordinate_conditions = array(
+			'Organization.organization_id' => $this->_GetUserOrganizationsByPermission('write')
+		);
+		$coordinating = $this->User->Permission->Organization->find('all', array('conditions' => $coordinate_conditions, 'contain' => array() ) );
+		$this->set( compact('publishing', 'supervising', 'coordinating') );
+
+
+		// summary all time
+		$conditions = array(
+			'Time.user_id' => $this->Auth->user('user_id')
+		);
+		$fields = array(
+			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as UserAllTime'
+		);
+		$summary_all_time = $this->User->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
+		$this->set( compact('summary_all_time') );
+
+		// summary month
+		$conditions = array(
+			'Time.user_id' => $this->Auth->user('user_id'),
+			'Time.start_time >=' => date($sql_date_fmt, strtotime('1 month ago') )
+		);
+		$fields = array(
+			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as UserPastMonth'
+		);
+		$summary_past_month = $this->User->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
+		$this->set( compact('summary_past_month') );
+
+		// summary year
+		$conditions = array(
+			'Time.user_id' => $this->Auth->user('user_id'),
+			'Time.start_time >=' => date($sql_date_fmt, strtotime('1 year ago') )
+		);
+		$fields = array(
+			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as UserPastYear'
+		);
+		$summary_past_year = $this->User->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
+		$this->set( compact('summary_past_year') );
+
+		// year-to-date
+		$conditions = array(
+			'Time.user_id' => $this->Auth->user('user_id'),
+			'Time.start_time >=' => date($sql_date_fmt, mktime(0,0,0,1,1, date('Y') ) )
+		);
+		$fields = array(
+			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as UserYTD'
+		);
+		$summary_ytd = $this->User->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
+		$this->set( compact('summary_ytd') );
+
+		$title_for_layout = sprintf( "%s &ndash; %s", __('My Service Activity'), $sub_title);
+		$this->set( compact('title_for_layout') );
 
 
 
@@ -442,13 +486,13 @@ class UsersController extends AppController {
 			*/
 			if( $this->Auth->user('user_id') == $id )
 			{
-				$this->Session->setFlash(__('Your account was deleted and you have been logged out.'));
+				$this->Session->setFlash( __('Your account was deleted and you have been logged out.'), 'success' );
     			$this->redirect( $this->Auth->logout() );
     		}
 		}
 		else
 		{
-			$this->Session->setFlash(__('The user could not be deleted. Please, try again.'));
+			$this->Session->setFlash( __('The user could not be deleted. Please, try again.'), 'danger' );
 		}
 		return $this->redirect( array('action' => 'index') );
 	}

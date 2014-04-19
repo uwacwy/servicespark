@@ -22,8 +22,10 @@ $(document).ready(function(){
 	{
 
 		console.log('injecting form control to parent ' + parent.attr('id'))
-		if( typeof key == "undefined" )
+		console.log('key is ' + key);
+		if( key == null )
 		{
+			console.log('creating NEW skill');
 			$input = $('<input type="hidden" name="data[Skill][New][]" />').attr('value', val);
 		}
 		else
@@ -31,7 +33,7 @@ $(document).ready(function(){
 			$input = $('<input type="hidden" name="data[Skill][Skill][]" />').attr('value', key);
 		}
 
-		$cancel = $('<a href="#" class="autocomplete-cancel"> </a>').html('&times;').on('click', function(e){ $(this).parent().remove(); return false; });
+		$cancel = $('<a href="#" class="autocomplete-cancel"> </a>').html('&times;');
 		$wrapper = $('<span class="autocomplete-wrapper" />').text(val);
 		$input.appendTo($wrapper);
 		$cancel.prependTo($wrapper);
@@ -74,6 +76,12 @@ $(document).ready(function(){
 		var $target = $( $(this).attr('data-target') );
 
 		console.log($(this).attr('id') + " has been bound to a skills autocomplete and is appending new Skills to " + $(this).attr('data-target') );
+
+		$target.delegate('.autocomplete-cancel', 'click', function(e) {
+			e.preventDefault();
+			$( this ).parent().fadeOut('fast', function(){$(this).remove();})
+			return false;
+		});
 
 		$(this).bind( "keydown", function( event ){
 

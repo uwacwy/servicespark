@@ -40,7 +40,7 @@ class User extends AppModel
 	Associations
 */
 
-	public $hasOne = 'Recovery';
+	public $hasOne = array('Recovery');
 
 	public $hasAndBelongsToMany = array(
 		'Skill' => array(

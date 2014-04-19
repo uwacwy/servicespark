@@ -51,6 +51,8 @@
   color: #fff;
   padding: 5px;
   margin-right: 5px;
+  white-space: nowrap;
+  display: inline-block;
   border-radius: 5px; }
   .autocomplete-wrapper a {
     color: #fff;
