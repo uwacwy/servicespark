@@ -1,61 +1,101 @@
 <div class="events view">
+	<div style="text-align: right">
+		<?php echo $this->Html->link(__('Back to Events'), array('action' => 'index'), array('class' => 'btn btn-primary')); ?>
+	</div>
 <h2><?php echo __('Event'); ?></h2>
-	 
-<!-- 	<table class="table table-bordered table-striped">
-		<tr>
-		  <td><strong><?php echo __('Title'); ?></strong></td>
-		  <td><?php echo h($event['Event']['title']); ?></td>
-		</tr>
-		<tr>
-		  <td><strong><?php echo __('Organization'); ?></strong></td>
-		  <td><?php echo h($event['Organization']['name']); ?></td>
-		</tr>
-		<tr>
-		  <td><strong><?php echo __('Description'); ?></strong></td>
-		  <td><?php echo h($event['Event']['description']); ?></td>
-		</tr>
-		<tr>
-		  <td><strong><?php echo __('Start Time'); ?></strong></td>
-		  <td><?php $startTime = new DateTime($event['Event']['start_time']);
-			echo $startTime->format('F j, Y, g:i a'); ?></td>
-		</tr>
-		<tr>
-		  <td><strong><?php echo __('Stop Time'); ?></strong></td>
-		  <td><?php $stopTime = new DateTime($event['Event']['stop_time']);
-			echo $stopTime->format('F j, Y, g:i a'); ?></td>
-		</tr>
-	</table>  -->
-
+	<?php $startTime = new DateTime($event['Event']['start_time']);
+		$stopTime = new DateTime($event['Event']['stop_time']);
+		?>
 	<div class="row">
-	<div class="col-md-12">
-		<?php echo $this->Form->create('Event'); ?>
-		<div class="row">
-			<div class="col-md-12">
-				<div class="well">
-					<?php
-						echo $this->Form->input('title', array('class' => 'form-control', 'disabled' => 'disabled') );
-						echo $this->Form->input('description', array('type' => 'textarea', 'class' => 'form-control', 'disabled' => 'disabled') );
-						echo $this->Form->input('start_time', array('disabled' => 'disabled'));
-						echo $this->Form->input('stop_time', array('disabled' => 'disabled'));
-						echo $this->Form->input('Organization.name', array('class' => 'form-control', 'disabled' => 'disabled', 'label' => 'Organization') );
-					?>
-				</div>
-			</div>
-		</div>
-			<div class="row">
-				<div class="col-md-12">
-					<div class="well">
-						<?php echo $this->Address->printAddress($this->request->data['Address']); ?>
-					</div>
-				</div>
-			</div>
+		<div class="col-md-12">
+			<h1><small><?php echo $event['Organization']['name']; ?></small><br><?php echo h($event['Event']['title']); ?> <small><?php echo $startTime->format('F j, Y, g:i a'); ?> - <?php echo $stopTime->format('g:i a'); ?></small></h1>
+			<blockquote><?php echo h($event['Event']['description']); ?></blockquote>
 		</div>
 	</div>
-		
-</div>
-<div class="actions">
-	<h3><?php echo __('Actions'); ?></h3>
-	<ul>
-		<li><?php echo $this->Html->link(__('Return to Events List'), array('action' => 'index')); ?> </li>
-	</ul>
-</div>
+
+	<div class="row">		
+		<?php
+			if($event['Address'] != [])
+			{
+				echo "<h2>Event Addresses</h2>";
+
+				foreach( $event['Address'] as $address )
+				{
+					echo '<div class="col-md-12"><address>';
+					switch($address['type'])
+					{
+						case 'physical':
+							echo '<h4>Physical Address</h4>';
+							break;
+						case 'mailing':
+							echo '<h4>Mailing Address</h4>';
+							break;
+						case 'both':
+							echo '<h4>Physical and Mailing Address</h4>';
+							break;
+					}
+					echo $address['address1'] . ' <br>';
+					if($address['address2'] != null)
+					{ 
+						echo $address['address1'] . ' <br>';
+					}
+					echo $address['city'] . ', ' . $address['state'] . '  ' . $address['zip'];
+					echo '</address></div>';
+				}
+				echo "<br>";
+			}
+
+		?>
+	</div>
+
+
+	<div class="row">
+		<div class="col-md-12">
+
+			<h3>Volunteer Report</h3>
+			<table cellpadding="0" cellspacing="0" class="table table-striped">
+			<tr>
+					<th><?php echo $this->Paginator->sort('User.first_name', "First Name"); ?></th>
+					<th><?php echo $this->Paginator->sort('User.last_name', "Last Name"); ?></th>
+					<th><?php echo $this->Paginator->sort('Time.start_time', "Clock In"); ?></th>
+					<th><?php echo $this->Paginator->sort('Time.stop_time', "Clock Out"); ?></th>
+					<th>Total Time</th>
+			</tr>
+			<?php
+				$grand_total_time = 0;
+				foreach($times as $time)
+				{
+					echo "<tr>";
+					echo "<td>" . $time['User']['first_name'] . "</td>";
+					echo "<td>" . $time['User']['last_name'] . "</td>";
+					$clock_in = new DateTime($time['Time']['start_time']);
+					echo "<td>" . $clock_in->format('F j, Y, g:i a') . "</td>";
+					if($time['Time']['stop_time'] != null)
+					{
+						$clock_out = new DateTime($time['Time']['stop_time']);
+						echo "<td>" . $clock_out->format('F j, Y, g:i a') . "</td>";
+					}else{
+						echo "<td><em>missed punch</em></td>";
+					}
+
+					$total_time = $time[0]['OrganizationAllTime'];
+					$hours = floor($total_time);
+					$minutes = round(60*($total_time-$hours));
+					echo "<td>" . $hours . ' Hour(s) ' . $minutes . " Minute(s)</td>";
+					$grand_total_time += $total_time;
+					echo "</tr>";
+				}
+				echo "</table>";
+				$hours = floor($grand_total_time);
+				$minutes = round(60*($grand_total_time-$hours));
+				echo '<h5 align="right">Total Event Time: ' . $hours . ' Hour(s) ' . $minutes . ' Minute(s)</h5>';
+			?>
+			<ul class="pagination bottom">
+				<?php
+					echo $this->Paginator->prev(__('prev'), array('tag' => 'li'), null, array('tag' => 'li','class' => 'disabled','disabledTag' => 'a'));
+					echo $this->Paginator->numbers(array('separator' => '','currentTag' => 'a', 'currentClass' => 'active','tag' => 'li','first' => 1));
+					echo $this->Paginator->next(__('next'), array('tag' => 'li','currentClass' => 'disabled'), null, array('tag' => 'li','class' => 'disabled','disabledTag' => 'a'));
+				?>
+			</ul>
+		</div>
+	</div>
