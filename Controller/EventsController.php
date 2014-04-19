@@ -38,9 +38,9 @@ class EventsController extends AppController {
 		}
 		$this->request->onlyAllow('post', 'delete');
 		if ($this->Event->delete()) {
-			$this->Session->setFlash(__('The event has been deleted.'));
+			$this->Session->setFlash(__('The event has been deleted.', 'success'));
 		} else {
-			$this->Session->setFlash(__('The event could not be deleted. Please, try again.'));
+			$this->Session->setFlash(__('The event could not be deleted. Please, try again.', 'danger'));
 		}
 		return $this->redirect(array('action' => 'index'));
 	}
@@ -106,13 +106,13 @@ class EventsController extends AppController {
 				$this->Event->create();
 				if ($this->Event->saveAll($this->request->data)) 
 				{
-					$this->Session->setFlash(__('The event has been saved.'));
+					$this->Session->setFlash(__('The event has been saved.', 'success'));
 					//debug($this->request->data);
 					//return $this->redirect(array('action' => 'index'));
 				} 
 				else 
 				{
-					$this->Session->setFlash(__('The event could not be saved. Please, try again.'));
+					$this->Session->setFlash(__('The event could not be saved. Please, try again.', 'danger'));
 				}
 			}
 			
@@ -157,10 +157,10 @@ class EventsController extends AppController {
 				}
 
 				if ($this->Event->save($this->request->data)) {
-					$this->Session->setFlash(__('The event has been saved.'));
+					$this->Session->setFlash(__('The event has been saved.', 'success'));
 					return $this->redirect(array('action' => 'index'));
 				} else {
-					$this->Session->setFlash(__('The event could not be saved. Please, try again.'));
+					$this->Session->setFlash(__('The event could not be saved. Please, try again.', 'danger'));
 				}
 			} else {
 				$options = array('conditions' => array('Event.' . $this->Event->primaryKey => $id));
@@ -188,28 +188,59 @@ class EventsController extends AppController {
 
 	public function admin_index($id = null)
 	{
-		if( AuthComponent::user('super_admin')  )
-		{
-			$this->index($id);
-		}
-		else
+		if( !AuthComponent::user('super_admin')  )
 		{
 			return $this->redirect(array('coordinator' => true,
 				'controller' => 'events', 'action' => 'index'));
 		}
+
+		$this->Paginator->settings['limit'] = 15;
+
+		$events = $this->Paginator->paginate();
+
+		//$events = $this->Event->find('all', array('conditions' => $conditions) ) ;
+		$this->set( compact('events') );
+
+
 	}
 
 	public function admin_view($id = null)
 	{
-		if( AuthComponent::user('super_admin')  )
-		{
-			$this->view($id);
-		}
-		else
+		if( !AuthComponent::user('super_admin')  )
 		{
 			return $this->redirect(array('coordinator' => true,
 				'controller' => 'events', 'action' => 'view', $id));
 		}
+
+		$event = $this->Event->find('first', array('conditions' => array('Event.event_id' => $id) ) );
+
+		$conditions = array(
+			'Time.event_id' => $id
+		);
+		$fields = array(
+			'Time.*',
+			'User.*',
+			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) )/60 as OrganizationAllTime',
+			'COUNT( Time.time_id ) as TimeEntryCount'
+		);
+		$group = array(
+			'Time.user_id'
+		);
+
+		// juxtapose this with the actual Time->find('all', $options) syntax
+		$this->Paginator->settings = array(
+			'conditions' => $conditions,
+			'fields' => $fields,
+			'group' => $group,
+			'limit' => 15
+		);
+		$times = $this->Paginator->paginate('Time');
+
+		// versus
+
+//		$times = $this->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
+		
+		$this->set( compact('times', 'event') );
 	}
 
 
@@ -285,13 +316,13 @@ class EventsController extends AppController {
 				$this->Event->create();
 				if ($this->Event->saveAll($this->request->data)) 
 				{
-					$this->Session->setFlash(__('The event has been saved.'));
+					$this->Session->setFlash(__('The event has been saved.', 'success'));
 					//debug($this->request->data);
 					return $this->redirect(array('controller' => 'events', 'action' => 'view', $this->Event->id, 'coordinator' => true));
 				} 
 				else 
 				{
-					$this->Session->setFlash(__('The event could not be saved. Please, try again.'));
+					$this->Session->setFlash(__('The event could not be saved. Please, try again.', 'danger'));
 				}
 			}
 			
@@ -338,10 +369,10 @@ class EventsController extends AppController {
 				$this->request->data['Address'] = $address_ids;
 
 				if ($this->Event->save($this->request->data)) {
-					$this->Session->setFlash(__('The event has been saved.'));
+					$this->Session->setFlash(__('The event has been saved.', 'success'));
 					return $this->redirect(array('action' => 'index'));
 				} else {
-					$this->Session->setFlash(__('The event could not be saved. Please, try again.'));
+					$this->Session->setFlash(__('The event could not be saved. Please, try again.', 'danger'));
 				}
 			} else {
 				$options = array('conditions' => array('Event.' . $this->Event->primaryKey => $id));
@@ -394,17 +425,50 @@ class EventsController extends AppController {
 
 	public function coordinator_view($id = null)
 	{
-		$events = $this->Event->findByEventId($id);
-		if( $this->_CurrentUserCanWrite($events['Event']['organization_id']) )
-		{
-			$this->view($id);
-		}
-		else
+		$user_organizations = $this->_GetUserOrganizationsByPermission('write');
+
+		if( !$this->_CurrentUserCanRead($user_organizations) )
 		{
 			$this->Session->setFlash('You do not have permission.', 'danger');
 			return $this->redirect(array('supervisor' => true,
 				'controller' => 'events', 'action' => 'view', $id));
 		}
+
+		$sql_date_fmt = 'Y-m-d H:i:s';
+		$contain = array('Event');
+
+		// summary all time
+		//$users = $this->_GetUsersByOrganization($id);
+
+		$event = $this->Event->find('first', array('conditions' => array('Event.event_id' => $id) ) );
+
+		$conditions = array(
+			'Time.event_id' => $id
+		);
+		$fields = array(
+			'Time.*',
+			'User.*',
+			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) )/60 as OrganizationAllTime',
+			'COUNT( Time.time_id ) as TimeEntryCount'
+		);
+		$group = array(
+			'Time.user_id'
+		);
+
+		// juxtapose this with the actual Time->find('all', $options) syntax
+		$this->Paginator->settings = array(
+			'conditions' => $conditions,
+			'fields' => $fields,
+			'group' => $group,
+			'limit' => 15
+		);
+		$times = $this->Paginator->paginate('Time');
+
+		// versus
+
+//		$times = $this->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
+		
+		$this->set( compact('times', 'event') );
 	}
 
 	/**
@@ -447,17 +511,14 @@ class EventsController extends AppController {
 
 	public function supervisor_view($id = null)
 	{
-		// $events = $this->Event->findByEventId($id);
-		// if( $this->_CurrentUserCanRead($events['Event']['organization_id']) )
-		// {
-		// 	$this->view($id);
-		// }
-		// else
-		// {
-		// 	$this->Session->setFlash('You do not have permission.', 'danger');
-		// 	return $this->redirect(array('volunteer' => true,
-		// 		'controller' => 'events', 'action' => 'view', $id));
-		// }
+		$user_organizations = $this->_GetUserOrganizationsByPermission('read');
+
+		if( !$this->_CurrentUserCanRead($user_organizations) )
+		{
+			$this->Session->setFlash('You do not have permission.', 'danger');
+			return $this->redirect(array('volunteer' => true,
+				'controller' => 'events', 'action' => 'view', $id));
+		}
 
 		$sql_date_fmt = 'Y-m-d H:i:s';
 		$contain = array('Event');
@@ -484,7 +545,8 @@ class EventsController extends AppController {
 		$this->Paginator->settings = array(
 			'conditions' => $conditions,
 			'fields' => $fields,
-			'group' => $group
+			'group' => $group,
+			'limit' => 15
 		);
 		$times = $this->Paginator->paginate('Time');
 
@@ -515,11 +577,7 @@ class EventsController extends AppController {
 	{
 		$user_organizations = $this->_GetUserOrganizationsByPermission('publish');
 
-		if( $this->_CurrentUserCanPublish($user_organizations) )
-		{
-			$this->index($id);
-		}
-		else
+		if( !$this->_CurrentUserCanPublish($user_organizations) )
 		{
 			$this->Session->setFlash('You do not have permission.', 'danger');
 			return $this->redirect("../../events");
@@ -529,11 +587,7 @@ class EventsController extends AppController {
 	public function volunteer_view($id = null)
 	{
 		$events = $this->Event->findByEventId($id);
-		if( $this->_CurrentUserCanPublish($events['Event']['organization_id']) )
-		{
-			$this->view($id);
-		}
-		else
+		if( !$this->_CurrentUserCanPublish($events['Event']['organization_id']) )
 		{
 			$this->Session->setFlash('You do not have permission.','danger');
 			return $this->redirect(array('volunteer' => true,

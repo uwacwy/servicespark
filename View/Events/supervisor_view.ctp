@@ -1,5 +1,3 @@
-<?php debug($pag_times); ?>
-
 <div class="events view">
 	<div style="text-align: right">
 		<?php echo $this->Html->link(__('Back to Events'), array('action' => 'index'), array('class' => 'btn btn-primary')); ?>
@@ -36,13 +34,12 @@
 							echo '<h4>Physical and Mailing Address</h4>';
 							break;
 					}
-					echo sprintf('%s<br>%s<br>%s, %s %s',
-						$address['address1'],
-						$address['address2'],
-						$address['city'],
-						$address['state'],
-						$address['zip']
-					);
+					echo $address['address1'] . ' <br>';
+					if($address['address2'] != null)
+					{ 
+						echo $address['address1'] . ' <br>';
+					}
+					echo $address['city'] . ', ' . $address['state'] . '  ' . $address['zip'];
 					echo '</address></div>';
 				}
 				echo "<br>";
@@ -51,15 +48,17 @@
 		?>
 	</div>
 
+
 	<div class="row">
 		<div class="col-md-12">
+
 			<h3>Volunteer Report</h3>
 			<table cellpadding="0" cellspacing="0" class="table table-striped">
 			<tr>
 					<th><?php echo $this->Paginator->sort('User.first_name', "First Name"); ?></th>
-					<th>Last Name</th>
-					<th>Clocked In</th>
-					<th>Clocked Out</th>
+					<th><?php echo $this->Paginator->sort('User.last_name', "Last Name"); ?></th>
+					<th><?php echo $this->Paginator->sort('Time.start_time', "Clock In"); ?></th>
+					<th><?php echo $this->Paginator->sort('Time.stop_time', "Clock Out"); ?></th>
 					<th>Total Time</th>
 			</tr>
 			<?php
@@ -71,8 +70,13 @@
 					echo "<td>" . $time['User']['last_name'] . "</td>";
 					$clock_in = new DateTime($time['Time']['start_time']);
 					echo "<td>" . $clock_in->format('F j, Y, g:i a') . "</td>";
-					$clock_out = new DateTime($time['Time']['stop_time']);
-					echo "<td>" . $clock_out->format('F j, Y, g:i a') . "</td>";
+					if($time['Time']['stop_time'] != null)
+					{
+						$clock_out = new DateTime($time['Time']['stop_time']);
+						echo "<td>" . $clock_out->format('F j, Y, g:i a') . "</td>";
+					}else{
+						echo "<td><em>missed punch</em></td>";
+					}
 
 					$total_time = $time[0]['OrganizationAllTime'];
 					$hours = floor($total_time);
@@ -86,5 +90,12 @@
 				$minutes = round(60*($grand_total_time-$hours));
 				echo '<h5 align="right">Total Event Time: ' . $hours . ' Hour(s) ' . $minutes . ' Minute(s)</h5>';
 			?>
+			<ul class="pagination bottom">
+				<?php
+					echo $this->Paginator->prev(__('prev'), array('tag' => 'li'), null, array('tag' => 'li','class' => 'disabled','disabledTag' => 'a'));
+					echo $this->Paginator->numbers(array('separator' => '','currentTag' => 'a', 'currentClass' => 'active','tag' => 'li','first' => 1));
+					echo $this->Paginator->next(__('next'), array('tag' => 'li','currentClass' => 'disabled'), null, array('tag' => 'li','class' => 'disabled','disabledTag' => 'a'));
+				?>
+			</ul>
 		</div>
 	</div>

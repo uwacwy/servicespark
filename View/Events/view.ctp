@@ -14,33 +14,37 @@
 	</div>
 	<hr>
 	
-	<hr>
-	<div class="row">
-		<h2>Event Addresses</h2>
+<div class="row">		
 		<?php
-			foreach( $event['Address'] as $address )
+			if($event['Address'] != [])
 			{
-				echo '<div class="col-md-12"><address>';
-				switch($address['type'])
+				echo "<h2>Event Addresses</h2>";
+
+				foreach( $event['Address'] as $address )
 				{
-					case 'physical':
-						echo '<h4>Physical Address</h4>';
-						break;
-					case 'mailing':
-						echo '<h4>Mailing Address</h4>';
-						break;
-					case 'both':
-						echo '<h4>Physical and Mailing Address</h4>';
-						break;
+					echo '<div class="col-md-12"><address>';
+					switch($address['type'])
+					{
+						case 'physical':
+							echo '<h4>Physical Address</h4>';
+							break;
+						case 'mailing':
+							echo '<h4>Mailing Address</h4>';
+							break;
+						case 'both':
+							echo '<h4>Physical and Mailing Address</h4>';
+							break;
+					}
+					echo $address['address1'] . ' <br>';
+					if($address['address2'] != null)
+					{ 
+						echo $address['address1'] . ' <br>';
+					}
+					echo $address['city'] . ', ' . $address['state'] . '  ' . $address['zip'];
+					echo '</address></div>';
 				}
-				echo sprintf('%s<br>%s<br>%s, %s %s',
-					$address['address1'],
-					$address['address2'],
-					$address['city'],
-					$address['state'],
-					$address['zip']
-				);
-				echo '</address></div>';
+				echo "<br>";
 			}
+
 		?>
 	</div>
