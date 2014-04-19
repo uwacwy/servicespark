@@ -99,6 +99,8 @@ class AppController extends Controller {
 			case 'write':
 				$conditions['Permission.write'] = true;
 				break;
+			case 'all':
+				break;
 		}
 		
 		App::uses('Permission', 'Model');
