@@ -67,7 +67,7 @@ class TimesController extends AppController
 
 		if($existing > 0)
 		{
-			$this->Session->setFlash('You have already clocked into this event.  Your event coordinator can adjust time punches for you.');
+			$this->Session->setFlash( __('You have already clocked into this event.  Your event coordinator can adjust time punches for you.'), 'warning');
 			return $this->redirect( array('controller' => 'events', 'action' => 'view', $event['Event']['event_id']) );
 		}
 
@@ -85,7 +85,7 @@ class TimesController extends AppController
 
 				if( $this->Time->save($entry) )
 				{
-					$this->Session->setFlash('You have been clocked in');
+					$this->Session->setFlash( __('You have been clocked in'), 'success');
 					return $this->redirect( array('controller' => 'events', 'action' => 'view', $event['Event']['event_id']) );
 				}
 			}
@@ -112,7 +112,6 @@ class TimesController extends AppController
 			'Time'
 		);
 
-		// find the event_id using Cake's magic methods
 		$event = $this->Time->Event->find('first', array('conditions' => $conditions, 'contain' => $contain));
 
 		if( empty($event) )
@@ -134,7 +133,9 @@ class TimesController extends AppController
 
 		if( $existing['Time']['stop_time'] != null )
 		{
-			throw new NotFoundException('You are unable to clock out using this token.  Contact your event coordinator for more assistance.');
+			//throw new NotFoundException('You are unable to clock out using this token.  Contact your event coordinator for more assistance.');
+			
+			$this->Session->setFlash( __('You are unable to clock out using this token.  Contact your event coordinator for more assistance.'), 'warning' );
 			return $this->redirect( array('controller' => 'events', 'action' => 'index') );
 		}
 
@@ -142,7 +143,9 @@ class TimesController extends AppController
 		{
 			$this->Time->id = $existing['Time']['time_id'];
 			$this->Time->saveField('stop_time', date('Y-m-d H:i:s') );
-			$this->redirect( array('controller' => 'events', 'action'));
+
+			$this->Session->setFlash( __('You have been clocked out of this event'), 'success');
+			$this->redirect( $this->_Redirector('volunteer', 'events', 'view', $event['Event']['event_id']) );
 		}
 
 		$this->set( compact('event') );
@@ -162,7 +165,8 @@ class TimesController extends AppController
 		if( !$this->_CurrentUserCanWrite($time['Event']['organization_id']) )
 		{
 
-			throw new ForbiddenException('You do not have permission to edit this organization\'s time entries');
+			$this->Session->setFlash( __('You do not have permission to edit this organization\'s time entries'), 'warning');
+			return $this->redirect( $this->_Redirector('go', 'organizations', 'view', $time['Event']['organization_id']) );
 		}
 
 		// This block will execute when data is posted in the request
@@ -177,12 +181,12 @@ class TimesController extends AppController
 
 			$save['Time'] = $this->request->data['Time'];
 
-			debug($save);
+			//debug($save);
 
 			if( $this->Time->save($save) )
 			{
 				$this->Session->setFlash( sprintf(__('Time entry %1$u was successfully updated.'), $this->Time->id), 'success');
-				return $this->redirect( array('coordinator' => true, 'controller' => 'event', 'action' => 'view', $time['Event']['event_id']) );
+				return $this->redirect( $this->_Redirector('coordinator', 'event', 'view', $time['Event']['event_id']) );
 			}
 		}
 
@@ -202,13 +206,10 @@ class TimesController extends AppController
 		$time = $this->Time->findAllByTimeId($time_id);
 
 		// verify that the current user can read/write this organization's time entries
-		if( $this->_CurrentUserCanWrite($time['Time']['organization_id']) )
+		if( !$this->_CurrentUserCanWrite($time['Time']['organization_id']) )
 		{
-
-		}
-		else
-		{
-			throw new ForbiddenException('You are not allowed to edit this organization\'s time entries');
+			$this->Session->setFlash( __("You are not allowed to edit this organization's time entries"), 'danger');
+			return $this->redirect( $this->_Redirector('go', 'organizations', 'view', $time['Time']['organization_id']) );
 		}
 
 		// post block
@@ -218,13 +219,10 @@ class TimesController extends AppController
 		{
 			if( $this->Time->delete($time_id) )
 			{
-				return $this->rediirect( array('coordinator' => true, 'controller' => 'event', 'action' => 'view', $time['Event']['event_id']) );
+				$this->Session->setFlash( sprintf(__("Time entry %u has been deleted."), $time_id), 'success');
+				return $this->rediirect( array('coordinator' => true, 'controller' => 'times', 'action' => 'view', $time['Event']['event_id']) );
 			}
 		}
-
-		// set data for view
-
-		throw new NotImplementedException('this method exists but has not been implemented');
 	}
 	
 	public function coordinator_adjust( $event_id )
@@ -237,13 +235,10 @@ class TimesController extends AppController
 		$event = $this->Time->Event->find( 'first', array('conditions' => $conditions, 'contain' => $contain) );
 
 		// verify that the current user can read/write this organization's time entries
-		if( $this->_CurrentUserCanWrite($event['Organization']['organization_id']) )
+		if( !$this->_CurrentUserCanWrite($event['Organization']['organization_id']) )
 		{
-
-		}
-		else
-		{
-			throw new ForbiddenException('You are not allowed to edit this organization\'s time entries');
+			$this->Session->setFlash( __("You are not allowed to edit this organization's time entries"), 'danger');
+			return $this->redirect( $this->_Redirector('go', 'organizations', 'view', $time['Time']['organization_id']) );
 		}
 
 

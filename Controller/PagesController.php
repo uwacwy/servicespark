@@ -70,6 +70,55 @@ class PagesController extends AppController {
 		if (!empty($path[$count - 1])) {
 			$title_for_layout = Inflector::humanize($path[$count - 1]);
 		}
+
+		if($title_for_layout == "Home")
+		{
+			// gather appropriate statistics!
+			App::uses('Time', 'Model');
+			App::uses('User', 'Model');
+			App::uses('Event', 'Model');
+
+			$user = new User();
+			$user->unbindModel( array('hasOne' => array('Recovery') ), false );
+
+			$time = new Time();
+			$time->unbindModel( array('belongsTo' => array('User', 'Event') ), false );
+
+			$event = new Event( );
+			$event->unbindModel(array('hasAndBelongsToMany' => array('Address', 'Skill'), 'hasMany' => array('Time'), 'belongsTo' => array('Organization') ), false);
+
+			// TODO: unbind models so these counts are faster
+
+			$conditions = array('Time.stop_time IS NULL');
+			$currently_volunteering = $time->find('count', array('conditions' => $conditions) );
+
+			$registered_volunteers = $user->find('count');
+
+			$sql_date_time = "Y-m-d H:i:s";
+
+			$conditions = array(
+				'Time.start_time >=' => date( $sql_date_time, mktime(0, 0, 0, 1, 1) ),
+				'Time.stop_time <' => date( $sql_date_time, mktime(0, 0, 0, 1, 1, date('Y')+1 ) )
+			);
+			$fields = array(
+				'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) )/60 as PeriodTotal'
+			);
+			$users_ytd = $time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
+
+			// $conditions = array(
+			// 	'Time.start_time >=' => date( $sql_date_time, mktime(0, 0, 0, date('n'), 1) ),
+			// 	'Time.stop_time <=' => date( $sql_date_time, mktime(23, 59, 59, date('n')+1, 0) )
+			// );
+			// $users_month = $time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
+
+			$conditions = array(
+				'Event.stop_time > Now()'
+			);
+			$upcoming_events = $event->find('count', array('conditions' => $conditions) );
+
+			$this->set( compact('currently_volunteering', 'registered_volunteers', 'users_ytd', 'upcoming_events') );
+		}
+
 		$this->set(compact('page', 'subpage', 'title_for_layout'));
 
 		try {

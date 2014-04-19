@@ -48,26 +48,26 @@
 <div class="row text-center">
 	<div class="col-md-3">
 		<div class="well text-center">
-			<span class="stat">5</span>
+			<span class="stat"><?php echo h( number_format($currently_volunteering, 0, ".", ",") ); ?></span>
 			currently volunteering
 		</div>
 	</div>
 	<div class="col-md-3">
 		<div class="well text-center">
-			<span class="stat">142</span>
+			<span class="stat"><?php echo h( number_format($registered_volunteers, 0, ".", ",") ); ?></span>
 			registered volunteers
 		</div>
 	</div>
 	<div class="col-md-3">
 		<div class="well text-center">
-			<span class="stat">7,258</span>
+			<span class="stat"><?php echo h( number_format($users_ytd[0][0]['PeriodTotal'], 0, ".", ",") ); ?></span>
 			hours volunteered this year
 		</div>
 	</div>
 	<div class="col-md-3">
 		<div class="well text-center">
-			<span class="stat">70</span>
-			hours volunteered this month
+			<span class="stat"><?php echo h( number_format($upcoming_events, 0, ".", ",") ); ?></span>
+			ongoing and upcoming events
 		</div>
 	</div>
 </div>
