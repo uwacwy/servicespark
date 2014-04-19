@@ -54,7 +54,8 @@ class TimesController extends AppController
 
 		if( empty($event) )
 		{
-			throw new NotFoundException('Invalid token provided.  Contact your event coordinator for more assistance.');
+			$this->Session->setFlash( __('Invalid token was provided.  Contact your event coordinator for more assistance.'), 'danger');
+			return $this->redirect( $this->_Redirector('volunteer', 'times', 'index') );
 		}
 
 		$existing = $this->Time->find('count', array('conditions' =>
@@ -68,7 +69,7 @@ class TimesController extends AppController
 		if($existing > 0)
 		{
 			$this->Session->setFlash( __('You have already clocked into this event.  Your event coordinator can adjust time punches for you.'), 'warning');
-			return $this->redirect( array('controller' => 'events', 'action' => 'view', $event['Event']['event_id']) );
+			return $this->redirect( $this->_Redirector('go', 'events', 'view', $event['Event']['event_id']) );
 		}
 
 		
@@ -116,7 +117,8 @@ class TimesController extends AppController
 
 		if( empty($event) )
 		{
-			throw new NotImplementedException('Invalid token was provided.  Contact your event coordinator for more assistance.');
+			$this->Session->setFlash( __('Invalid token was provided.  Contact your event coordinator for more assistance.'), 'danger');
+			return $this->redirect( $this->_Redirector('volunteer', 'times', 'index') );
 		}
 
 		$existing = $this->Time->find('first',
@@ -155,11 +157,14 @@ class TimesController extends AppController
 	{
 		if( !$this->Time->exists($time_id) )
 		{
-			throw new NotFoundException('Invalid time entry specified');
+			$this->Session->setFlash( __('An invalid time entry was specified.'), 'warning');
+			return $this->redirect( $this->_Redirector('coordinator', 'events', 'index') );
 		}
 
 		// fetch time id
-		$time = $this->Time->findByTimeId($time_id);
+		$conditions = array('Time.time_id' => $time_id);
+		$contain = array( 'Event' => array('Organization'), 'User');
+		$time = $this->Time->find('first', array('conditions' => $conditions, 'contain' => $contain) );
 
 		// verify that the current user can read/write this organization's time entries
 		if( !$this->_CurrentUserCanWrite($time['Event']['organization_id']) )
@@ -168,6 +173,8 @@ class TimesController extends AppController
 			$this->Session->setFlash( __('You do not have permission to edit this organization\'s time entries'), 'warning');
 			return $this->redirect( $this->_Redirector('go', 'organizations', 'view', $time['Event']['organization_id']) );
 		}
+
+		$title_for_layout = sprintf( __('Editing Time Entry %2$u &ndash; %1$s'), $time['Event']['title'], $time['Time']['time_id']);
 
 		// This block will execute when data is posted in the request
 		if( $this->request->is( array('post', 'put') ) )
@@ -191,7 +198,7 @@ class TimesController extends AppController
 		}
 
 		$this->request->data = $time;
-		$this->set( compact('time') );
+		$this->set( compact('time', 'title_for_layout') );
 		
 	}
 	
@@ -199,7 +206,8 @@ class TimesController extends AppController
 	{
 		if( !$this->Time->exists($time_id) )
 		{
-			throw new NotFoundException('Invalid time entry specified');
+			$this->Session->setFlash( __('An invalid time entry was specified.'), 'warning');
+			return $this->redirect( $this->_Redirector('coordinator', 'events', 'index') );
 		}
 
 		// fetch time id
@@ -212,6 +220,7 @@ class TimesController extends AppController
 			return $this->redirect( $this->_Redirector('go', 'organizations', 'view', $time['Time']['organization_id']) );
 		}
 
+		$title_for_layout = sprintf( __('Deleting Time Entry %u'), $time_id);
 		// post block
 			// check a confirm variable
 			// redirect to coordinator/event/edit/:event_id
@@ -223,6 +232,8 @@ class TimesController extends AppController
 				return $this->rediirect( array('coordinator' => true, 'controller' => 'times', 'action' => 'view', $time['Event']['event_id']) );
 			}
 		}
+
+		$this->set( compact('title_for_layout') );
 	}
 	
 	public function coordinator_adjust( $event_id )
@@ -241,6 +252,8 @@ class TimesController extends AppController
 			return $this->redirect( $this->_Redirector('go', 'organizations', 'view', $time['Time']['organization_id']) );
 		}
 
+		$title_for_layout = sprintf( __('Adjusting Time Entries for %s'), $event['Event']['title']);
+
 
 		if($this->request->is('post') )
 		{
@@ -249,7 +262,8 @@ class TimesController extends AppController
 			);
 
 			$where = array(
-				'Event.event_id' => $event_id
+				'Event.event_id' => $event_id,
+				'Time.stop_time IS NULL'
 			);
 
 			if( $this->Time->updateAll( $new, $where ) )
@@ -266,9 +280,35 @@ class TimesController extends AppController
 		$this->Paginator->settings['contain'] = array('User');
 		$times = $this->Paginator->paginate();
 
-		$this->set( compact('event', 'times') );
+		$this->set( compact('event', 'times', 'title_for_layout') );
 
 		//throw new NotImplementedException('this method exists but has not been implemented');
+	}
+
+	public function supervisor_view( $event_id )
+	{
+		$conditions = array(
+			'Event.event_id' => $event_id
+		);
+
+		$contain = array('Organization');
+		$event = $this->Time->Event->find( 'first', array('conditions' => $conditions, 'contain' => $contain) );
+
+		// verify that the current user can read/write this organization's time entries
+		if( !$this->_CurrentUserCanRead($event['Organization']['organization_id']) )
+		{
+			$this->Session->setFlash( __("You are not allowed to view this organization's time entries"), 'danger');
+			return $this->redirect( $this->_Redirector('go', 'organizations', 'view', $time['Time']['organization_id']) );
+		}
+
+		$title_for_layout = sprintf( __('Viewing Time Entries for %s'), $event['Event']['title']);
+
+
+		$this->Paginator->settings['conditions'] = array('Time.event_id' => $event_id);
+		$this->Paginator->settings['contain'] = array('User');
+		$times = $this->Paginator->paginate();
+
+		$this->set( compact('event', 'times', 'title_for_layout') );
 	}
 
 

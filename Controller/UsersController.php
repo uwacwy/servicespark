@@ -76,8 +76,15 @@ class UsersController extends AppController {
 	    	}
 	    	$this->Session->setFlash(__('Invalid username or password, try again'), 'danger');
 		}
+		$title_for_layout = sprintf( __('Login to %s'), Configure::read('Solution.name') );
+		$this->set( compact('title_for_layout') );
 	}
 
+/**
+ * logout
+ * does not have a view.
+ * does not need a title_for_layout
+ */
 	public function logout()
 	{
 		$this->Session->delete('can_coordinate');
@@ -88,6 +95,10 @@ class UsersController extends AppController {
 /**
 	index methods
 */
+	public function go_index()
+	{
+
+	}
 
 	public function admin_index()
 	{
@@ -131,39 +142,46 @@ class UsersController extends AppController {
 	/**
 	 * view method
 	 *
+	 * TEMPORARILY DISABLED!
+	 *
 	 * @throws NotFoundException
 	 * @param string $username
 	 * @return void
 	 */
-	public function view($username)
-	{
-		/*
-			cake's magic methods let us use cool methods to find stuff
-		*/
-		$user_id = $this->User->findByUsername($username);
+	// public function view($username)
+	// {
+	// 	/*
+	// 		cake's magic methods let us use cool methods to find stuff
+	// 	*/
+	// 	$user_id = $this->User->findByUsername($username);
 
-		debug($user_id);
+	// 	debug($user_id);
 
-		$options = array(
-			'conditions' => array('User.username'  => $username),
-			'contain' => array(
-				'Recovery', 
-				'Permission' => array('Organization'), // without this containable behavior, cake would have sent the related User back again
-				'Skill',
-				'Address',
-				'Time' => array('Event')
-			)
-		);
+	// 	$options = array(
+	// 		'conditions' => array('User.username'  => $username),
+	// 		'contain' => array(
+	// 			'Recovery', 
+	// 			'Permission' => array('Organization'), // without this containable behavior, cake would have sent the related User back again
+	// 			'Skill',
+	// 			'Address',
+	// 			'Time' => array('Event')
+	// 		)
+	// 	);
 
-		$user = $this->User->find('first', $options);
+	// 	$user = $this->User->find('first', $options);
 
-		$this->set( compact('user') );
-	}
+	// 	$this->set( compact('user') );
+	// }
 
 
 /**
 	register methods
 */
+
+	public function go_register()
+	{
+		$this->redirect( array('go' => false, 'action' => 'register') );
+	}
 
 
 	/**
@@ -237,6 +255,17 @@ class UsersController extends AppController {
 		$this->set( 'title_for_layout', __('Create An Account') );
 
 	}
+
+
+	public function go_profile()
+	{
+		return $this->redirect( array('go' => false, 'action' => 'profile') );
+	}
+
+	public function coordinator_profile() { return $this->go_profile(); }
+	public function supervisor_profile() { return $this->go_profile(); }
+	public function volunteer_profile() { return $this->go_profile(); }
+	public function admin_profile() { return $this->go_profile(); }
 
 
 	/**
@@ -320,6 +349,17 @@ class UsersController extends AppController {
 		$this->set( 'title_for_layout', __('Editing My Profile') );
 		$this->set( compact('addresses') ); // unneeded?
 	}
+
+	public function go_activity()
+	{
+		return $this->redirect( array('go' => false, 'action' => 'activity') );
+	}
+
+	public function coordinator_activity() { return $this->go_activity(); }
+	public function supervisor_activity() { return $this->go_activity(); }
+	public function volunteer_activity() { return $this->go_activity(); }
+	public function admin_activity() { return $this->go_activity(); }
+
 
 	/**
 	 * activity method
@@ -466,10 +506,9 @@ class UsersController extends AppController {
 	 * @param string $id
 	 * @return void
 	 */
-	public function delete($id = null)
+	public function delete($user_id = null)
 	{
-		$this->User->id = $id;
-		if (!$this->User->exists())
+		if (!$this->User->exists($user_id))
 		{
 				throw new NotFoundException( __('Invalid user') );
 
@@ -477,7 +516,7 @@ class UsersController extends AppController {
 
 		$this->request->onlyAllow('post', 'delete');
 
-		if ($this->User->delete())
+		if ( $this->User->delete($user_id) )
 		{
 			$this->Session->setFlash(__('The user has been deleted.'));
 
