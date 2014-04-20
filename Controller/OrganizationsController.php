@@ -264,10 +264,13 @@ class OrganizationsController extends AppController {
 		}
 		else 
 		{
-			return $this->redirect(array('supervisor' => true,
-										 'controller' => 'organizations',
-										 'action' => 'view',
-										 $id));
+			return $this->redirect(
+				array(
+						'supervisor' => true,
+						'controller' => 'organizations',
+						'action' => 'view',
+						$id)
+			);
 		}
 
 		$conditions = array(
@@ -289,15 +292,28 @@ class OrganizationsController extends AppController {
 			throw new NotFoundException(__('Invalid organization'));
 		}
 
-		$this->Organization->delete($id);
+		if(_CurrentUserCanWrite($this->Auth->user('user_id'))
+		{
+			$this->Organization->delete($id);
 
-		$this->redirect(
-			array(
-				'volunteer' => false,
-				'controller' => 'users',
-				'action' => 'activity'
-			)
-		);
+			$this->redirect(
+				array(
+					'volunteer' => false,
+					'controller' => 'users',
+					'action' => 'activity'
+				)
+			);
+		}
+		else
+		{
+			return $this->redirect(
+				array(
+					'volunteer' => false,
+					'controller' => $organizations,
+					'action' => 'index'
+				)
+			);
+		}
 	}
 
 
@@ -308,82 +324,49 @@ class OrganizationsController extends AppController {
  * @param string $id
  * @return void
 */
-	public function supervisor_view($period = null) 
+	public function supervisor_view($organization_id = null) 
 	{
-		$sql_date_fmt = 'Y-m-d H:i:s';
-		$contain = array('Event');
-
-		if( $period != null)
+		if(_CurrentUserCanRead($this->Auth->user('user_id')))
 		{
-			$order = array(
-				'Event.stop_time DESC'
+			$sql_date_fmt = 'Y-m-d H:i:s';
+
+			// summary all time
+			$users = $this->_GetUsersByOrganization($organization_id);
+
+			$event_ids = $this->Organization->Event->find('list', 
+				array(
+					'conditions' => array('Event.organization_id' => $organization_id),
+					'fields' => array('Event.event_id')
+				)
 			);
-			$conditions['Time.user_id'] = $this->Auth->user('user_id');
 
-			switch($period)
-			{
-				case 'month':
-					$conditions['Time.start_time >='] = date($sql_date_fmt, strtotime('1 month ago') );
-					break;
-				case 'year':
-					$conditions['Time.start_time >='] = date($sql_date_fmt, strtotime('1 year ago') );
-					break;
-				case 'ytd':
-					$conditions['Time.start_time >='] = date($sql_date_fmt, mktime(0,0,0,1,1, date('Y') ) );
-					break;
-				case 'custom':
-					break;
-			}
+			$events = $this->Organization->Event->find('all', array('conditions' => array('Event.event_id' => $event_ids)));
 
-			$time_data = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'contain' => $contain, 'order' => $order) );
-			$this->set( compact('time_data', 'period') );
+			$conditions = array(
+				'Time.event_id' => $event_ids
+			);
+			$fields = array(
+				'User.*',
+				'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) )/60 as UserSumTime',
+				'COUNT( Time.time_id ) as UserNumberEvents'
+			);
+			$group = array(
+				'User.user_id'
+			);
 
+			$userHours = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
+			$this->set(compact('userHours', 'events'));
 		}
-
-		// summary all time
-		$users = $this->Organization->Permission->find('all');
-		debug($users);
-		$conditions = array(
-			'Time.user_id' => $this->Auth->user('user_id')
-		);
-		$fields = array(
-			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as OrganizationAllTime'
-		);
-		$summary_all_time = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
-		$this->set( compact('summary_all_time') );
-
-		// summary month
-		$conditions = array(
-			'Time.user_id' => $this->Auth->user('user_id'),
-			'Time.start_time >=' => date($sql_date_fmt, strtotime('1 month ago') )
-		);
-		$fields = array(
-			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as OrganizationPastMonth'
-		);
-		$summary_past_month = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
-		$this->set( compact('summary_past_month') );
-
-		// summary year
-		$conditions = array(
-			'Time.user_id' => $this->Auth->user('user_id'),
-			'Time.start_time >=' => date($sql_date_fmt, strtotime('1 year ago') )
-		);
-		$fields = array(
-			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as OrganizationPastYear'
-		);
-		$summary_past_year = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
-		$this->set( compact('summary_past_year') );
-
-		// year-to-date
-		$conditions = array(
-			'Time.user_id' => $this->Auth->user('user_id'),
-			'Time.start_time >=' => date($sql_date_fmt, mktime(0,0,0,1,1, date('Y') ) )
-		);
-		$fields = array(
-			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as OrganizationYTD'
-		);
-		$summary_ytd = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
-		$this->set( compact('summary_ytd') );
+		else
+		{
+			return $this->redirect(
+				array(
+					'volunteer' => false,
+					'controller' => $organizations,
+					'action' => 'index'
+				)
+			);
+		}
 	}
 
 
@@ -394,33 +377,246 @@ class OrganizationsController extends AppController {
  * @param string $id
  * @return void
 */
+	public function leave($organization_id = null) 
+	{
+		if($this->Auth->user('user_id') ) 
+		{
+			if ($organization_id != null) 
+			{
+				$conditions = array(
+					'Permission.user_id' => $this->Auth->user('user_id'),
+					'Permission.organization_id' => $organization_id
+				);
+				
+				if($this->Organization->Permission->deleteAll($conditions)) 
+				{
+					$this->Session->setFlash(__('Something went wrong. You cannot leave this organization.'), 'success');
+					$this->redirect(
+						array(
+							'volunteer' => false,
+							'controller' => 'users',
+							'action' => 'activity'
+						)
+					 );
+				}
+				else 
+				{
+					$this->Session->setFlash(__('Something went wrong. You cannot leave this organization.'), 'danger');
+				}
+			}
+
+			$conditions = array(
+				'Organization.organization_id' => $this->_GetUserOrganizationsByPermission('all')
+			);
+
+			$this->Paginator->settings = array(
+				'conditions' => $conditions,
+				'limit' => 10,
+				'contain' => array()
+			);
+
+			$data = $this->Paginator->paginate();
+			$this->set(compact('data'));
+		}
+		else
+		{
+			return $this->redirect(
+				array(
+					'volunteer' => false,
+					'controller' => $organizations,
+					'action' => 'index'
+				)
+			);
+		}
+	}
+
+
+/**
+ * volunteer_leave
+ *
+ * @throws ForbiddenException
+ * @param string $id
+ * @return void
+*/
 	public function volunteer_leave($organization_id = null) 
 	{
-
-		if ($organization_id != null) 
+		if(_CurrentUserCanPublish($this->Auth->user('user_id')))
 		{
+			if ($organization_id != null) 
+			{
+				$user_id = $this->Auth->user('user_id');
+				$permission = $this->Organization->Permission->findByUserIdAndOrganizationId($user_id, $organization_id); // yes, this will work
+				if( empty($permission) )
+				{
+				// permissions didn't exist.  redirect gracefully
+					$this->Session->setFlash(__('We are unable to process your request at this time.'), 'danger');
+				}
+				$this->Organization->Permission->id = $permission['Permission']['permission_id'];
+				if( $this->Organization->Permission->saveField('publish', false) )
+				{
+				// redirect
+					$this->Session->setFlash(__('You are no longer publishing your results to this organization.'), 'success');
+				}
+				else
+				{
+				// didn't save
+					$this->Session->setFlash(__('We are unable to process your request at this time.'), 'danger');
+				}
+			}
+
 			$conditions = array(
-				'Permission.user_id' => $this->Auth->user('user_id'),
-				'Permission.organization_id' => $organization_id
+				'Organization.organization_id' => $this->_GetUserOrganizationsByPermission('publish')
 			);
-			$this->Organization->Permission->deleteAll($conditions);
+
+			$fields = array(
+				'Organization.*',
+			);
+
+			$this->Paginator->settings = array(
+				'conditions' => $conditions,
+				'limit' => 10,
+				'contain' => array()
+			);
+
+			$data = $this->Paginator->paginate();
+			$this->set(compact('data'));
 		}
+		else 
+		{
+			return $this->redirect(
+				array(
+					'volunteer' => false,
+					'controller' => 'organizations',
+					'action' => 'leave'
+				)
+			);
+		}
+	}
 
-		$conditions = array(
-			'Permission.user_id' => $this->Auth->user('user_id')
-		);
 
-		$contain = array(
-			// 'Address',
-			'Organization',
-			// 'Skill',
-			// 'Time'
-		);
+/**
+ * volunteer_leave
+ *
+ * @throws ForbiddenException
+ * @param string $id
+ * @return void
+*/
+	public function coordinator_leave($organization_id = null) 
+	{
+		if(_CurrentUserCanRead($this->Auth->user('user_id')))
+		{
+			if ($organization_id != null) 
+			{
+				$user_id = $this->Auth->user('user_id');
+				$permission = $this->Organization->Permission->findByUserIdAndOrganizationId($user_id, $organization_id); // yes, this will work
+				if( empty($permission) )
+				{
+				// permissions didn't exist.  redirect gracefully
+					$this->Session->setFlash(__('We are unable to process your request at this time.'), 'danger');
+				}
+				$this->Organization->Permission->id = $permission['Permission']['permission_id'];
+				if( $this->Organization->Permission->saveField('write', false) )
+				{
+				// redirect
+					$this->Session->setFlash(__('You are no longer able to coordinate for this organization.'), 'success');
+				}
+				else
+				{
+				// didn't save
+					$this->Session->setFlash(__('We are unable to process your request at this time.'), 'danger');
+				}
+			}
 
-		// get a list of user's organizations
-		$data = $this->Organization->Permission->find('all', array('conditions' => $conditions, 
-																   'contain' => $contain));
-		$this->set(compact('data'));
+			$conditions = array(
+				'Organization.organization_id' => $this->_GetUserOrganizationsByPermission('publish')
+			);
+
+			$fields = array(
+				'Organization.*',
+			);
+
+			$this->Paginator->settings = array(
+				'conditions' => $conditions,
+				'limit' => 10,
+				'contain' => array()
+			);
+
+			$data = $this->Paginator->paginate();
+			$this->set(compact('data'));
+		}
+		else 
+		{
+			return $this->redirect(
+				array(
+					'volunteer' => true,
+					'controller' => 'organizations',
+					'action' => 'leave'
+				)
+			);
+		}
+	}
+
+
+/**
+ * volunteer_leave
+ *
+ * @throws ForbiddenException
+ * @param string $id
+ * @return void
+*/
+	public function supervisor_leave($organization_id = null) 
+	{
+		if(_CurrentUserCanWrite($this->Auth->user('user_id')))
+		{
+			if ($organization_id != null) 
+			{
+				$user_id = $this->Auth->user('user_id');
+				$permission = $this->Organization->Permission->findByUserIdAndOrganizationId($user_id, $organization_id); // yes, this will work
+				if( empty($permission) )
+				{
+				// permissions didn't exist.  redirect gracefully
+					$this->Session->setFlash(__('We are unable to process your request at this time.'), 'danger');
+				}
+				$this->Organization->Permission->id = $permission['Permission']['permission_id'];
+				if( $this->Organization->Permission->saveField('write', false) )
+				{
+				// redirect
+					$this->Session->setFlash(__('You are no longer supervising events or users for this organization.'), 'success');
+				}
+				else
+				{
+				// didn't save
+					$this->Session->setFlash(__('We are unable to process your request at this time.'), 'danger');
+				}
+			}
+
+			$conditions = array(
+				'Organization.organization_id' => $this->_GetUserOrganizationsByPermission('publish')
+			);
+
+			$fields = array(
+				'Organization.*',
+			);
+
+			$this->Paginator->settings = array(
+				'conditions' => $conditions,
+				'limit' => 10,
+				'contain' => array()
+			);
+
+			$data = $this->Paginator->paginate();
+			$this->set(compact('data'));
+		}
+		else 
+		{
+			return $this->redirect(
+				array(
+					'coordinator' => true,
+					'controller' => 'organizations',
+					'action' => 'leave'
+				)
+			);
+		}
 	}
 
 
@@ -459,7 +655,13 @@ class OrganizationsController extends AppController {
 			{
 				$this->request->data['Organization']['Organization'] = $organization_ids;
 			}
-			return $this->redirect(array('action' => 'join'));
+			return 	$this->redirect(
+				array(
+					'volunteer' => false,
+					'controller' => 'users',
+					'action' => 'activity'
+				)
+			);
 		}
 
 		$organizations = $this->Organization->find('list');
@@ -514,12 +716,13 @@ class OrganizationsController extends AppController {
 		}
 		else 
 		{
-			return $this->redirect(array(
-											'volunteer' => false,
-											'controller' => $organizations,
-											'action' => 'index'
-										)
-								);
+			return $this->redirect(
+				array(
+					'volunteer' => false,
+					'controller' => $organizations,
+					'action' => 'index'
+				)
+			);
 		}
 	}
 }
