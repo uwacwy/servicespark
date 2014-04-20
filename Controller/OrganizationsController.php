@@ -528,7 +528,7 @@ class OrganizationsController extends AppController {
 			}
 
 			$conditions = array(
-				'Organization.organization_id' => $this->_GetUserOrganizationsByPermission('publish')
+				'Organization.organization_id' => $this->_GetUserOrganizationsByPermission('read')
 			);
 
 			$fields = array(
@@ -591,7 +591,7 @@ class OrganizationsController extends AppController {
 			}
 
 			$conditions = array(
-				'Organization.organization_id' => $this->_GetUserOrganizationsByPermission('publish')
+				'Organization.organization_id' => $this->_GetUserOrganizationsByPermission('write')
 			);
 
 			$fields = array(
