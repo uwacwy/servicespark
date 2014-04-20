@@ -1,27 +1,22 @@
-<div class="btn-group pull-right">
-	<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
-		Other Views <span class="caret"></span>
-	</button>
-	<ul class="dropdown-menu" role="menu">
-
-		<li><?php echo $this->Html->link('Best', array('go' => true, 'controller' => 'events', 'action' => 'index') ); ?></li>
-		<li><?php echo $this->Html->link('Coordinator', array('coordinator' => true, 'controller' => 'events', 'action' => 'index') ); ?></li>
-		<li><?php echo $this->Html->link('Supervisor', array('supervisor' => true, 'controller' => 'events', 'action' => 'index') ); ?></li>
-		<li><?php echo $this->Html->link('Volunteer', array('volunteer' => true, 'controller' => 'events', 'action' => 'index') ); ?></li>
-		<li class="divider"></li>
-		<li><?php echo $this->Html->link('Help', array('coordinator' => false, 'controller' => 'pages', 'action' => 'display', 'help_roles') ); ?></li>
-	</ul>
+<div class="row">
+	<div class="col-md-12">
+		<ol class="breadcrumb">
+			<li><?php echo $this->Html->link( Configure::read('Solution.name'), '/'); ?></li>
+			<li><?php echo h( __('Coordinator') ); ?></li>
+			<li><?php echo h( __('Events I Can Coordinate') ); ?></li>
+		</ol>
+	</div>
 </div>
 
+
+
 <div class="events index">
-	<h2><?php echo __('Events'); ?></h2>
-	
-	<div style="text-align: right">
+	<div class="pull-right">
 		<?php echo $this->Html->link(__('Create Event'), array('action' => 'add'), array('class' => 'btn btn-primary')); ?>
 	</div>
-	
-	</br>
 
+	<h2><?php echo __('Events'); ?></h2>
+	
 	<table cellpadding="0" cellspacing="0" class="table table-striped">
 	<tr>
 			<th><?php echo $this->Paginator->sort('title'); ?></th>

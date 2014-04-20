@@ -1,5 +1,14 @@
 <div class="row">
 	<div class="col-md-12">
+		<ol class="breadcrumb">
+			<li><?php echo $this->Html->link( Configure::read('Solution.name'), '/'); ?></li>
+			<li><?php echo h( __('Creating a new event') ); ?></li>
+		</ol>
+	</div>
+</div>
+
+<div class="row">
+	<div class="col-md-12">
 		<?php echo $this->Form->create('Event'); ?>
 		<h2>Create Event</h2>
 		<div class="row">

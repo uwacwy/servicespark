@@ -102,7 +102,7 @@
 
 		<h2>Does Everything Look Good?</h2>
 		<div>
-			<?php echo $this->Form->button('Update this organization', array('type' => 'button', 'class' => 'btn btn-primary')); ?>
+			<?php echo $this->Form->button('Update this organization', array('type' => 'submit', 'class' => 'btn btn-primary')); ?>
 
 			<?php
 				echo $this->Html->link('Delete this Organzation', 

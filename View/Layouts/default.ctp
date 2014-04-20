@@ -202,6 +202,7 @@ global $solution_name;
 				'organizations' => array(
 					'label' => __('Organizations'),
 					'actions' => array(
+						'join' => __('Join an Organization'),
 						'add' => __('New Organization'),
 						'index' => __('Manage my Organizations')
 					)

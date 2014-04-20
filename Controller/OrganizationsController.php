@@ -459,7 +459,7 @@ class OrganizationsController extends AppController {
 			{
 				$this->request->data['Organization']['Organization'] = $organization_ids;
 			}
-			return $this->redirect(array('action' => 'index'));
+			return $this->redirect(array('action' => 'join'));
 		}
 
 		$organizations = $this->Organization->find('list');

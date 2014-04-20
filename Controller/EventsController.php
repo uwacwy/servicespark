@@ -38,9 +38,9 @@ class EventsController extends AppController {
 		}
 		$this->request->onlyAllow('post', 'delete');
 		if ($this->Event->delete()) {
-			$this->Session->setFlash(__('The event has been deleted.', 'success'));
+			$this->Session->setFlash(__('The event has been deleted.'), 'success');
 		} else {
-			$this->Session->setFlash(__('The event could not be deleted. Please, try again.', 'danger'));
+			$this->Session->setFlash(__('The event could not be deleted. Please, try again.'), 'danger');
 		}
 		return $this->redirect(array('action' => 'index'));
 	}
@@ -106,13 +106,13 @@ class EventsController extends AppController {
 				$this->Event->create();
 				if ($this->Event->saveAll($this->request->data)) 
 				{
-					$this->Session->setFlash(__('The event has been saved.', 'success'));
+					$this->Session->setFlash(__('The event has been saved.'), 'success');
 					//debug($this->request->data);
 					//return $this->redirect(array('action' => 'index'));
 				} 
 				else 
 				{
-					$this->Session->setFlash(__('The event could not be saved. Please, try again.', 'danger'));
+					$this->Session->setFlash(__('The event could not be saved. Please, try again.'), 'danger');
 				}
 			}
 			
@@ -157,10 +157,10 @@ class EventsController extends AppController {
 				}
 
 				if ($this->Event->save($this->request->data)) {
-					$this->Session->setFlash(__('The event has been saved.', 'success'));
+					$this->Session->setFlash(__('The event has been saved.'), 'success');
 					return $this->redirect(array('action' => 'index'));
 				} else {
-					$this->Session->setFlash(__('The event could not be saved. Please, try again.', 'danger'));
+					$this->Session->setFlash(__('The event could not be saved. Please, try again.'), 'danger');
 				}
 			} else {
 				$options = array('conditions' => array('Event.' . $this->Event->primaryKey => $id));
@@ -316,13 +316,13 @@ class EventsController extends AppController {
 				$this->Event->create();
 				if ($this->Event->saveAll($this->request->data)) 
 				{
-					$this->Session->setFlash(__('The event has been saved.', 'success'));
+					$this->Session->setFlash(__('The event has been saved.'), 'success');
 					//debug($this->request->data);
 					return $this->redirect(array('controller' => 'events', 'action' => 'view', $this->Event->id, 'coordinator' => true));
 				} 
 				else 
 				{
-					$this->Session->setFlash(__('The event could not be saved. Please, try again.', 'danger'));
+					$this->Session->setFlash(__('The event could not be saved. Please, try again.'), 'danger');
 				}
 			}
 			
@@ -369,10 +369,10 @@ class EventsController extends AppController {
 				$this->request->data['Address'] = $address_ids;
 
 				if ($this->Event->save($this->request->data)) {
-					$this->Session->setFlash(__('The event has been saved.', 'success'));
+					$this->Session->setFlash(__('The event has been saved.'), 'success');
 					return $this->redirect(array('action' => 'index'));
 				} else {
-					$this->Session->setFlash(__('The event could not be saved. Please, try again.', 'danger'));
+					$this->Session->setFlash(__('The event could not be saved. Please, try again.'), 'danger');
 				}
 			} else {
 				$options = array('conditions' => array('Event.' . $this->Event->primaryKey => $id));
