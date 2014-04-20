@@ -62,18 +62,18 @@ class Permission extends AppModel
 	public function beforeSave($options = array())
 	{
 		// if user-organization pair exists
-		$conditions = array(
-			'Permission.user_id' => $this->data[ 'Permission']['user_id'],
-			'Permission.organization_id' => $this->data[ 'Permission']['organization_id']
-		);
-		$existing = $this->field('permission_id', $conditions);
+		// $conditions = array(
+		// 	'Permission.user_id' => $this->data[ 'Permission']['user_id'],
+		// 	'Permission.organization_id' => $this->data[ 'Permission']['organization_id']
+		// );
+		// $existing = $this->field('permission_id', $conditions);
 
-		if($existing)
-		{
-			$this->delete($existing);
-		}
+		// if($existing)
+		// {
+		// 	$this->delete($existing);
+		// }
 
-		return true;
+		// return true;
 	}
 
 
