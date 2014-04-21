@@ -9,8 +9,7 @@
 <div class="row">
 	<div class="col-md-12">
 		<h1>Are you no longer affiliated with an organization? </h1>
-		<h1><small>Leave any organization you belong to. </small></h1>
-		<hr>
+		<p class="text-muted">Leave any organization you belong to.</p>
 
 		<h2> Here are your organizations</h2>
 		<table class="table table-striped">
@@ -35,5 +34,13 @@
     			</tr>
 			<?php endforeach; ?>
 		</table>
+		
+		<ul class="pagination bottom">
+			<?php
+				echo $this->Paginator->prev(__('prev'), array('tag' => 'li'), null, array('tag' => 'li','class' => 'disabled','disabledTag' => 'a'));
+				echo $this->Paginator->numbers(array('separator' => '','currentTag' => 'a', 'currentClass' => 'active','tag' => 'li','first' => 1));
+				echo $this->Paginator->next(__('next'), array('tag' => 'li','currentClass' => 'disabled'), null, array('tag' => 'li','class' => 'disabled','disabledTag' => 'a'));
+			?>
+		</ul>
 	</div>
 </div>

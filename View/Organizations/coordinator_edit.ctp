@@ -38,69 +38,75 @@
 		<hr>
 
 		<h2>Members</h2>
-		<p>Add or remove member privileges for this organization.</p>
-		<table class="table table-striped"></h2>
-			<thead>  
-          		<tr>  
-            		<th>Member Name</th>
-            		<th>Volunteer</th>
-            		<th>Coordinator</th>
-            		<th>Supervisor</th> 
-          		</tr>  
-        	</thead>
-        	<?php
-        		$i=0; 
-        		foreach ($data as $organization):
-        	?>
-    			<tr>
-    				<td>
-    					<?php echo $this->Form->input(
-    						"Permission.$i.user_id",
-    						array('value' => $organization['User']['user_id'], 'type' => 'hidden')
-    					); ?>
-    					<?php echo h( $organization['User']['full_name'] ); ?>
-    				</td>
-					<td>
-						<?php 
-							echo $this->Form->input("Permission.$i.publish",
-								array(
-									'checked' => $organization['Permission']['publish'],
-									'type' => 'checkbox',
-									'class' => 'checkbox'
-								)
-							); 
-						?>
-					</td>
-					<td>
-						<?php
-							echo $this->Form->input("Permission.$i.write", 
-								array(
-									'checked' => $organization['Permission']['write'],
-									'type' => 'checkbox', 
-									'class' => 'checkbox'
-								)
-							);
-						?>
-					</td>
-					<td>
-						<?php
-							echo $this->Form->input("Permission.$i.read", 
-								array(
-									'checked' => $organization['Permission']['read'],
-									'type' => 'checkbox', 
-									'class' => 'checkbox'
-								)
-							);
-						?>
-					</td>
-    			</tr>
-			<?php
-				$i++;
-			 	endforeach;
-			 ?>
-		</table>
+		<p>Modify member privileges for this organization.</p>
+		<p>Are you looking to add a member to your organization?  They need to <em>join</em> your organization before you can manage their permissions.</p>
+		<div class="table-responsive">
+			<table class="table table-condensed"></h2>
+				<thead>  
+	          		<tr>  
+	            		<th>Member</th>
+	            		<th class="text-center">Volunteer</th>
+	            		<th class="text-center">Supervisor</th>
+	            		<th class="text-center">Coordinator</th> 
+	          		</tr>  
+	        	</thead>
+	        	<?php
+	        		$i=0; 
+	        		foreach ($data as $organization):
+	        	?>
+	    			<tr>
+	    				<td>
+	    					<?php echo $this->Form->input(
+	    						"Permission.$i.permission_id",
+	    						array('value' => $organization['Permission']['permission_id'], 'type' => 'hidden')
+	    					); ?>
+	    					<strong><?php echo h( $organization['User']['full_name'] ); ?></strong><br>
+	    					<?php echo h( sprintf( __('@%s'), $organization['User']['username'] ) ); ?>
+	    				</td>
+						<td class="text-center success">
+							<?php 
+								echo $this->Form->input("Permission.$i.publish",
+									array(
+										'checked' => $organization['Permission']['publish'],
+										'type' => 'checkbox',
+										'class' => 'checkbox-inline',
+										'label' => false
+									)
+								); 
+							?>
+						</td>
+						<td class="text-center warning">
+							<?php
+								echo $this->Form->input("Permission.$i.read", 
+									array(
+										'checked' => $organization['Permission']['read'],
+										'type' => 'checkbox', 
+										'class' => 'checkbox-inline',
+										'label' => false
+									)
+								);
+							?>
+						</td>
+						<td class="text-center danger">
+							<?php
+								echo $this->Form->input("Permission.$i.write", 
+									array(
+										'checked' => $organization['Permission']['write'],
+										'type' => 'checkbox', 
+										'class' => 'checkbox-inline',
+										'label' => false
+									)
+								);
+							?>
+						</td>
+	    			</tr>
+				<?php
+					$i++;
+				 	endforeach;
+				 ?>
+			</table>
+		</div>
 
-		<h2>Does Everything Look Good?</h2>
 		<div>
 			<?php echo $this->Form->button('Update this organization',
 									array(
@@ -111,7 +117,7 @@
 			?>
 
 			<?php
-				echo $this->Html->link('Delete this Organzation', 
+				echo $this->Html->link('Delete this Organization', 
 									array(
 											'coordinator' => true,
 											'controller' => 'organizations',
@@ -119,9 +125,9 @@
 											$organization['Organization']['organization_id']
 										), 
 										array(
-											'class' => 'btn btn-danger'
+											'class' => 'btn btn-link'
 										),
-										'Are you sure you want to permanently delete this organization?'
+										'Are you sure you want to permanently delete this organization?  ALL permissions, events, and time entries will also be deleted.'
 									); 
 			?>
 		</div>

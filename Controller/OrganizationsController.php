@@ -179,18 +179,20 @@ class OrganizationsController extends AppController {
 	public function coordinator_index() 
 	{
 		$user_co_organizations = $this->_GetUserOrganizationsByPermission('write');
+
 		$this->Paginator->settings['conditions'] = array(
 			'Organization.organization_id' => $user_co_organizations
 		);
+		$this->Paginator->settings['contain'] = array();
 
 		$pag_organizations = $this->Paginator->paginate();
 
-		$conditions = array(
-			'Permission.user_id' => $this->Auth->user('user_id')
-		);
+		// $conditions = array(
+		// 	'Permission.user_id' => $this->Auth->user('user_id')
+		// );
 		// get a list of user's organizations
-		$organizations = $this->Organization->Permission->find('all', array('conditions' => $conditions));
-		$this->set(compact('organizations', 'pag_organizations'));
+		//$organizations = $this->Organization->Permission->find('all', array('conditions' => $conditions));
+		$this->set(compact('pag_organizations'));
 	}
 
 
@@ -225,30 +227,38 @@ class OrganizationsController extends AppController {
 				}
 				
 
-				if( !empty($this->request->data['Address']) )
+				if( !empty($entry['Address']) )
 				{
-					unset( $this->request->data['Address'] );
+					unset( $entry['Address'] );
 				}
 				
 
 				if( !empty($address_ids) )
 				{
-					$this->request->data['Address'] = $address_ids;
+					$entry['Address'] = $address_ids;
 				}
 
-				if ($this->Organization->save($entry['Organization'])) 
+				/*
+					keep this block before the Organization save.
+					The database is set to delete 0-0-0 permissions before Organizations are saved.
+				*/
+				foreach($entry['Permission'] as $permission)
 				{
-					foreach($entry['Permission'] as $permission) {
-						$permissions = array(
-							'user_id' => $permission['user_id'],
-							'organization_id' => $id,
-							'publish' => $permission['publish']	,
-							'write' => $permission['write'],
-							'read' => $permission['read']				
-						);
-						$this->Organization->Permission->saveAll($permissions);
-					}
-					$this->Session->setFlash(__('The organization has been saved.'));
+					$permissions = array(
+						'permission_id' => $permission['permission_id'], // without this, we will get integrity violations
+						// 'user_id' => $permission['user_id'],
+						// 'organization_id' => $id,
+						'publish' => $permission['publish']	,
+						'write' => $permission['write'],
+						'read' => $permission['read']				
+					);
+					$this->Organization->Permission->saveAll($permissions);
+				}
+
+				if ( $this->Organization->save($entry) ) 
+				{
+					
+					$this->Session->setFlash(__('The organization has been saved.'), 'success');
 					return $this->redirect(array('action' => 'coordinator_index'));
 				} 
 				else 
@@ -292,7 +302,7 @@ class OrganizationsController extends AppController {
 			throw new NotFoundException(__('Invalid organization'));
 		}
 
-		if(_CurrentUserCanWrite($this->Auth->user('user_id'))
+		if( $this->_CurrentUserCanWrite($this->Auth->user('user_id') ) )
 		{
 			$this->Organization->delete($id);
 
@@ -326,7 +336,7 @@ class OrganizationsController extends AppController {
 */
 	public function supervisor_view($organization_id = null) 
 	{
-		if(_CurrentUserCanRead($this->Auth->user('user_id')))
+		if( $this->_CurrentUserCanRead( $organization_id ) )
 		{
 			$sql_date_fmt = 'Y-m-d H:i:s';
 
@@ -390,7 +400,7 @@ class OrganizationsController extends AppController {
 				
 				if($this->Organization->Permission->deleteAll($conditions)) 
 				{
-					$this->Session->setFlash(__('Something went wrong. You cannot leave this organization.'), 'success');
+					$this->Session->setFlash(__('You have successfully left this organization.'), 'success');
 					$this->redirect(
 						array(
 							'volunteer' => false,
@@ -440,57 +450,64 @@ class OrganizationsController extends AppController {
 */
 	public function volunteer_leave($organization_id = null) 
 	{
-		if(_CurrentUserCanPublish($this->Auth->user('user_id')))
+		if( $organization_id != null)
 		{
-			if ($organization_id != null) 
+			if ( !$this->Organization->exists($organization_id) )
 			{
-				$user_id = $this->Auth->user('user_id');
-				$permission = $this->Organization->Permission->findByUserIdAndOrganizationId($user_id, $organization_id); // yes, this will work
-				if( empty($permission) )
-				{
-				// permissions didn't exist.  redirect gracefully
-					$this->Session->setFlash(__('We are unable to process your request at this time.'), 'danger');
-				}
-				$this->Organization->Permission->id = $permission['Permission']['permission_id'];
-				if( $this->Organization->Permission->saveField('publish', false) )
-				{
-				// redirect
-					$this->Session->setFlash(__('You are no longer publishing your results to this organization.'), 'success');
-				}
-				else
-				{
-				// didn't save
-					$this->Session->setFlash(__('We are unable to process your request at this time.'), 'danger');
-				}
+				// get out of here
+				$this->Session->setFlash( __('This request was invalid.'), 'danger');
+				$this->redirect('/');
 			}
 
-			$conditions = array(
-				'Organization.organization_id' => $this->_GetUserOrganizationsByPermission('publish')
-			);
+			if( !$this->_CurrentUserCanPublish($organization_id) )
+			{
+				// get out of here
+				$this->Session->setFlash( __('current user cannot publish'), 'danger');
+				$this->redirect('/');
+			}
 
-			$fields = array(
-				'Organization.*',
-			);
+			$user_id = $this->Auth->user('user_id');
+			$permission = $this->Organization->Permission->findByUserIdAndOrganizationId($user_id, $organization_id); // yes, this will work
 
-			$this->Paginator->settings = array(
-				'conditions' => $conditions,
-				'limit' => 10,
-				'contain' => array()
-			);
+			if( empty($permission) )
+			{
+				// permissions didn't exist.  redirect gracefully
+				$this->Session->setFlash(__('We are unable to process your request at this time.'), 'danger');
 
-			$data = $this->Paginator->paginate();
-			$this->set(compact('data'));
+				// redirect here so the other stuff isn't attempted
+				$this->redirect('/');
+			}
+
+			$this->Organization->Permission->id = $permission['Permission']['permission_id'];
+
+			if( $this->Organization->Permission->saveField('publish', false) )
+			{
+				// redirect
+				$this->Session->setFlash(__('You are no longer publishing activity to this organization.'), 'success');
+			}
+			else
+			{
+				// didn't save
+				$this->Session->setFlash(__('We are unable to process your request at this time.'), 'danger');
+			}
 		}
-		else 
-		{
-			return $this->redirect(
-				array(
-					'volunteer' => false,
-					'controller' => 'organizations',
-					'action' => 'leave'
-				)
-			);
-		}
+
+		$conditions = array(
+			'Organization.organization_id' => $this->_GetUserOrganizationsByPermission('publish')
+		);
+
+		$fields = array(
+			'Organization.*',
+		);
+
+		$this->Paginator->settings = array(
+			'conditions' => $conditions,
+			'limit' => 10,
+			'contain' => array()
+		);
+
+		$data = $this->Paginator->paginate();
+		$this->set( compact('data') );
 	}
 
 
@@ -503,57 +520,65 @@ class OrganizationsController extends AppController {
 */
 	public function coordinator_leave($organization_id = null) 
 	{
-		if(_CurrentUserCanRead($this->Auth->user('user_id')))
+		if( $organization_id != null)
 		{
-			if ($organization_id != null) 
+			if ( !$this->Organization->exists($organization_id) )
 			{
-				$user_id = $this->Auth->user('user_id');
-				$permission = $this->Organization->Permission->findByUserIdAndOrganizationId($user_id, $organization_id); // yes, this will work
-				if( empty($permission) )
-				{
-				// permissions didn't exist.  redirect gracefully
-					$this->Session->setFlash(__('We are unable to process your request at this time.'), 'danger');
-				}
-				$this->Organization->Permission->id = $permission['Permission']['permission_id'];
-				if( $this->Organization->Permission->saveField('write', false) )
-				{
-				// redirect
-					$this->Session->setFlash(__('You are no longer able to coordinate for this organization.'), 'success');
-				}
-				else
-				{
-				// didn't save
-					$this->Session->setFlash(__('We are unable to process your request at this time.'), 'danger');
-				}
+				// get out of here
+				$this->Session->setFlash( __('This request was invalid.'), 'danger');
+				$this->redirect('/');
 			}
 
-			$conditions = array(
-				'Organization.organization_id' => $this->_GetUserOrganizationsByPermission('publish')
-			);
+			if( !$this->_CurrentUserCanWrite($organization_id) )
+			{
+				// get out of here
+				$this->Session->setFlash( __('current user cannot read'), 'danger');
+				$this->redirect('/');
+			}
 
-			$fields = array(
-				'Organization.*',
-			);
+			$user_id = $this->Auth->user('user_id');
+			$permission = $this->Organization->Permission->findByUserIdAndOrganizationId($user_id, $organization_id); // yes, this will work
 
-			$this->Paginator->settings = array(
-				'conditions' => $conditions,
-				'limit' => 10,
-				'contain' => array()
-			);
+			if( empty($permission) )
+			{
+				// permissions didn't exist.  redirect gracefully
+				$this->Session->setFlash(__('We are unable to process your request at this time.'), 'danger');
 
-			$data = $this->Paginator->paginate();
-			$this->set(compact('data'));
+				// redirect here so the other stuff isn't attempted
+				$this->redirect('/');
+			}
+
+			$this->Organization->Permission->id = $permission['Permission']['permission_id'];
+
+			if( $this->Organization->Permission->saveField('write', false) )
+			{
+				// redirect
+				$this->Session->setFlash(__('You are no longer able to coordinate for this organization.'), 'success');
+			}
+			else
+			{
+				// didn't save
+				$this->Session->setFlash(__('We are unable to process your request at this time.'), 'danger');
+			}
 		}
-		else 
-		{
-			return $this->redirect(
-				array(
-					'volunteer' => true,
-					'controller' => 'organizations',
-					'action' => 'leave'
-				)
-			);
-		}
+
+		$conditions = array(
+			'Organization.organization_id' => $this->_GetUserOrganizationsByPermission('write')
+		);
+
+		$fields = array(
+			'Organization.*',
+		);
+
+		$this->Paginator->settings = array(
+			'conditions' => $conditions,
+			'limit' => 10,
+			'contain' => array()
+		);
+
+		$data = $this->Paginator->paginate();
+		$this->set( compact('data') );
+
 	}
 
 
@@ -566,57 +591,64 @@ class OrganizationsController extends AppController {
 */
 	public function supervisor_leave($organization_id = null) 
 	{
-		if(_CurrentUserCanWrite($this->Auth->user('user_id')))
+		if( $organization_id != null)
 		{
-			if ($organization_id != null) 
+			if ( !$this->Organization->exists($organization_id) )
 			{
-				$user_id = $this->Auth->user('user_id');
-				$permission = $this->Organization->Permission->findByUserIdAndOrganizationId($user_id, $organization_id); // yes, this will work
-				if( empty($permission) )
-				{
-				// permissions didn't exist.  redirect gracefully
-					$this->Session->setFlash(__('We are unable to process your request at this time.'), 'danger');
-				}
-				$this->Organization->Permission->id = $permission['Permission']['permission_id'];
-				if( $this->Organization->Permission->saveField('write', false) )
-				{
-				// redirect
-					$this->Session->setFlash(__('You are no longer supervising events or users for this organization.'), 'success');
-				}
-				else
-				{
-				// didn't save
-					$this->Session->setFlash(__('We are unable to process your request at this time.'), 'danger');
-				}
+				// get out of here
+				$this->Session->setFlash( __('This request was invalid.'), 'danger');
+				$this->redirect('/');
 			}
 
-			$conditions = array(
-				'Organization.organization_id' => $this->_GetUserOrganizationsByPermission('publish')
-			);
+			if( !$this->_CurrentUserCanRead($organization_id) )
+			{
+				// get out of here
+				$this->Session->setFlash( __('current user cannot read'), 'danger');
+				$this->redirect('/');
+			}
 
-			$fields = array(
-				'Organization.*',
-			);
+			$user_id = $this->Auth->user('user_id');
+			$permission = $this->Organization->Permission->findByUserIdAndOrganizationId($user_id, $organization_id); // yes, this will work
 
-			$this->Paginator->settings = array(
-				'conditions' => $conditions,
-				'limit' => 10,
-				'contain' => array()
-			);
+			if( empty($permission) )
+			{
+				// permissions didn't exist.  redirect gracefully
+				$this->Session->setFlash(__('We are unable to process your request at this time.'), 'danger');
 
-			$data = $this->Paginator->paginate();
-			$this->set(compact('data'));
+				// redirect here so the other stuff isn't attempted
+				$this->redirect('/');
+			}
+
+			$this->Organization->Permission->id = $permission['Permission']['permission_id'];
+
+			if( $this->Organization->Permission->saveField('read', false) )
+			{
+				// redirect
+				$this->Session->setFlash(__('You are no longer able to supervise activity for this organization.'), 'success');
+			}
+			else
+			{
+				// didn't save
+				$this->Session->setFlash(__('We are unable to process your request at this time.'), 'danger');
+			}
 		}
-		else 
-		{
-			return $this->redirect(
-				array(
-					'coordinator' => true,
-					'controller' => 'organizations',
-					'action' => 'leave'
-				)
-			);
-		}
+
+		$conditions = array(
+			'Organization.organization_id' => $this->_GetUserOrganizationsByPermission('read')
+		);
+
+		$fields = array(
+			'Organization.*',
+		);
+
+		$this->Paginator->settings = array(
+			'conditions' => $conditions,
+			'limit' => 10,
+			'contain' => array()
+		);
+
+		$data = $this->Paginator->paginate();
+		$this->set( compact('data') );
 	}
 
 

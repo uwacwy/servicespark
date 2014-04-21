@@ -16,16 +16,17 @@
 					<tr>
 						<td><?php echo h($organization['Organization']['name']); ?>&nbsp;</td>
 						<td>
-							<?php echo $this->Html->link(__('View Your Events'),
+							<?php echo $this->Html->link(__('View'),
 								array(
 									'coordinator' => false,
 									'controller' => 'organizations',
 									'action' => 'view',
 									$organization['Organization']['organization_id']
-								)
+								),
+								array('class' => 'btn btn-xs btn-success')
 							); ?>
-							<?php echo $this->Html->link(__('Edit Your Events'), array('action' => 'edit', $organization['Organization']['organization_id'])); ?>
-							<?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $organization['Organization']['organization_id']), null, __('Are you sure you want to delete # %s?', $organization['Organization']['organization_id'])); ?>
+							<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $organization['Organization']['organization_id']), array('class' => 'btn btn-xs btn-primary')); ?>
+							<?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $organization['Organization']['organization_id']), array('class' => 'btn btn-xs btn-danger'), __('Are you sure you want to delete # %s?', $organization['Organization']['organization_id'])); ?>
 						</td>
 					</tr>
 				<?php endforeach; ?>

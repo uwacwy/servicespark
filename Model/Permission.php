@@ -76,6 +76,15 @@ class Permission extends AppModel
 		// return true;
 	}
 
+	public function afterSave($created, $options = array() )
+	{
+		parent::afterSave($created, $options);
+
+		$this->deleteAll( array('Permission.read' => false, 'Permission.write' => false, 'Permission.publish' => false) );
+
+		return true;
+	}
+
 
 	public function _UserCanPublish($user_id, $organization_id)
 	{

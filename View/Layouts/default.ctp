@@ -28,8 +28,6 @@ global $solution_name;
 	<title>
 		<?php echo $title_for_layout; ?> &ndash; <?php echo Configure::read('Solution.name'); ?>
 	</title>
-	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-	<script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.js"></script>
 	<style>
 		.stat{font-weight:bold; font-size: 48px;display: block;}
 		a.asc:after { content: "\e155"; }

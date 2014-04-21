@@ -15,7 +15,7 @@
 
 	<div class="row">		
 		<?php
-			if($event['Address'] != [])
+			if( array($event['Address']) )
 			{
 				echo "<h2>Event Addresses</h2>";
 
