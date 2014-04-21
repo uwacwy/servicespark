@@ -40,6 +40,7 @@ class AppController extends Controller {
 	public $helpers = array(
 		'Js',
 		'Html' => array('className' => 'BoostCake.BoostCakeHtml'),
+		'Tm' => array('className' => 'Time')
 		//'Form' => array('className' => 'BoostCake.BoostCakeForm'),
 		//'Paginator' => array('className' => 'BoostCake.BoostCakePaginator'),
 	);
@@ -293,6 +294,11 @@ class AppController extends Controller {
 	{
 		App::uses('Permission', 'Model');
 
+		if( $this->_CurrentUserIsSuperAdmin() )
+		{
+			return true;
+		}
+
 		$permission = new Permission();
 		return $permission->_UserCanPublish( $this->Auth->user('user_id'), $organization_id);
 	}
@@ -301,6 +307,11 @@ class AppController extends Controller {
 	{
 		App::uses('Permission', 'Model');
 
+		if( $this->_CurrentUserIsSuperAdmin() )
+		{
+			return true;
+		}
+
 		$permission = new Permission();
 		return $permission->_UserCanRead( $this->Auth->user('user_id'), $organization_id) || $this->_CurrentUserCanWrite($organization_id) || $this->_CurrentUserIsSuperAdmin();
 	}
@@ -308,6 +319,11 @@ class AppController extends Controller {
 	public function _CurrentUserCanWrite($organization_id)
 	{
 		App::uses('Permission', 'Model');
+
+		if( $this->_CurrentUserIsSuperAdmin() )
+		{
+			return true;
+		}
 
 		$permission = new Permission();
 		return $permission->_UserCanWrite( $this->Auth->user('user_id'), $organization_id) || $this->_CurrentUserIsSuperAdmin();

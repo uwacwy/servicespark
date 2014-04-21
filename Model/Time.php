@@ -14,6 +14,9 @@ class Time extends AppModel
 */
 	public $primaryKey = 'time_id';
 	public $actsAs = array('Containable');
+	public $virtualFields = array(
+		'duration' => 'TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time)/60'
+	);
 
 	/*
 		event_id required fk

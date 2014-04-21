@@ -285,30 +285,22 @@ class TimesController extends AppController
 		//throw new NotImplementedException('this method exists but has not been implemented');
 	}
 
-	public function supervisor_view( $event_id )
+	public function supervisor_view( $time_id )
 	{
-		$conditions = array(
-			'Event.event_id' => $event_id
-		);
+		$conditions = array('Time.time_id' => $time_id);
+		$contain = array('Event' => array('Organization'), 'User');
 
-		$contain = array('Organization');
-		$event = $this->Time->Event->find( 'first', array('conditions' => $conditions, 'contain' => $contain) );
+		$time = $this->Time->find('first', array('conditions' => $conditions, 'contain' => $contain) );
 
-		// verify that the current user can read/write this organization's time entries
-		if( !$this->_CurrentUserCanRead($event['Organization']['organization_id']) )
+		if( !$this->_CurrentUserCanRead($time['Event']['Organization']['organization_id']) )
 		{
-			$this->Session->setFlash( __("You are not allowed to view this organization's time entries"), 'danger');
-			return $this->redirect( $this->_Redirector('go', 'organizations', 'view', $time['Time']['organization_id']) );
+			$this->Session->setFlash( __('You do not have permission to view information for this organization.'), 'danger');
+			return $this->redirect( array('supervisor' => false, 'controller' => 'users', 'action' => 'activity') );
 		}
 
-		$title_for_layout = sprintf( __('Viewing Time Entries for %s'), $event['Event']['title']);
+		$title_for_layout = sprintf( __('Viewing Time Entry %u &laquo; %s &laquo; %s'), $time['Time']['time_id'], $time['Event']['title'], $time['Event']['Organization']['name']);
 
-
-		$this->Paginator->settings['conditions'] = array('Time.event_id' => $event_id);
-		$this->Paginator->settings['contain'] = array('User');
-		$times = $this->Paginator->paginate();
-
-		$this->set( compact('event', 'times', 'title_for_layout') );
+		$this->set( compact('time', 'title_for_layout') );
 	}
 
 

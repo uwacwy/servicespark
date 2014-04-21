@@ -372,7 +372,7 @@ class UsersController extends AppController {
 		$sql_date_fmt = 'Y-m-d H:i:s';
 		$contain = array('Event');
 
-		if( $period == null)
+		if( !in_array($period, array('month', 'year', 'ytd', 'custom') ) )
 			$period = "month";
 
 		$order = array(

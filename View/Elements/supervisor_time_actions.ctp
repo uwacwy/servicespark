@@ -1,0 +1,1 @@
+<?php if( isset($time) ) echo 'time is set'; ?>

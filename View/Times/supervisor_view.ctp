@@ -1,77 +1,74 @@
 <div class="row">
 	<div class="col-md-12">
 		<ol class="breadcrumb">
-			<li><?php echo h( __('Supervisor') ); ?></li>
-			<li><?php echo $this->Html->link( $event['Organization']['name'], array('controller' => 'organizations', 'action' => 'view', $event['Organization']['organization_id']) ); ?></li>
-			<li><?php echo $this->Html->link( $event['Event']['title'], array('controller' => 'events', 'action' => 'view', $event['Event']['event_id']) ); ?></li>
-			<li><?php echo sprintf( __('Viewing time entries for %s'), $event['Event']['title'] ); ?></li>
-		</ol>
+			<li><a href="<?php echo $this->Html->url('/'); ?>"><span class="glyphicon glyphicon-home"></span><span class="sr-only"><?php echo Configure::read('Solution.name'); ?></span></a></li>
+			<li><strong><?php echo h( __('Supervisor') ); ?></strong></li>
+			<li><?php echo $this->Html->link( $time['Event']['Organization']['name'], array('supervisor' => true, 'controller' => 'organizations', 'action' => 'view', $time['Event']['Organization']['organization_id']) ); ?></li>
+			<li><?php echo $this->Html->link( $time['Event']['title'], array('supervisor' => true, 'controller' => 'events', 'action' => 'view', $time['Event']['event_id']) ); ?></li>
+			<li><?php echo h( sprintf( __('Viewing Time Entry %u for %s'), $time['Time']['time_id'], $time['User']['full_name'] ) ); ?></li>
+		</ol> 
 	</div>
 </div>
 
 <div class="row">
+	<div class="col-md-3">
+		<?php echo $this->Element('supervisor_time_actions', array('time' => $time)); ?>
+	</div>
 	<div class="col-md-9">
-
-		<h2>
-			<small>Viewing Time Entries</small><br>
-			<?php echo h($event['Event']['title']); ?> <small><?php echo h( date('F j, Y g:i a', strtotime($event['Event']['start_time'])) ); ?> - <?php echo h( date('g:i a', strtotime($event['Event']['stop_time']) ) ); ?></small>
-		</h2>
-
-		<?php if( count($times) > 0 ) : ?>
-
-			<ul class="pagination bottom">
-				<?php
-					echo $this->Paginator->prev(__('prev'), array('tag' => 'li'), null, array('tag' => 'li','class' => 'disabled','disabledTag' => 'a'));
-					echo $this->Paginator->numbers(array('separator' => '','currentTag' => 'a', 'currentClass' => 'active','tag' => 'li','first' => 1));
-					echo $this->Paginator->next(__('next'), array('tag' => 'li','currentClass' => 'disabled'), null, array('tag' => 'li','class' => 'disabled','disabledTag' => 'a'));
-				?>
-			</ul>
-
-			<table class="table table-striped">
+		<h1>
+			<small><?php echo h($time['Event']['Organization']['name']); ?></small><br>
+			<?php echo h( sprintf( __('Viewing Time Entry %u'), $time['Time']['time_id'] ) ); ?> <small>for <?php echo h($time['User']['full_name']); ?></small>
+		</h1>
+		<p><?php
+			echo 
+				sprintf( 
+					__('<strong>%s</strong><br>%s &ndash; %s<br>%s'),
+					h($time['Event']['title']),
+					date('F j, Y g:i a', strtotime($time['Event']['start_time']) ),
+					date('F j, Y g:i a', strtotime($time['Event']['stop_time']) ),
+					h($time['Event']['description'])
+			); ?></p>
+		<div class="table-responsive">
+			<table class="table table-condensed">
 				<thead>
 					<tr>
-						<th><?php echo $this->Paginator->sort('User.last_name', "Last, First"); ?></th>
-						<th><?php echo $this->Paginator->sort('Time.start_time', 'Time In'); ?></th>
-						<th><?php echo $this->Paginator->sort('Time.stop_time', 'Time Out'); ?></th>
+						<th>Volunteer</th>
+						<th>Time In</th>
+						<th>Time Out</th>
+						<th>Duration</th>
 					</tr>
 				</thead>
 				<tbody>
-					<?php foreach($times as $time) : ?>
-						<tr>
-							<td><?php echo h( sprintf( __('%1$s, %2$s'), $time['User']['last_name'], $time['User']['first_name']) ); ?></td>
-							<td>
-								<?php echo h( date('F j, Y g:i a', strtotime($time['Time']['start_time']) ) ); ?>
-							</td>
-							<td>
-								<?php
-									if( $time['Time']['stop_time'] )
-									{
-										echo h( date('F j, Y g:i a', strtotime($time['Time']['stop_time']) ) );
-									}
-									else
-									{
-										echo sprintf('<em>%s</em>', __('missed punch') );
-									}
-								?>
-							</td>
-						</tr>
-					<?php endforeach; ?>
+					<tr>
+						<td><strong><?php echo h($time['User']['full_name']); ?></strong><br><?php echo h( sprintf(__('@%s'), $time['User']['username']) ); ?></td>
+						<td><?php echo h( date('F j, Y g:i a', strtotime($time['Time']['start_time']) ) ); ?></td>
+						<td><?php
+							if( $time['Time']['stop_time'] != null )
+							{
+								echo h( date('F j, Y g:i a', strtotime($time['Time']['stop_time']) ) );
+							}
+							else
+							{
+								echo $this->Html->tag('em', __('missing punch') );
+							}
+						?></td>
+						<td><?php
+							if( $time['Time']['stop_time'] != null )
+							{
+								echo h( sprintf( __('%s hr'), number_format($time['Time']['duration'], 2) ) );
+							}
+						?></td>
+
+					</tr>
 				</tbody>
-
 			</table>
-
-			<ul class="pagination">
-				<?php
-					echo $this->Paginator->prev(__('prev'), array('tag' => 'li'), null, array('tag' => 'li','class' => 'disabled','disabledTag' => 'a'));
-					echo $this->Paginator->numbers(array('separator' => '','currentTag' => 'a', 'currentClass' => 'active','tag' => 'li','first' => 1));
-					echo $this->Paginator->next(__('next'), array('tag' => 'li','currentClass' => 'disabled'), null, array('tag' => 'li','class' => 'disabled','disabledTag' => 'a'));
-				?>
-			</ul>
-
-		<?php else : ?>
-			<p><em>There are no recorded time entries for this event.</em></p>
-		<?php endif; ?>
-
-
+		</div>
+		<p class="text-muted"><?php echo h(
+			sprintf('%s joined %s %s',
+				$time['User']['full_name'], 
+				Configure::read('Solution.name'),
+				$this->Tm->timeAgoInWords( sprintf('%u minutes ago', $time['User']['account_age']) )
+			) 
+		); ?></p>
 	</div>
 </div>
