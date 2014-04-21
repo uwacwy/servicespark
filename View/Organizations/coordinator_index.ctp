@@ -3,7 +3,7 @@
 		<?php echo $this->Form->create('Organization', $form_defaults); ?>
 		<h1><small>Coordinator</small><br>Organizations </h1>
 		<p>You can coordinate events for these organizations.</p>
-		<?php if ( count($pag_organizations) > 1) : ?>
+		<?php if ( count($pag_organizations) > 0) : ?>
 		<table class="table table-striped"> 
 			<thead>  
           		<tr>  

@@ -138,7 +138,9 @@ class AppController extends Controller {
 		App::uses('Permission', 'Model');
 		$permission = new Permission();
 
-		return $permission->find('list', array('conditions' => $conditions, 'fields' => array('Permission.organization_id') ) );
+		$permissions = $permission->find('list', array('conditions' => $conditions, 'fields' => array('Permission.organization_id') ) );
+
+		return $permissions;
 	}
 
 
