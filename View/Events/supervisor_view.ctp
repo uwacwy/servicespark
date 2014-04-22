@@ -33,42 +33,47 @@
 </div>
 
 	
-<div class="row">
-	<div class="col-md-12">	
-		<?php
-			if( !empty($event['Address']) )
+<?php
+	if( !empty($event['Address']) )
+	{
+		echo '<div class="row"><div class="col-md-12"><h2>Event Addresses</h2></div></div>';
+
+		foreach( $event['Address'] as $address )
+		{
+			echo '<div class="row"><div class="col-md-4"><address>';
+			switch($address['type'])
 			{
-				echo "<h2>Event Addresses</h2>";
-
-				foreach( $event['Address'] as $address )
-				{
-					echo '<div class="col-md-12"><address>';
-					switch($address['type'])
-					{
-						case 'physical':
-							echo '<h4>Physical Address</h4>';
-							break;
-						case 'mailing':
-							echo '<h4>Mailing Address</h4>';
-							break;
-						case 'both':
-							echo '<h4>Physical and Mailing Address</h4>';
-							break;
-					}
-					echo $address['address1'] . ' <br>';
-					if($address['address2'] != null)
-					{ 
-						echo $address['address1'] . ' <br>';
-					}
-					echo $address['city'] . ', ' . $address['state'] . '  ' . $address['zip'];
-					echo '</address></div>';
-				}
-				echo "<br>";
+				case 'physical':
+					echo '<h4>Physical Address</h4>';
+					break;
+				case 'mailing':
+					echo '<h4>Mailing Address</h4>';
+					break;
+				case 'both':
+					echo '<h4>Physical and Mailing Address</h4>';
+					break;
 			}
+			echo $address['address1'] . ' <br>';
+			if($address['address2'] != null)
+			{ 
+				echo $address['address1'] . ' <br>';
+			}
+			echo $address['city'] . ', ' . $address['state'] . '  ' . $address['zip'];
+			echo '</address></div>';
 
-		?>
-	</div>
-</div>
+			if( $address['type'] != 'mailing' )
+			{
+				echo '<div class="col-md-8">';
+					echo '<iframe width="100%" height="300" frameborder="0" style="border:0"';
+						echo 'src="https://www.google.com/maps/embed/v1/place?key=AIzaSyAVfPLXNv_u-c7k6gQpoPK8c7oDbGHwvNU';
+					    echo '&q='.$address['address1'].'+'.$address['city'].'+'.$address['state'].'+'.$address['zip'].'">';
+					echo '</iframe>';
+				echo '</div>';
+			}
+			echo '</div><hr>';
+		}
+	}
+?>
 
 <div class="row">
 	<div class="col-md-12">
