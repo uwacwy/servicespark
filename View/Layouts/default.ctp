@@ -51,12 +51,13 @@ global $solution_name;
 		.form-inline .form-group input,
 		.form-inline .form-group select
 		{
-			margin-right: 10px;
+			margin-right: 5px;
+			margin-left: 5px;
 		}
 
 		.append-bottom
 		{
-			margin-bottom: 1.5em;
+			margin-bottom: 1.5em !important;
 		}
 		.append-top
 		{

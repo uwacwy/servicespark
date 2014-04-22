@@ -21,20 +21,19 @@
 					<div class="form-inline">
 						<?php
 							echo $this->Form->input('start_time',
-								array('label' => "Start Date", 'type' => 'datetime', 'separator' => " ", 'class' => 'form-control append-bottom' ) );
-							echo '<br>';
+								array('label' => "Start Date", 'type' => 'datetime', 'separator' => " ", 'div' => array('class' => 'append-bottom form-group') ) );
 							echo $this->Form->input('stop_time',
-								array('label' => 'Stop Date', 'type' => 'datetime', 'separator' => " ") );
-							echo '<br>';
-							echo '<br>';
+								array('label' => 'Stop Date', 'type' => 'datetime', 'separator' => " ", 'div' => array('class' => 'append-bottom form-group') ) );
 						?>
-					</div
+					</div>
 					<?php
 						echo $this->Form->input('organization_id', array('class' => 'form-control') );
 					?>
 				</div>
 			</div>
 		</div>
+
+		<hr>
 
 		<div class="row">
 			<div class="col-md-12">
@@ -62,7 +61,9 @@
 				</div>
 			</div>
 		</div>
+
 		<hr>
+
 		<div class="row">
 			<div class="col-md-12">
 				<h2>Addresses <small>Addresses will help volunteers navigate to your events.</small></h2>
@@ -84,6 +85,8 @@
 				</div>
 			</div>
 		</div>
+
+		<hr>
 
 		<?php echo $this->Form->end(array('label' => "Create Event", 'class' => 'btn btn-lg btn-primary')); ?>
 		</div>
