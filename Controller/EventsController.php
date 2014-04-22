@@ -498,6 +498,7 @@ class EventsController extends AppController {
 				'controller' => 'events', 'action' => 'index'));
 		}
 
+		$contain = array('Event');
 		$conditions = array(
 			'Event.organization_id' => $user_organizations
 		);
@@ -580,19 +581,38 @@ class EventsController extends AppController {
 		if( !$this->_CurrentUserCanPublish($user_organizations) )
 		{
 			$this->Session->setFlash('You do not have permission.', 'danger');
-			return $this->redirect("../../events");
+			return $this->redirect(array('volunteer' => true,
+				'controller' => 'events', 'action' => 'index'));
 		}
+
+		$contain = array('Event');
+		$conditions = array(
+			'Event.organization_id' => $user_organizations
+		);
+
+		$this->Paginator->settings['conditions'] = $conditions;
+		$this->Paginator->settings['limit'] = 15;
+
+		$events = $this->Paginator->paginate();
+		$this->set( compact('events') );
 	}
 
 	public function volunteer_view($id = null)
 	{
-		$events = $this->Event->findByEventId($id);
-		if( !$this->_CurrentUserCanPublish($events['Event']['organization_id']) )
+		$user_organizations = $this->_GetUserOrganizationsByPermission('publish');
+
+		if( !$this->_CurrentUserCanPublish($user_organizations) )
 		{
-			$this->Session->setFlash('You do not have permission.','danger');
+			$this->Session->setFlash('You do not have permission.', 'danger');
 			return $this->redirect(array('volunteer' => true,
 				'controller' => 'events', 'action' => 'index'));
 		}
+
+		$contain = array('Event');
+
+		$event = $this->Event->find('first', array('conditions' => array('Event.event_id' => $id) ) );
+
+		$this->set( compact('event') );
 	}
 
 	/**

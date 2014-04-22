@@ -9,7 +9,7 @@
 
 <div class="row">
 	<div class="col-md-12">
-		<?php echo $this->Form->create('Event'); ?>
+		<?php echo $this->Form->create('Event', $form_defaults); ?>
 		<h2>Create Event</h2>
 		<div class="row">
 			<div class="col-md-12">
@@ -17,8 +17,19 @@
 					<?php
 						echo $this->Form->input('title', array('class' => 'form-control') );
 						echo $this->Form->input('description', array('type' => 'textarea', 'class' => 'form-control') );
-						echo $this->Form->input('start_time');
-						echo $this->Form->input('stop_time');
+					?>
+					<div class="form-inline">
+						<?php
+							echo $this->Form->input('start_time',
+								array('label' => "Start Date", 'type' => 'datetime', 'separator' => " ", 'class' => 'form-control append-bottom' ) );
+							echo '<br>';
+							echo $this->Form->input('stop_time',
+								array('label' => 'Stop Date', 'type' => 'datetime', 'separator' => " ") );
+							echo '<br>';
+							echo '<br>';
+						?>
+					</div
+					<?php
 						echo $this->Form->input('organization_id', array('class' => 'form-control') );
 					?>
 				</div>
