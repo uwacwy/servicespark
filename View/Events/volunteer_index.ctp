@@ -24,7 +24,12 @@
 							echo $stopTime->format('F j, Y, g:i a'); ?>&nbsp;</td>
 
 						<td class="actions">
-							<?php echo $this->Html->link(__('View'), array('action' => 'view', $event['Event']['event_id'])); ?>
+							<?php 
+								echo $this->Html->link(__('View'),
+									array('action' => 'view', $event['Event']['event_id']),
+									array('class' => 'btn btn-success btn-xs')
+								);
+							?>
 						</td>
 					</tr>
 				<?php endforeach; ?>
