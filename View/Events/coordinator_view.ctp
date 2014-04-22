@@ -20,18 +20,36 @@
 
 
 	<div class="row">
-		<div class="col-md-12">
-			<div class="btn-group pull-right">
-				<button class="btn btn-default btn-md dropdown-toggle btn-primary" type="button" data-toggle="dropdown">
-					Actions <span class="caret"></span>
-					</button>
-				<ul class="dropdown-menu">
-					<li><?php echo $this->Html->link(__('Edit Event'), array('action' => 'edit', $event['Event']['event_id'])); ?></li>
-					<li><?php echo $this->Form->postlink(__('Delete Event'), array('action' => 'delete', $event['Event']['event_id']), null, __('Are you sure you want to delete # %s?', $event['Event']['event_id'])); ?> </li>
-					<li><?php echo $this->Html->link(__('List Events'), array('action' => 'index')); ?></li>
-					<li><?php echo $this->Html->link(__('New Event'), array('action' => 'add')); ?> </li>
-				</ul>
+		<div class="col-md-3">
+			<h3>Viewing Event</h3>
+			<div class="list-group">
+				<?php
+					echo $this->Html->link(
+						__('Edit Event'),
+						array('coordinator' => true, 'controller' => 'events', 'action' => 'edit', $event['Event']['event_id']),
+						array('class' => 'list-group-item list-group-item-success')
+					);
+					echo $this->Html->link(
+						__('Adjust Time Entries'),
+						array('coordinator' => true, 'controller' => 'times', 'action' => 'adjust', $event['Event']['event_id']),
+						array('class' => 'list-group-item')
+					);
+				?>
 			</div>
+			<div class="list-group">
+				<?php echo $this->Html->link(__('List Events'), array('go' => true, 'action' => 'index'), array('class' => 'list-group-item') ); ?>
+				<?php echo $this->Html->link(__('New Event'), array('go' => true, 'action' => 'add'), array('class' => 'list-group-item') ); ?>
+			</div>
+			<p>
+				<?php echo $this->Form->postlink(
+						__('Delete Event'), 
+						array('coordinator' => true, 'action' => 'delete', $event['Event']['event_id']), 
+						array('class' => 'btn btn-block btn-danger'), 
+						__('Are you sure you want to delete %s?  This will delete all associated time entry data.', $event['Event']['title'])
+					); ?>
+			</p>
+		</div>
+		<div class="col-md-9">
 
 			<h1><small><?php echo $event['Organization']['name']; ?></small><br>
 				<?php echo h($event['Event']['title']); ?>

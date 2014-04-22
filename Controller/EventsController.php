@@ -12,7 +12,7 @@ class EventsController extends AppController {
 	{
 		parent::beforeFilter();
 	    // Allow guest users to open event index and event view
-	    $this->Auth->allow('index','view');
+	    $this->Auth->allow('index','view', 'go_view', 'go_add', 'go_index');
 	}
 
 /**
@@ -35,7 +35,7 @@ class EventsController extends AppController {
 		{
 			return $this->redirect( array('supervisor' => true, 'action' => 'view', $event_id) );
 		}
-		elseif( $this->_CurrentUserCanWrite( $event['Event']['organization_id']) )
+		elseif( $this->Auth->user('user_id') != null )
 		{
 			return $this->redirect( array('volunteer' => true, 'action' => 'view', $event_id) );
 		}
@@ -298,9 +298,10 @@ class EventsController extends AppController {
 	public function coordinator_delete($id = null)
 	{
 		$events = $this->Event->findByEventId($id);
+
 		if( $this->_CurrentUserCanWrite($events['Event']['organization_id']) )
 		{
-			$this->delete($id);
+			$this->Event->delete($id);
 		}
 		else
 		{
@@ -324,7 +325,7 @@ class EventsController extends AppController {
 
 		$user_organizations = $this->_GetUserOrganizationsByPermission('write');
 
-		if( $this->_CurrentUserCanWrite($user_organizations) )
+		if( !empty($user_organizations) ) // do we have organizations?
 		{
 			if ($this->request->is('post')) 
 			{
@@ -399,12 +400,15 @@ class EventsController extends AppController {
 
 	public function coordinator_edit($id = null)
 	{
-		$user_organizations = $this->_GetUserOrganizationsByPermission('write');
-		if( $this->_CurrentUserCanWrite($user_organizations) )
+		if (!$this->Event->exists($id)) {
+			throw new NotFoundException(__('Invalid event'));
+		}
+		
+		$event = $this->Event->findByEventId($id);
+
+		if( $this->_CurrentUserCanWrite($event['Organization']['organization_id']) )
 		{
-			if (!$this->Event->exists($id)) {
-				throw new NotFoundException(__('Invalid event'));
-			}
+
 			if ($this->request->is(array('post', 'put'))) 
 			{
 				if(! $this->Event->validTimes()) {
@@ -463,12 +467,12 @@ class EventsController extends AppController {
 	{
 		$user_organizations = $this->_GetUserOrganizationsByPermission('write');
 
-		if( !$this->_CurrentUserCanWrite($user_organizations) )
-		{
-			$this->Session->setFlash('You do not have permission.', 'danger');
-			return $this->redirect(array('supervisor' => true,
-				'controller' => 'events', 'action' => 'index'));
-		}
+		// if( !$this->_CurrentUserCanWrite($user_organizations) )
+		// {
+		// 	$this->Session->setFlash('You do not have permission.', 'danger');
+		// 	return $this->redirect(array('supervisor' => true,
+		// 		'controller' => 'events', 'action' => 'index'));
+		// }
 
 		$conditions = array(
 			'Event.organization_id' => $user_organizations
@@ -483,32 +487,37 @@ class EventsController extends AppController {
 		$this->set( compact('events') );
 	}
 
-	public function coordinator_view($id = null)
+	public function coordinator_view($event_id = null)
 	{
 		$user_organizations = $this->_GetUserOrganizationsByPermission('write');
 
-		if( !$this->_CurrentUserCanRead($user_organizations) )
-		{
-			$this->Session->setFlash('You do not have permission.', 'danger');
-			return $this->redirect(array('supervisor' => true,
-				'controller' => 'events', 'action' => 'view', $id));
-		}
+		// if( !$this->_CurrentUserCanRead($user_organizations) )
+		// {
+		// 	$this->Session->setFlash('You do not have permission.', 'danger');
+		// 	return $this->redirect(array('supervisor' => true,
+		// 		'controller' => 'events', 'action' => 'view', $event_id));
+		// }
 
 		$sql_date_fmt = 'Y-m-d H:i:s';
 		$contain = array('Event');
 
 		// summary all time
-		//$users = $this->_GetUsersByOrganization($id);
+		//$users = $this->_GetUsersByOrganization($event_id);
 
-		$event = $this->Event->find('first', array('conditions' => array('Event.event_id' => $id) ) );
+		$event = $this->Event->find('first', array('conditions' => array('Event.event_id' => $event_id) ) );
 
 		if( empty($event) )
 		{
 			throw new NotFoundException( __('Page Not Found') );
 		}
 
+		if( !$this->_CurrentUserCanWrite($event['Event']['organization_id']) )
+		{
+			return $this->redirect( array('supervisor' => true, 'controller' => 'events', 'action' => 'view', $event_id) );
+		}
+
 		$conditions = array(
-			'Time.event_id' => $id
+			'Time.event_id' => $event_id
 		);
 		$fields = array(
 			'Time.*',
@@ -584,27 +593,35 @@ class EventsController extends AppController {
 		$this->set( compact('events') );
 	}
 
-	public function supervisor_view($id = null)
+	public function supervisor_view($event_id = null)
 	{
 		$user_organizations = $this->_GetUserOrganizationsByPermission('read');
 
-		if( !$this->_CurrentUserCanRead($user_organizations) )
-		{
-			$this->Session->setFlash('You do not have permission.', 'danger');
-			return $this->redirect(array('volunteer' => true,
-				'controller' => 'events', 'action' => 'view', $id));
-		}
+
 
 		$sql_date_fmt = 'Y-m-d H:i:s';
 		$contain = array('Event');
 
 		// summary all time
-		//$users = $this->_GetUsersByOrganization($id);
+		//$users = $this->_GetUsersByOrganization($event_id);
 
-		$event = $this->Event->find('first', array('conditions' => array('Event.event_id' => $id) ) );
+		$event = $this->Event->find('first', array('conditions' => array('Event.event_id' => $event_id) ) );
+
+		if( empty($event) )
+		{
+			throw new NotFoundException( __('Page Not Found') );
+		}
+
+		if( !$this->_CurrentUserCanRead($event['Event']['organization_id']) )
+		{
+			$this->Session->setFlash('You cannot supervise this event');
+			return $this->redirect(array('volunteer' => true,
+				'controller' => 'events', 'action' => 'view', $event_id));
+		}
+
 
 		$conditions = array(
-			'Time.event_id' => $id
+			'Time.event_id' => $event_id
 		);
 		$fields = array(
 			'Time.*',

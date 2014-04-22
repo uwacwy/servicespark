@@ -41,7 +41,7 @@
 					echo $address['address1'] . ' <br>';
 					if($address['address2'] != null)
 					{ 
-						echo $address['address1'] . ' <br>';
+						echo $address['address2'] . ' <br>';
 					}
 					echo $address['city'] . ', ' . $address['state'] . '  ' . $address['zip'];
 					echo '</address></div>';

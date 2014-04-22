@@ -41,7 +41,8 @@ class AppController extends Controller {
 		'Js',
 		'Html' => array('className' => 'BoostCake.BoostCakeHtml'),
 		'Tm' => array('className' => 'Time'),
-		'Duration'
+		'Duration',
+		'Utility'
 		//'Form' => array('className' => 'BoostCake.BoostCakeForm'),
 		//'Paginator' => array('className' => 'BoostCake.BoostCakePaginator'),
 	);
