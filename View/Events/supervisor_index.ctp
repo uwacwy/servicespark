@@ -1,5 +1,19 @@
+<div class="row">
+	<div class="col-md-12">
+		<ol class="breadcrumb">
+			<li><a href="<?php echo $this->Html->url('/'); ?>"><span class="glyphicon glyphicon-home"></span><span class="sr-only"><?php echo Configure::read('Solution.name'); ?></span></a></li>
+			<li><strong><?php echo h( __('Supervisor') ); ?></strong></li>
+			<li><?php echo h( __('Events you supervise') ); ?></li>
+		</ol> 
+	</div>
+</div>
+
 <div class="events index">
-	<h2><?php echo __('Events'); ?></h2>
+	<h2>
+		<small><?php echo h( __('Supervise') ); ?></small><br>
+		<?php echo __('Events'); ?>
+	</h2>
+	<?php if( !empty($events) ) : ?>
 	<table cellpadding="0" cellspacing="0" class="table table-striped">
 	<tr>
 			<!-- <th><?php echo $this->Paginator->sort('event_id'); ?></th> -->
@@ -46,4 +60,7 @@
 					echo $this->Paginator->next(__('next'), array('tag' => 'li','currentClass' => 'disabled'), null, array('tag' => 'li','class' => 'disabled','disabledTag' => 'a'));
 				?>
 	</ul>
+<?php else: ?>
+	<p><em>You are not supervising for any organizations.  Before you can supervise events, you need to be added to an organization as a supervisor.</em></p>
+<?php endif; ?>
 </div>

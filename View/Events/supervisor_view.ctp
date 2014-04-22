@@ -1,3 +1,20 @@
+<div class="row">
+	<div class="col-md-12">
+		<ol class="breadcrumb">
+			<li><a href="<?php echo $this->Html->url('/'); ?>"><span class="glyphicon glyphicon-home"></span><span class="sr-only"><?php echo Configure::read('Solution.name'); ?></span></a></li>
+			<li><strong><?php echo h( __('Supervisor') ); ?></strong></li>
+			<li><?php echo $this->Html->link(
+				$event['Organization']['name'],
+				array('supervisor' => true, 'controller' => 'organizations', 'action' => 'view', $event['Organization']['organization_id'])
+			); ?></li>
+			<li><?php
+				echo h( sprintf( __('Viewing event %s'), $event['Event']['title']) );
+			?></li>
+		</ol> 
+	</div>
+</div>
+
+
 <div class="events view">
 	<div style="text-align: right">
 		<?php echo $this->Html->link(__('Back to Events'), array('action' => 'index'), array('class' => 'btn btn-primary')); ?>
