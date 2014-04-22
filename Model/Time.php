@@ -41,49 +41,79 @@ class Time extends AppModel
 		),
 		'start_time' => array(
 			'rule' => array('date_compare', 'lt', 'stop_time'),
-			'required' => true,
+			'required' => false,
         	'allowEmpty' => false,
-        	'message' => 'Time object requires start time.'
+        	'message' => 'Start time must be less than stop time.'
 		),
 		'stop_time' => array(
 			'rule' => array('date_compare', 'gt', 'start_time'),
-			'required' => 'false',
+			'required' => false,
+			'message' => 'Stop time must be greater than start time.',
 			'allowEmpty' => true,
 		)
 	);
 
 	public function date_compare($value, $mode, $against)
 	{
+		$against_str = $this->data[$this->name][$against];
+		$value_str = reset($value);
+
+		debug($value);
+		debug($against);
+		
+		if( $against == 'stop_time' && $against_str == null  )
+		{
+			return true;
+		}
+
+		if( $against == 'start_time' && $value_str == null)
+		{
+			return true;
+		}		
+
 		switch($mode)
 		{
 			case 'lt':
 			case '<':
-				if( !isset($this->data['Time'][$against]) || is_null($this->data['Time'][$against]) ) return true;
-				if( strtotime($value) < strtotime($this->data['Time'][$against]) )
+				debug( sprintf('verifying %s < %s', $value_str, $against_str) );
+				if( strtotime($value_str) < strtotime($against_str) )
+				{
+					debug('returning true');
 					return true;
+				}
 				break;
 			case 'lte':
 			case '<=':
-				if( !isset($this->data['Time'][$against]) || is_null($this->data['Time'][$against]) ) return true;
-				if( strtotime($value) <= strtotime($this->data['Time'][$against]) )
+				debug( sprintf('verifying %s <= %s', $value_str, $against_str) );
+				if( strtotime($value_str) <= strtotime($against_str) )
+				{
+					debug('returning true');
 					return true;
+				}
 				break;
 			case 'gt':
 			case '>':
-				if( is_null($value) ) return true;
-				if( strtotime($value) > strtotime($this->data['Time'][$against]) )
+				debug( sprintf('verifying %s > %s', $value_str, $against_str) );
+				if( strtotime($value_str) > strtotime($against_str) )
+				{
+					debug('returning true');
 					return true;
+				}
 				break;
 			case 'gte':
 			case '>=':
-				if( is_null($value) ) return true;
-				if( strtotime($value) < strtotime($this->data['Time'][$against]) )
+				debug( sprintf('verifying %s >= %s', $value_str, $against_str) );
+				if( strtotime($value_str) < strtotime($against_str) )
+				{
+					debug('returning true');
 					return true;
+				}
 				break;
-			default:
-				return false;
 		}
+
+		debug('returning false');
 		
+		return false;
 
 	}
 

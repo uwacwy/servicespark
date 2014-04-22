@@ -19,15 +19,9 @@
 			<small><?php echo h($time['Event']['Organization']['name']); ?></small><br>
 			<?php echo h( sprintf( __('Viewing Time Entry %u'), $time['Time']['time_id'] ) ); ?> <small>for <?php echo h($time['User']['full_name']); ?></small>
 		</h1>
-		<p><?php
-			echo 
-				sprintf( 
-					__('<strong>%s</strong><br>%s &ndash; %s<br>%s'),
-					h($time['Event']['title']),
-					date('F j, Y g:i a', strtotime($time['Event']['start_time']) ),
-					date('F j, Y g:i a', strtotime($time['Event']['stop_time']) ),
-					h($time['Event']['description'])
-			); ?></p>
+		<p><strong><?php echo h($time['Event']['title']); ?></strong><br>
+			<?php echo h( $this->Duration->format($time['Event']['start_time'], $time['Event']['stop_time']) ); ?><br>
+			<?php echo h( $time['Event']['description']); ?></p>
 		<div class="table-responsive">
 			<table class="table table-condensed">
 				<thead>

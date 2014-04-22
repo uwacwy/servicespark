@@ -182,18 +182,24 @@ class TimesController extends AppController
 
 			if( $this->request->data['Time']['blank'] )
 			{
-				unset( $this->request->data['Time']['stop_time'], $this->request->data['Time']['blank'] );
+				unset( $this->request->data['Time']['stop_time'] );
 				$this->request->data['Time']['stop_time'] = "";
 			}
 
+			unset($this->request->data['Time']['blank']);
+
 			$save['Time'] = $this->request->data['Time'];
 
-			//debug($save);
+			debug($save);
 
-			if( $this->Time->save($save) )
+			if( $this->Time->save($save['Time']) )
 			{
 				$this->Session->setFlash( sprintf(__('Time entry %1$u was successfully updated.'), $this->Time->id), 'success');
 				return $this->redirect( $this->_Redirector('coordinator', 'event', 'view', $time['Event']['event_id']) );
+			}
+			else
+			{
+				$this->Session->setFlash( __('There were problems saving your time entry edit.'), 'danger');
 			}
 		}
 

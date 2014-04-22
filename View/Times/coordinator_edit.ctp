@@ -1,8 +1,9 @@
 <div class="row">
 	<div class="col-md-12">
 		<ol class="breadcrumb">
-			<li>Coordinator</li>
-			<li><?php echo $this->Html->link( $time['Event']['Organization']['name'], array('controller' => 'organizations', 'action' => 'view', $time['Organization']['organization_id']) ); ?></li>
+			<li><a href="<?php echo $this->Html->url('/'); ?>"><span class="glyphicon glyphicon-home"></span><span class="sr-only"><?php echo Configure::read('Solution.name'); ?></span></a></li>
+			<li><strong><?php echo h( __('Coordinator') ); ?></strong></li>
+			<li><?php echo $this->Html->link( $time['Event']['Organization']['name'], array('controller' => 'organizations', 'action' => 'view', $time['Event']['Organization']['organization_id']) ); ?></li>
 			<li><?php echo $this->Html->link( $time['Event']['title'], array('controller' => 'events', 'action' => 'view', $time['Event']['event_id']) ); ?></li>
 			<li><?php echo $this->Html->link( __('Adjust Time Entries'), array('controller' => 'times', 'action' => 'adjust', $time['Event']['event_id']) ); ?></li>
 			<li><?php echo sprintf( __('Editing time entry %u for %s'), $time['Time']['time_id'], $time['User']['full_name'] ); ?></li>
