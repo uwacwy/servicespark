@@ -411,9 +411,12 @@ class EventsController extends AppController {
 					return false;
 				}
 
-				$address_ids = $this->_ProcessAddresses($this->request->data['Address'], $this->Event->Address);
-				unset($this->request->data['Address']);
-				$this->request->data['Address'] = $address_ids;
+				if( isset($this->request->data['Address']) )
+				{
+					$address_ids = $this->_ProcessAddresses($this->request->data['Address'], $this->Event->Address);
+					unset($this->request->data['Address']);
+					$this->request->data['Address'] = $address_ids;
+				}
 
 				if ($this->Event->save($this->request->data)) {
 					$this->Session->setFlash(__('The event has been saved.'), 'success');

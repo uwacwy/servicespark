@@ -34,15 +34,17 @@ class Event extends AppModel
 			)
 		),
 		'start_time' => array(
-			'notEmpty' => array(
-				'rule' => 'notEmpty',
-				'message' => 'You must enter a start time for an event.'
+			'lt_stop_time' => array(
+				'rule' => array('date_compare', 'lt', 'stop_time'),
+				'message' => 'Start Time must be before the Stop Time',
+				'required' => true
 			)
 		),
 		'stop_time' => array(
-			'notEmpty' => array(
-				'rule' => 'notEmpty',
-				'message' => 'You must enter an end time for an event.'
+			'gt_start_time' => array(
+				'rule' => array('date_compare', 'gt', 'start_time'),
+				'message' => 'Stop Time must be after the Start Time',
+				'required' => true
 			)
 		)
 	);

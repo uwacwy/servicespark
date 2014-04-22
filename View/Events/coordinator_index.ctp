@@ -12,38 +12,56 @@
 
 <div class="events index">
 	<div class="pull-right">
-		<?php echo $this->Html->link(__('Create Event'), array('action' => 'add'), array('class' => 'btn btn-primary')); ?>
+		<?php echo $this->Html->link( __('Create New Event'), array('coordinator' => true, 'controller' => 'events', 'action' => 'add'), array('class' => 'btn btn-primary')); ?>
 	</div>
 
-	<h2><?php echo __('Events'); ?></h2>
-	
-	<table cellpadding="0" cellspacing="0" class="table table-striped">
-	<tr>
-			<th><?php echo $this->Paginator->sort('title'); ?></th>
-			<th><?php echo $this->Paginator->sort('Organization.name'); ?></th> 
-			<th><?php echo $this->Paginator->sort('start_time'); ?></th>
-			<th><?php echo $this->Paginator->sort('stop_time'); ?></th>
-			<th class="actions"><?php echo __('Actions'); ?></th>
-	</tr>
-	<?php foreach ($events as $event): ?>
-	<tr>
-		<td><?php echo h($event['Event']['title']); ?>&nbsp;</td>
-		<td><?php echo h($event['Organization']['name']); ?>&nbsp;</td>
+	<h2><?php echo h( __('Events') ); ?></h2>
+	<p class="text-muted"><?php echo h( __('These are events for organizations for which you are a coordinator') ); ?></p>
 
-		<td> <?php $startTime = new DateTime($event['Event']['start_time']);
-			echo $startTime->format('F j, Y, g:i a'); ?>&nbsp;</td>
+<?php if( !empty($events) ): ?>
+	<div class="table-responsive">
+		<table cellpadding="0" cellspacing="0" class="table table-striped">
+		<tr>
+				<th><?php echo $this->Paginator->sort('title', __('Event Title') ); ?></th>
+				<th><?php echo $this->Paginator->sort('Organization.name', __('Organization') ); ?></th> 
+				<th><?php echo $this->Paginator->sort('start_time', __('Start Time') ); ?></th>
+				<th><?php echo $this->Paginator->sort('stop_time', __('Stop Time') ); ?></th>
+				<th class="actions text-right">&nbsp;</th>
+		</tr>
+		<?php foreach ($events as $event): ?>
+			<tr>
+				<td><?php echo h($event['Event']['title']); ?>&nbsp;</td>
+				<td><?php echo h($event['Organization']['name']); ?>&nbsp;</td>
 
-		<td> <?php $stopTime = new DateTime($event['Event']['stop_time']);
-			echo $stopTime->format('F j, Y, g:i a'); ?>&nbsp;</td>
+				<td> <?php $startTime = new DateTime($event['Event']['start_time']);
+					echo $startTime->format('F j, Y, g:i a'); ?>&nbsp;</td>
 
-		<td class="actions">
-			<?php echo $this->Html->link(__('View'), array('action' => 'view', $event['Event']['event_id'])); ?>
-			<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $event['Event']['event_id'])); ?>
-			<?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $event['Event']['event_id']), null, __('Are you sure you want to delete # %s?', $event['Event']['event_id'])); ?>
-		</td>
-	</tr>
-<?php endforeach; ?>
-	</table>
+				<td> <?php $stopTime = new DateTime($event['Event']['stop_time']);
+					echo $stopTime->format('F j, Y, g:i a'); ?>&nbsp;</td>
+
+				<td class="actions text-right">
+					<?php
+						echo $this->Html->link(__('View'),
+							array('action' => 'view', $event['Event']['event_id']),
+							array('class' => 'btn btn-success btn-xs')
+						);
+						echo ' ';
+						echo $this->Html->link(__('Edit'),
+							array('action' => 'edit', $event['Event']['event_id']),
+							array('class' => 'btn btn-primary btn-xs')
+						);
+						echo ' ';						
+						echo $this->Form->postLink(__('Delete'),
+							array('action' => 'delete', $event['Event']['event_id']),
+							array('class' => 'btn btn-danger btn-xs'),
+							__('Are you sure you want to delete event #%s?  This will delete all Time Entry data and cannot be recovered.', $event['Event']['event_id'])
+						);
+					?>
+				</td>
+			</tr>
+		<?php endforeach; ?>
+		</table>
+	</div>
 	<p>
 	<?php
 	echo $this->Paginator->counter(array(
@@ -57,5 +75,8 @@
 			echo $this->Paginator->next(__('next'), array('tag' => 'li','currentClass' => 'disabled'), null, array('tag' => 'li','class' => 'disabled','disabledTag' => 'a'));
 		?>
 	</ul>
+<?php else: ?>
+	<p><em><?php echo __("You have no organizations you can coordinate for."); ?></em></p>
+<?php endif; ?>
 </div>
 

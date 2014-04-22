@@ -32,4 +32,71 @@ App::uses('Model', 'Model');
 class AppModel extends Model
 {
 	public $actsAs = array('Containable');
+
+	/*
+		date_compare
+		--
+		can be used by Event and Time
+	*/
+	public function date_compare($value, $mode, $against)
+	{
+		$against_str = $this->data[$this->name][$against];
+		$value_str = reset($value);
+
+		
+		if( $against == 'stop_time' && $against_str == null  )
+		{
+			return true;
+		}
+
+		if( $against == 'start_time' && $value_str == null)
+		{
+			return true;
+		}		
+
+		switch($mode)
+		{
+			case 'lt':
+			case '<':
+				//debug( sprintf('verifying %s < %s', $value_str, $against_str) );
+				if( strtotime($value_str) < strtotime($against_str) )
+				{
+					//debug('returning true');
+					return true;
+				}
+				break;
+			case 'lte':
+			case '<=':
+				//debug( sprintf('verifying %s <= %s', $value_str, $against_str) );
+				if( strtotime($value_str) <= strtotime($against_str) )
+				{
+					//debug('returning true');
+					return true;
+				}
+				break;
+			case 'gt':
+			case '>':
+				//debug( sprintf('verifying %s > %s', $value_str, $against_str) );
+				if( strtotime($value_str) > strtotime($against_str) )
+				{
+					//debug('returning true');
+					return true;
+				}
+				break;
+			case 'gte':
+			case '>=':
+				//debug( sprintf('verifying %s >= %s', $value_str, $against_str) );
+				if( strtotime($value_str) < strtotime($against_str) )
+				{
+					//debug('returning true');
+					return true;
+				}
+				break;
+		}
+
+		//debug('returning false');
+		
+		return false;
+
+	}
 }
