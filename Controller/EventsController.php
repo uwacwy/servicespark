@@ -640,8 +640,7 @@ class EventsController extends AppController {
 		if( !$this->_CurrentUserCanPublish($user_organizations) )
 		{
 			$this->Session->setFlash('You do not have permission.', 'danger');
-			return $this->redirect(array('volunteer' => true,
-				'controller' => 'events', 'action' => 'index'));
+			return $this->redirect('../../events/');
 		}
 
 		$conditions = array(
@@ -667,8 +666,7 @@ class EventsController extends AppController {
 		if( !$this->_CurrentUserCanPublish($event['Event']['organization_id']) )
 		{
 			$this->Session->setFlash('You do not have permission.','danger');
-			return $this->redirect(array('volunteer' => true,
-				'controller' => 'events', 'action' => 'index'));
+			return $this->redirect('../../events/view/'.$event_id);
 		}
 
 		$this->set( compact('event') );
