@@ -20,7 +20,7 @@ class TimesController extends AppController
 
 	public function go_index()
 	{
-		return $this->redirect('volunteer' => true, 'controller' => 'times', 'action' => 'index');
+		return $this->redirect( array('volunteer' => true, 'controller' => 'times', 'action' => 'index') );
 	}
 
 	public function volunteer_index()

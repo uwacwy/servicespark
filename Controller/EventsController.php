@@ -632,15 +632,22 @@ class EventsController extends AppController {
 		}
 	}
 
-	public function volunteer_view($id = null)
+	public function volunteer_view($event_id = null)
 	{
-		$events = $this->Event->findByEventId($id);
-		if( !$this->_CurrentUserCanPublish($events['Event']['organization_id']) )
+		$event = $this->Event->findByEventId($event_id);
+
+		if( empty($event) )
+		{
+			throw new NotFoundException(__('Event does not exist') );
+		}
+		if( !$this->_CurrentUserCanPublish($event['Event']['organization_id']) )
 		{
 			$this->Session->setFlash('You do not have permission.','danger');
 			return $this->redirect(array('volunteer' => true,
 				'controller' => 'events', 'action' => 'index'));
 		}
+
+		$this->set( compact('event') );
 	}
 
 	/**
