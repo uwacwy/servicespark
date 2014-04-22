@@ -27,68 +27,49 @@
 		</tr>
 */
 ?>
-		<ul class="media-list">
-		<?php foreach ($events as $event): ?>
-		<li class="media">
-			<?php if( isset($event['Image']) ) : ?>
+		<p class="visible-sm visible-xs"><span class="glyphicon glyphicon-resize-horizontal"></span> <?php echo __('Scroll side-to-side to see more information'); ?></p>
+		<p>Sort by <?php echo $this->Paginator->sort('Event.title', 'Event Title'); ?>, 
+			<?php echo $this->Paginator->sort('Organization.name', __('Organization Name') ); ?>, 
+			<?php echo $this->Paginator->sort('Event.start_time', __('Event Start') ); ?>, 
+			<?php echo $this->Paginator->sort('Event.stop_time', __('Event Stop') ); ?>
+		</p>
+		<div class="table-responsive">
+			<table class="table table-striped table-condensed">
+				<?php foreach ($events as $event): ?>
 
-			<?php endif; ?>
-			<div class="media-body">
-				<h4 class="media-heading">
-					<?php echo $this->Html->link( $event['Event']['title'], array('volunteer' => false, 'controller' => 'events', 'action' => 'view', $event['Event']['event_id']) ); ?>
-				</h4>
-				<p>
-					<?php echo h( $event['Event']['description'] ); ?><br>
-					<?php echo h( $this->Duration->format($event['Event']['start_time'], $event['Event']['stop_time']) ); ?>
-					<?php 
+				<tr>
+					<td>
+						<strong><?php echo $this->Html->link( $event['Event']['title'], array('volunteer' => false, 'controller' => 'events', 'action' => 'view', $event['Event']['event_id']) ); ?></strong>
+						<br><?php echo h( $event['Event']['description'] ); ?>
+						<br><?php echo h( $this->Duration->format($event['Event']['start_time'], $event['Event']['stop_time']) ); ?>
+						<?php if( !empty($event['Skill']) ) : ?>
+							<br>
+							<?php
+								foreach($event['Skill'] as $skill)
+								{
+									echo $this->Html->tag('span', $skill['skill'], array('class' => 'label label-info', 'title' => __('If you enjoy %s, consider volunteering for this event.', $skill['skill']) ) );
+									echo ' ';
+								}
+							?>
+						<?php endif; ?>
+					</td>
+					<td>
+						<?php echo $this->Html->link( $event['Organization']['name'], array('controller' => 'organizations', 'action' => 'view', $event['Organization']['organization_id']), array('class' => 'btn btn-info btn-xs')); ?>
+					</td>
 
-					if( !empty($event['Skill']) ) : ?>
-					<br>
-					<small>Recommended skills: </small>
-					<?php
-						foreach($event['Skill'] as $skill)
-						{
-							echo $this->Html->tag('span', $skill['Skill'], array('class' => 'label label-primary') );
-							echo ' ';
-						}
-					endif; ?>
-				</p>
-				<hr>
+				</tr>
 
-			</div>
-		</li>
-<?php
-/*
-		<tr>
-			<td><?php echo h($event['Event']['title']); ?>&nbsp;</td>
-			<td><?php echo h($event['Organization']['name']); ?>&nbsp;</td>
-
-			<td> <?php $startTime = new DateTime($event['Event']['start_time']);
-				echo $startTime->format('F j, Y, g:i a'); ?>&nbsp;</td>
-
-			<td> <?php $stopTime = new DateTime($event['Event']['stop_time']);
-				echo $stopTime->format('F j, Y, g:i a'); ?>&nbsp;</td>
-
-			<td class="actions">
-				<?php
-
-				echo $this->Html->link(
-					__('View Event'),
-					array('action' => 'view', $event['Event']['event_id']),
-					array('class' => 'btn btn-primary btn-xs')
-				); ?>
-			</td>
-		</tr>
-*/
-?>
-	<?php endforeach; ?>
-</ul>
+				<?php endforeach; ?>
+				</ul>
+			</table>
+		</div>
 		<p>
-		<?php
-		echo $this->Paginator->counter(array(
-		'format' => __('Page {:page} of {:pages}, showing {:current} records out of {:count} total, starting on record {:start}, ending on {:end}')
-		));
-		?>	</p>
+			<?php
+				echo $this->Paginator->counter(array(
+					'format' => __('Page {:page} of {:pages}, showing {:current} records out of {:count} total, starting on record {:start}, ending on {:end}')
+				));
+			?>
+		</p>
 		<ul class="pagination bottom">
 			<?php
 				echo $this->Paginator->prev(__('prev'), array('tag' => 'li'), null, array('tag' => 'li','class' => 'disabled','disabledTag' => 'a'));

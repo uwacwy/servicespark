@@ -74,7 +74,7 @@ class TimesController extends AppController
 		if($existing > 0)
 		{
 			$this->Session->setFlash( __('You have already clocked into this event.  Your event coordinator can adjust time punches for you.'), 'warning');
-			return $this->redirect( $this->_Redirector('go', 'events', 'view', $event['Event']['event_id']) );
+			return $this->redirect( array('go' => true, 'controller' => 'events', 'action' => 'view', $event['Event']['event_id'] ) );
 		}
 
 		
@@ -86,13 +86,14 @@ class TimesController extends AppController
 				$entry['Time'] = array(
 					'user_id' => $this->Auth->user('user_id'),
 					'event_id' => $event['Event']['event_id'],
-					'start_time' => date('Y-m-d H:i:s')
+					'start_time' => date('Y-m-d H:i:s'),
+					'stop_time' => null
 				);
 
 				if( $this->Time->save($entry) )
 				{
 					$this->Session->setFlash( __('You have been clocked in'), 'success');
-					return $this->redirect( array('controller' => 'events', 'action' => 'view', $event['Event']['event_id']) );
+					return $this->redirect( array('go' => true, 'controller' => 'events', 'action' => 'view', $event['Event']['event_id'] ) );
 				}
 			}
 		}
@@ -152,7 +153,7 @@ class TimesController extends AppController
 			$this->Time->saveField('stop_time', date('Y-m-d H:i:s') );
 
 			$this->Session->setFlash( __('You have been clocked out of this event'), 'success');
-			$this->redirect( $this->_Redirector('volunteer', 'events', 'view', $event['Event']['event_id']) );
+			return $this->redirect( array('go' => true, 'controller' => 'events', 'action' => 'view', $event['Event']['event_id'] ) );
 		}
 
 		$this->set( compact('event') );

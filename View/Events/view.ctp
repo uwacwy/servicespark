@@ -1,50 +1,77 @@
-<div class="events view">
-	<div style="text-align: right">
-		<?php echo $this->Html->link(__('Back to Events'), array('action' => 'index'), array('class' => 'btn btn-primary')); ?>
+<div class="row">
+	<div class="col-md-3">
+		<?php echo $this->Html->link(__('Back to Events'), array('action' => 'index'), array('class' => 'btn btn-primary btn-lg btn-block')); ?>
+		<?php echo $this->Html->link( __('Register for %s', Configure::read('Solution.name')), array('controller' => 'users', 'action' => 'register'), array('class' => 'btn btn-default btn-lg btn-block') ); ?>
 	</div>
-<h2><?php echo __('Event'); ?></h2>
-	<?php $startTime = new DateTime($event['Event']['start_time']);
-		$stopTime = new DateTime($event['Event']['stop_time']);
-		?>
-	<div class="row">
-		<div class="col-md-12">
-			<h1><small><?php echo $event['Organization']['name']; ?></small><br><?php echo h($event['Event']['title']); ?> <small><?php echo $startTime->format('F j, Y, g:i a'); ?> - <?php echo $stopTime->format('g:i a'); ?></small></h1>
+	<div class="col-md-9">
+			<h1>
+				<small><?php echo $event['Organization']['name']; ?></small><br><?php echo h($event['Event']['title']); ?>
+				<small><?php echo $this->Duration->format($event['Event']['start_time'], $event['Event']['stop_time']); ?></small>
+			</h1>
 			<blockquote><?php echo h($event['Event']['description']); ?></blockquote>
-		</div>
-	</div>
-	<hr>
-	
-<div class="row">		
-		<?php
-			if($event['Address'] != [])
-			{
-				echo "<h2>Event Addresses</h2>";
+			<?php if (!empty($event['Skill']) ) : ?>
+				<h3>Skills</h3>
+				<p class="lead">
+					<?php foreach ($event['Skill'] as $skill) : ?>
+						<?php
+							echo $this->Html->tag('span', $skill['skill'], array('class' => 'label label-info', 'title' => __('If you enjoy %s, consider volunteering for this event.', $skill['skill']) ) );
+							echo ' ';
+						?>
+					<?php endforeach; ?>
+				</p>
+			<?php endif; ?>
 
+		<?php
+			if( !empty($event['Address']) ) 
+			{
+				echo "<h3>Event Addresses</h3>";
+				echo '<div class="row">';
 				foreach( $event['Address'] as $address )
 				{
-					echo '<div class="col-md-12"><address>';
+					echo '<address class="col-md-3">';
 					switch($address['type'])
 					{
 						case 'physical':
-							echo '<h4>Physical Address</h4>';
+							echo '<strong>Physical Address</strong><br>';
 							break;
 						case 'mailing':
-							echo '<h4>Mailing Address</h4>';
+							echo '<strong>Mailing Address</strong><br>';
 							break;
 						case 'both':
-							echo '<h4>Physical and Mailing Address</h4>';
+							echo '<strong>Physical/Mailing Address</strong><br>';
 							break;
 					}
 					echo $address['address1'] . ' <br>';
 					if($address['address2'] != null)
 					{ 
-						echo $address['address1'] . ' <br>';
+						echo $address['address2'] . ' <br>';
 					}
 					echo $address['city'] . ', ' . $address['state'] . '  ' . $address['zip'];
-					echo '</address></div>';
+					if( $address['type'] != 'mailing' )
+					{
+						echo '<br>'. $this->Html->link(
+							__('Map'),
+							sprintf(
+								'https://maps.google.com/?q=%s',
+								urlencode(
+									sprintf(
+										'%s, %s, %s, %s, %s',
+										$address['address1'],
+										$address['address2'],
+										$address['city'],
+										$address['state'],
+										$address['zip']
+									)
+								)
+							),
+							array('target' => '_blank')
+						);
+					}
+					echo '</address>';
 				}
-				echo "<br>";
+				echo '</div>';
 			}
 
 		?>
 	</div>
+</div>

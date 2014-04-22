@@ -29,19 +29,19 @@ class EventsController extends AppController {
 
 		if( $this->_CurrentUserCanWrite( $event['Event']['organization_id']) )
 		{
-			return $this->redirect( array('coordinator' => true, 'action' => 'view') );
+			return $this->redirect( array('coordinator' => true, 'action' => 'view', $event_id) );
 		}
 		elseif( $this->_CurrentUserCanRead( $event['Event']['organization_id']) )
 		{
-			return $this->redirect( array('supervisor' => true, 'action' => 'view') );
+			return $this->redirect( array('supervisor' => true, 'action' => 'view', $event_id) );
 		}
 		elseif( $this->_CurrentUserCanWrite( $event['Event']['organization_id']) )
 		{
-			return $this->redirect( array('volunteer' => true, 'action' => 'view') );
+			return $this->redirect( array('volunteer' => true, 'action' => 'view', $event_id) );
 		}
 		else
 		{
-			return $this->redirect( array('volunteer' => false, 'action' => 'view') );
+			return $this->redirect( array('volunteer' => false, 'action' => 'view', $event_id) );
 
 		}
 	}
@@ -418,9 +418,16 @@ class EventsController extends AppController {
 					$this->request->data['Address'] = $address_ids;
 				}
 
+				if( isset($this->request->data['Skill']) )
+				{
+					$skill_ids = $this->_ProcessSkills($this->request->data['Skill'], $this->Event->Skill);
+					unset($this->request->data['Skill']);
+					$this->request->data['Skill' ] =  $skill_ids;
+				}
+
 				if ($this->Event->save($this->request->data)) {
 					$this->Session->setFlash(__('The event has been saved.'), 'success');
-					return $this->redirect(array('action' => 'index'));
+					return $this->redirect(array('action' => 'view', $this->request->data['Event']['event_id']));
 				} else {
 					$this->Session->setFlash(__('The event could not be saved. Please, try again.'), 'danger');
 				}
@@ -690,21 +697,25 @@ class EventsController extends AppController {
 
 	public function index($id = null)
 	{
-		$this->Event->recursive = 0;
+		$this->Paginator->settings['conditions'] = array(
+			'Event.stop_time > NOW()'
+		);
+		$this->Paginator->settings['order'] = array(
+			'Event.start_time ASC'
+		);
 		$this->set('events', $this->Paginator->paginate());	
 	}
 
 	public function view($id = null)
 	{
-		if (!$this->Event->exists($id)){
-			throw new NotFoundException(__('Invalid event'));
-		}
+		// if (!$this->Event->exists($id)){
+		// 	throw new NotFoundException(__('Invalid event'));
+		// }
 
-		$address = $this->Event->Address->find('all');
-		$this->set( compact('address') );
 		$options = array('conditions' => array('Event.' . $this->Event->primaryKey => $id));
-		$this->request->data = $this->Event->find('first', $options);
-		$this->set('event', $this->Event->find('first', $options));
+		$event = $this->Event->find('first', $options);
+		$this->request->data = $event;
+		$this->set( compact('event') );
 
 	}
 

@@ -32,16 +32,27 @@
 					<li><?php echo $this->Html->link(__('New Event'), array('action' => 'add')); ?> </li>
 				</ul>
 			</div>
+
 			<h1><small><?php echo $event['Organization']['name']; ?></small><br>
 				<?php echo h($event['Event']['title']); ?>
 				<small><?php echo $this->Duration->format($startTime->format(DateTime::W3C), $stopTime->format(DateTime::W3C) ); ?></small></h1>
 			<blockquote><?php echo h($event['Event']['description']); ?></blockquote>
-		</div>
-	</div>
-	<hr>
-	<div class="row">
-		<div class="col-md-12">
-			<h2>Volunteer Time Tokens</h2>
+
+			<?php if (!empty($event['Skill']) ) : ?>
+				<h3>Skills</h3>
+				<p class="lead">
+					<?php foreach ($event['Skill'] as $skill) : ?>
+						<?php
+							echo $this->Html->tag('span', $skill['skill'], array('class' => 'label label-info', 'title' => __('If you enjoy %s, consider volunteering for this event.', $skill['skill']) ) );
+							echo ' ';
+						?>
+					<?php endforeach; ?>
+				</p>
+			<?php endif; ?>
+
+			<hr>
+
+			<h3>Volunteer Time Tokens</h3>
 			<p class="text-muted">Show these time tokens and QR codes to your volunteers to help them track volunteer time.</p>
 			<div class="col-md-6">
 				<div class="well text-center">
@@ -50,7 +61,7 @@
 						urlencode( $this->Html->Url(array('controller' => 'times', 'action' => 'in', 'volunteer' => true, $event['Event']['start_token']), true ) )
 					); ?>
 					<h3>In Token</h3>
-					<?php echo h($event['Event']['start_token']); ?>
+					<code><?php echo h($event['Event']['start_token']); ?></code>
 				</div>
 			</div>
 			<div class="col-md-6">
@@ -60,51 +71,67 @@
 						urlencode( $this->Html->Url(array('controller' => 'times', 'action' => 'out', 'volunteer' => true, $event['Event']['stop_token']), true ) )
 					); ?>
 					<h3>Out Token</h3>
-					<?php echo h($event['Event']['stop_token']); ?>
+					<code><?php echo h($event['Event']['stop_token']); ?></code>
 				</div>
 			</div>
-		</div>
-	</div>
-	<hr>
-	<div class="row">		
-		<?php
-			if( !empty($event['Address']) )
-			{
-				echo "<h2>Event Addresses</h2>";
 
-				foreach( $event['Address'] as $address )
+			<?php
+				if( !empty($event['Address']) ) 
 				{
-					echo '<div class="col-md-12"><address>';
-					switch($address['type'])
+					echo "<hr>";
+					echo "<h3>Event Addresses</h3>";
+					echo '<div class="row">';
+					foreach( $event['Address'] as $address )
 					{
-						case 'physical':
-							echo '<h4>Physical Address</h4>';
-							break;
-						case 'mailing':
-							echo '<h4>Mailing Address</h4>';
-							break;
-						case 'both':
-							echo '<h4>Physical and Mailing Address</h4>';
-							break;
-					}
-					echo $address['address1'] . ' <br>';
-					if($address['address2'] != null)
-					{ 
+						echo '<address class="col-md-3">';
+						switch($address['type'])
+						{
+							case 'physical':
+								echo '<strong>Physical Address</strong><br>';
+								break;
+							case 'mailing':
+								echo '<strong>Mailing Address</strong><br>';
+								break;
+							case 'both':
+								echo '<strong>Physical/Mailing Address</strong><br>';
+								break;
+						}
 						echo $address['address1'] . ' <br>';
+						if($address['address2'] != null)
+						{ 
+							echo $address['address2'] . ' <br>';
+						}
+						echo $address['city'] . ', ' . $address['state'] . '  ' . $address['zip'];
+						if( $address['type'] != 'mailing' )
+						{
+							echo '<br>'. $this->Html->link(
+								__('Map'),
+								sprintf(
+									'https://maps.google.com/?q=%s',
+									urlencode(
+										sprintf(
+											'%s, %s, %s, %s, %s',
+											$address['address1'],
+											$address['address2'],
+											$address['city'],
+											$address['state'],
+											$address['zip']
+										)
+									)
+								),
+								array('target' => '_blank')
+							);
+						}
+						echo '</address>';
 					}
-					echo $address['city'] . ', ' . $address['state'] . '  ' . $address['zip'];
-					echo '</address></div>';
+					echo '</div>';
 				}
-				echo "<br>";
-			}
 
-		?>
-	</div>
-	
-	<div class="row">
-		<div class="col-md-12">
+			?>
 
-			<h2>Volunteer Time Entries</h2>
+			<hr>
+			
+			<h3>Volunteer Time Entries</h3>
 			<?php if( !empty($times) ) : ?>
 				<div class="table-responsive">
 					<table class="table table-striped">
@@ -178,6 +205,5 @@
 				<p><em>there is no time-punch data for this event.</em></p>
 			<?php endif; ?>
 
-			
 		</div>
 	</div>
