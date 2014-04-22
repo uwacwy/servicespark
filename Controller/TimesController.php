@@ -18,6 +18,11 @@ class TimesController extends AppController
 		)
 	);
 
+	public function go_index()
+	{
+		return $this->redirect( array('volunteer' => true, 'controller' => 'times', 'action' => 'index') );
+	}
+
 	public function volunteer_index()
 	{
 		if( $this->request->is('post') )
@@ -190,12 +195,14 @@ class TimesController extends AppController
 
 			$save['Time'] = $this->request->data['Time'];
 
-			debug($save);
+			//debug($save);
 
-			if( $this->Time->save($save['Time']) )
+			$this->Time->clear();
+
+			if( $this->Time->save($save) )
 			{
 				$this->Session->setFlash( sprintf(__('Time entry %1$u was successfully updated.'), $this->Time->id), 'success');
-				return $this->redirect( $this->_Redirector('coordinator', 'event', 'view', $time['Event']['event_id']) );
+				return $this->redirect( $this->_Redirector('coordinator', 'events', 'view', $time['Event']['event_id']) );
 			}
 			else
 			{

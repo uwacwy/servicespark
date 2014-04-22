@@ -26,24 +26,14 @@ class Time extends AppModel
 		created
 		modified
 	*/
+
+
 	public $validate = array(
-		'event_id' => array(
-			'rule' => 'numeric',
-			'required' => true,
-        	'allowEmpty' => false,
-        	'message' => 'Time object requires event id.'
-		),
-		'user_id' => array(
-			'rule' => 'numeric',
-			'required' => true,
-        	'allowEmpty' => false,
-        	'message' => 'Time object requires user id.'
-		),
 		'start_time' => array(
 			'rule' => array('date_compare', 'lt', 'stop_time'),
 			'required' => false,
-        	'allowEmpty' => false,
-        	'message' => 'Start time must be less than stop time.'
+			'allowEmpty' => false,
+			'message' => 'Start time must be less than stop time.'
 		),
 		'stop_time' => array(
 			'rule' => array('date_compare', 'gt', 'start_time'),
@@ -58,8 +48,6 @@ class Time extends AppModel
 		$against_str = $this->data[$this->name][$against];
 		$value_str = reset($value);
 
-		debug($value);
-		debug($against);
 		
 		if( $against == 'stop_time' && $against_str == null  )
 		{
@@ -75,43 +63,43 @@ class Time extends AppModel
 		{
 			case 'lt':
 			case '<':
-				debug( sprintf('verifying %s < %s', $value_str, $against_str) );
+				//debug( sprintf('verifying %s < %s', $value_str, $against_str) );
 				if( strtotime($value_str) < strtotime($against_str) )
 				{
-					debug('returning true');
+					//debug('returning true');
 					return true;
 				}
 				break;
 			case 'lte':
 			case '<=':
-				debug( sprintf('verifying %s <= %s', $value_str, $against_str) );
+				//debug( sprintf('verifying %s <= %s', $value_str, $against_str) );
 				if( strtotime($value_str) <= strtotime($against_str) )
 				{
-					debug('returning true');
+					//debug('returning true');
 					return true;
 				}
 				break;
 			case 'gt':
 			case '>':
-				debug( sprintf('verifying %s > %s', $value_str, $against_str) );
+				//debug( sprintf('verifying %s > %s', $value_str, $against_str) );
 				if( strtotime($value_str) > strtotime($against_str) )
 				{
-					debug('returning true');
+					//debug('returning true');
 					return true;
 				}
 				break;
 			case 'gte':
 			case '>=':
-				debug( sprintf('verifying %s >= %s', $value_str, $against_str) );
+				//debug( sprintf('verifying %s >= %s', $value_str, $against_str) );
 				if( strtotime($value_str) < strtotime($against_str) )
 				{
-					debug('returning true');
+					//debug('returning true');
 					return true;
 				}
 				break;
 		}
 
-		debug('returning false');
+		//debug('returning false');
 		
 		return false;
 
