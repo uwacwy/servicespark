@@ -399,8 +399,8 @@ class EventsController extends AppController {
 
 	public function coordinator_edit($id = null)
 	{
-		$events = $this->Event->findByEventId($id);
-		if( $this->_CurrentUserCanWrite($events['Event']['organization_id']) )
+		$user_organizations = $this->_GetUserOrganizationsByPermission('write');
+		if( $this->_CurrentUserCanWrite($user_organizations) )
 		{
 			if (!$this->Event->exists($id)) {
 				throw new NotFoundException(__('Invalid event'));
@@ -429,15 +429,18 @@ class EventsController extends AppController {
 				$this->request->data = $this->Event->find('first', $options);
 			}
 
-			$organization = $this->Event->Organization->find('list');
 			$address = $this->Event->Address->find('all');
 			$skills = null;
 			$this->set( compact('skills', 'address', 'organization') );
 
+			//debug($user_organizations);
+
 			$this->set('organizations', $this->Event->Organization->find(
 	            'list',
 	            array(
-	                'fields' => array('Organization.name'),
+	            	'conditions' => array(
+	            		'Organization.organization_id' => $user_organizations
+	            	),
 	                'order' => array('Organization.name')
 	            )));
 		}

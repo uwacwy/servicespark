@@ -21,8 +21,17 @@
 						echo $this->Form->input('event_id');
 						echo $this->Form->input('title', array('class' => 'form-control') );
 						echo $this->Form->input('description', array('type' => 'textarea', 'class' => 'form-control') );
-						echo $this->Form->input('start_time', array('class' => 'inline') );
-						echo $this->Form->input('stop_time', array('class' => 'inline') );
+						
+
+						echo '<div class="form-inline">';
+	
+							echo $this->Form->input('start_time',
+								array('label' => "Start Date", 'type' => 'datetime', 'separator' => " ", 'div' => array('class' => 'append-bottom form-group') ) );
+							echo $this->Form->input('stop_time',
+								array('label' => 'Stop Date', 'type' => 'datetime', 'separator' => " ", 'div' => array('class' => 'append-bottom form-group') ) );
+						
+						echo '</div>';
+
 						echo $this->Form->input('organization_id', array('class' => 'form-control') );
 					?>
 				</div>
