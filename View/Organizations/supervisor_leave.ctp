@@ -1,10 +1,10 @@
 <div class="row">
 	<div class="col-md-12">
-		<h1>Do you want to stop creating and editing events for your organizations? </h1>
-		<h1><small>Leave any organization you supervise. </small></h1>
+		<h1>Do you want to stop supervising an organization?</h1>
+		<p class="text-muted lead">Leave any organization you supervise.</p>
 		<hr>
 
-		<h2> Here are your organizations</h2>
+		<h2>Organizations You Can Supervise</h2>
 		<table class="table table-striped">
 			<thead>
 				<th>Organization</th>

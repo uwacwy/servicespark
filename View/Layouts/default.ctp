@@ -202,6 +202,7 @@ global $solution_name;
 					'label' => __('Organizations'),
 					'actions' => array(
 						'join' => __('Join an Organization'),
+						'leave' => __('Leave an Organization'),
 						'add' => __('New Organization'),
 						'index' => __('Manage my Organizations')
 					)
@@ -239,21 +240,50 @@ global $solution_name;
 				</li>
 			<?php endforeach; ?>
 		<?php endif; ?>
+
+		<?php if( $this->Session->read('can_supervise') ): ?>
+			<li class="dropdown">
+				<?php
+					echo sprintf('<a href="%S" class="dropdown-toggle" data-toggle="dropdown">%s <b class="caret"></b></a>',
+						$this->Html->url( array('controller' => 'organizations', 'action' => 'index', 'supervisor' => true) ),
+						'Supervisor'
+					);
+				?>
+				<ul class="dropdown-menu">
+					<li class="dropdown-header"><?php echo __('Organizations'); ?></li>
+					<li><?php echo $this->Html->link(__('My Organizations'), array('controller'=>'organizations', 'action' => 'index', 'supervisor' => true)); ?></li>
+					<li><?php echo $this->Html->link( __('Leave an Organization'), array('controller' => 'organizations', 'action' => 'leave', 'supervisor' => true) ); ?></li>
+					<li class="divider"></li>
+					<li class="dropdown-header"><?php echo __('Events'); ?></li>
+					<li><?php echo $this->Html->link(__('My Events'), array('controller' => 'events', 'action' => 'index', 'supervisor' => true) ); ?></li>
+					<li><?php echo $this->Html->link(__('Create Event'), array('controller' => 'events', 'action' => 'add', 'supervisor' => true) ); ?> </li>
+				</ul>
+			</li>
+		<?php endif; ?>
+
+		<?php if( $this->Session->read('can_coordinate') ): ?>
 			<li class="dropdown">
 				<?php
 					echo sprintf('<a href="%S" class="dropdown-toggle" data-toggle="dropdown">%s <b class="caret"></b></a>',
 						$this->Html->url( array('controller' => 'organizations', 'action' => 'index', 'coordinator' => true) ),
-						'Coordinate'
+						'Coordinator'
 					);
 				?>
 				<ul class="dropdown-menu">
+					<li class="dropdown-header"><?php echo __('Organizations'); ?></li>
 					<li><?php echo $this->Html->link(__('My Organizations'), array('controller'=>'organizations', 'action' => 'index', 'coordinator' => true)); ?></li>
+					<li><?php echo $this->Html->link( __('Leave an Organization'), array('controller' => 'organizations', 'action' => 'leave', 'coordinator' => true) ); ?></li>
 					<li class="divider"></li>
-	<li><?php echo $this->Html->link(__('My Events'), array('controller' => 'events', 'action' => 'index', 'coordinator' => true) ); ?></li>
-	<li><?php echo $this->Html->link(__('New Event'), array('controller' => 'events', 'action' => 'add', 'coordinator' => true) ); ?> </li>
+					<li class="dropdown-header"><?php echo __('Events'); ?></li>
+					<li><?php echo $this->Html->link(__('My Events'), array('controller' => 'events', 'action' => 'index', 'coordinator' => true) ); ?></li>
+					<li><?php echo $this->Html->link(__('Create Event'), array('controller' => 'events', 'action' => 'add', 'coordinator' => true) ); ?> </li>
 				</ul>
 			</li>
+		<?php endif; ?>
+
+
 		</ul>
+
 
 		<?php if(AuthComponent::user('user_id') ) : ?>
 			<ul class="nav navbar-nav navbar-right">

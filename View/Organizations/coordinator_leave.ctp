@@ -1,10 +1,10 @@
 <div class="row">
 	<div class="col-md-12">
-		<h1>Do you want to stop supervising an organization? </h1>
-		<h1><small>Leave any organization you supervise. </small></h1>
+		<h1>Do you want to stop coordinating an organization? </h1>
+		<p class="lead text-muted">Leave any organization you supervise.</p>
 		<hr>
 
-		<h2> Here are your organizations</h2>
+		<h2>Organizations You Can Coordinate</h2>
 		<table class="table table-striped">
 			<thead>
 				<th>Organization</th>

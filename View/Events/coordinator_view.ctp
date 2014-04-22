@@ -37,49 +37,12 @@
 				<?php echo h($event['Event']['title']); ?>
 				<small><?php echo $this->Duration->format($startTime->format(DateTime::W3C), $stopTime->format(DateTime::W3C) ); ?></small></h1>
 			<blockquote><?php echo h($event['Event']['description']); ?></blockquote>
-
-			<?php if (!empty($event['Skill']) ) : ?>
-				<h3>Skills</h3>
-				<p class="lead">
-					<?php foreach ($event['Skill'] as $skill) : ?>
-						<?php
-							echo $this->Html->tag('span', $skill['skill'], array('class' => 'label label-info', 'title' => __('If you enjoy %s, consider volunteering for this event.', $skill['skill']) ) );
-							echo ' ';
-						?>
-					<?php endforeach; ?>
-				</p>
-			<?php endif; ?>
-
+			
 			<hr>
-
-			<h3>Volunteer Time Tokens</h3>
-			<p class="text-muted">Show these time tokens and QR codes to your volunteers to help them track volunteer time.</p>
-			<div class="col-md-6">
-				<div class="well text-center">
-					<?php echo sprintf(
-						'<img src="http://chart.apis.google.com/chart?cht=qr&chs=150x150&chl=%s&chld=H|0">',
-						urlencode( $this->Html->Url(array('controller' => 'times', 'action' => 'in', 'volunteer' => true, $event['Event']['start_token']), true ) )
-					); ?>
-					<h3>In Token</h3>
-					<code><?php echo h($event['Event']['start_token']); ?></code>
-				</div>
-			</div>
-			<div class="col-md-6">
-				<div class="well text-center">
-					<?php echo sprintf(
-						'<img src="http://chart.apis.google.com/chart?cht=qr&chs=150x150&chl=%s&chld=H|0">',
-						urlencode( $this->Html->Url(array('controller' => 'times', 'action' => 'out', 'volunteer' => true, $event['Event']['stop_token']), true ) )
-					); ?>
-					<h3>Out Token</h3>
-					<code><?php echo h($event['Event']['stop_token']); ?></code>
-				</div>
-			</div>
-
+			
 			<?php
 				if( !empty($event['Address']) ) 
 				{
-					echo "<hr>";
-					echo "<h3>Event Addresses</h3>";
 					echo '<div class="row">';
 					foreach( $event['Address'] as $address )
 					{
@@ -126,8 +89,56 @@
 					}
 					echo '</div>';
 				}
+				else
+				{
+					echo sprintf('<p><em>%s</em></p>', __("There aren't any event addresses.  Add addresses to help volunteers navigate to your events") );
+				}
 
 			?>
+
+			<hr>
+
+			<h3>Skills</h3>
+			<?php if (!empty($event['Skill']) ) : ?>
+				
+				<p class="lead">
+					<?php foreach ($event['Skill'] as $skill) : ?>
+						<?php
+							echo $this->Html->tag('span', $skill['skill'], array('class' => 'label label-info', 'title' => __('If you enjoy %s, consider volunteering for this event.', $skill['skill']) ) );
+							echo ' ';
+						?>
+					<?php endforeach; ?>
+				</p>
+			<?php else: ?>
+				<p><em>This event doesn't have any skills.  Add skills to help skilled volunteers discover your event.</em></p>
+			<?php endif; ?>
+
+			<hr>
+
+			<h3>Volunteer Time Tokens</h3>
+			<p>Show these time tokens and QR codes to your volunteers to help them track volunteer time.</p>
+			<div class="row">
+				<div class="col-md-6">
+					<div class="well text-center">
+						<?php echo sprintf(
+							'<img src="http://chart.apis.google.com/chart?cht=qr&chs=150x150&chl=%s&chld=H|0">',
+							urlencode( $this->Html->Url(array('controller' => 'times', 'action' => 'in', 'volunteer' => true, $event['Event']['start_token']), true ) )
+						); ?>
+						<h3>In Token</h3>
+						<code><?php echo h($event['Event']['start_token']); ?></code>
+					</div>
+				</div>
+				<div class="col-md-6">
+					<div class="well text-center">
+						<?php echo sprintf(
+							'<img src="http://chart.apis.google.com/chart?cht=qr&chs=150x150&chl=%s&chld=H|0">',
+							urlencode( $this->Html->Url(array('controller' => 'times', 'action' => 'out', 'volunteer' => true, $event['Event']['stop_token']), true ) )
+						); ?>
+						<h3>Out Token</h3>
+						<code><?php echo h($event['Event']['stop_token']); ?></code>
+					</div>
+				</div>
+			</div>
 
 			<hr>
 			

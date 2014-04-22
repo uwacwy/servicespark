@@ -502,6 +502,11 @@ class EventsController extends AppController {
 
 		$event = $this->Event->find('first', array('conditions' => array('Event.event_id' => $id) ) );
 
+		if( empty($event) )
+		{
+			throw new NotFoundException( __('Page Not Found') );
+		}
+
 		$conditions = array(
 			'Time.event_id' => $id
 		);
