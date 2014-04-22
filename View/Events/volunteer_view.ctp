@@ -4,7 +4,8 @@
 
 <h2><?php echo __('Event'); ?></h2>
 
-<?php $startTime = new DateTime($event['Event']['start_time']);
+<?php 
+	$startTime = new DateTime($event['Event']['start_time']);
 	$stopTime = new DateTime($event['Event']['stop_time']);
 ?>
 
