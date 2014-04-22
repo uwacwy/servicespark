@@ -14,25 +14,29 @@
 	</div>
 </div>
 
+<div style="text-align: right">
+	<?php echo $this->Html->link(__('Back to Events'), array('action' => 'index'), array('class' => 'btn btn-primary')); ?>
+</div>
 
-<div class="events view">
-	<div style="text-align: right">
-		<?php echo $this->Html->link(__('Back to Events'), array('action' => 'index'), array('class' => 'btn btn-primary')); ?>
-	</div>
 <h2><?php echo __('Event'); ?></h2>
-	<?php $startTime = new DateTime($event['Event']['start_time']);
-		$stopTime = new DateTime($event['Event']['stop_time']);
-		?>
-	<div class="row">
-		<div class="col-md-12">
-			<h1><small><?php echo $event['Organization']['name']; ?></small><br><?php echo h($event['Event']['title']); ?> <small><?php echo $startTime->format('F j, Y, g:i a'); ?> - <?php echo $stopTime->format('g:i a'); ?></small></h1>
-			<blockquote><?php echo h($event['Event']['description']); ?></blockquote>
-		</div>
-	</div>
+	
+<?php 
+	$startTime = new DateTime($event['Event']['start_time']);
+	$stopTime = new DateTime($event['Event']['stop_time']);
+?>
 
-	<div class="row">		
+<div class="row">
+	<div class="col-md-12">
+		<h1><small><?php echo $event['Organization']['name']; ?></small><br><?php echo h($event['Event']['title']); ?> <small><?php echo $startTime->format('F j, Y, g:i a'); ?> - <?php echo $stopTime->format('g:i a'); ?></small></h1>
+		<blockquote><?php echo h($event['Event']['description']); ?></blockquote>
+	</div>
+</div>
+
+	
+<div class="row">
+	<div class="col-md-12">	
 		<?php
-			if( array($event['Address']) )
+			if( !empty($event['Address']) )
 			{
 				echo "<h2>Event Addresses</h2>";
 
@@ -64,12 +68,14 @@
 
 		?>
 	</div>
+</div>
 
+<div class="row">
+	<div class="col-md-12">
+		<h3>Volunteer Report</h3>
 
-	<div class="row">
-		<div class="col-md-12">
-
-			<h3>Volunteer Report</h3>
+		<?php if( !empty($times) ) : ?>
+			<div class="table-responsive">
 			<table cellpadding="0" cellspacing="0" class="table table-striped">
 			<tr>
 					<th><?php echo $this->Paginator->sort('User.first_name', "First Name"); ?></th>
@@ -102,11 +108,12 @@
 					$grand_total_time += $total_time;
 					echo "</tr>";
 				}
-				echo "</table>";
+				echo "</table> </div>";
 				$hours = floor($grand_total_time);
 				$minutes = round(60*($grand_total_time-$hours));
 				echo '<h5 align="right">Total Event Time: ' . $hours . ' Hour(s) ' . $minutes . ' Minute(s)</h5>';
 			?>
+			
 			<ul class="pagination bottom">
 				<?php
 					echo $this->Paginator->prev(__('prev'), array('tag' => 'li'), null, array('tag' => 'li','class' => 'disabled','disabledTag' => 'a'));
@@ -114,5 +121,9 @@
 					echo $this->Paginator->next(__('next'), array('tag' => 'li','currentClass' => 'disabled'), null, array('tag' => 'li','class' => 'disabled','disabledTag' => 'a'));
 				?>
 			</ul>
-		</div>
+			
+		<?php else: ?>
+			<p><em>there is no time-punch data for this event.</em></p>
+		<?php endif; ?>
 	</div>
+</div>
