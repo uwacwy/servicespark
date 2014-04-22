@@ -511,6 +511,15 @@ class EventsController extends AppController {
 		);
 		$times = $this->Paginator->paginate('Time');
 
+		$conditions = array(
+			'Time.event_id' => $id
+		);
+		$fields = array(
+			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) )/60 as EventTotal'
+		);
+		$event_total = $this->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
+		$this->set( compact('event_total') );
+
 		// versus
 
 //		$times = $this->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
