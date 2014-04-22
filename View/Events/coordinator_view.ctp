@@ -32,31 +32,36 @@
 					<li><?php echo $this->Html->link(__('New Event'), array('action' => 'add')); ?> </li>
 				</ul>
 			</div>
-			<h1><small><?php echo $event['Organization']['name']; ?></small><br><?php echo h($event['Event']['title']); ?> <small><?php echo $startTime->format('F j, Y, g:i a'); ?> - <?php echo $stopTime->format('g:i a'); ?></small></h1>
+			<h1><small><?php echo $event['Organization']['name']; ?></small><br>
+				<?php echo h($event['Event']['title']); ?>
+				<small><?php echo $this->Duration->format($startTime->format(DateTime::W3C), $stopTime->format(DateTime::W3C) ); ?></small></h1>
 			<blockquote><?php echo h($event['Event']['description']); ?></blockquote>
 		</div>
 	</div>
 	<hr>
 	<div class="row">
-		<h2>Volunteer Checkin and Checkout</h2>
-		<div class="col-md-6">
-			<div class="well text-center">
-				<?php echo sprintf(
-					'<img src="http://chart.apis.google.com/chart?cht=qr&chs=150x150&chl=%s&chld=H|0">',
-					urlencode( $this->Html->Url(array('controller' => 'times', 'action' => 'in', 'volunteer' => true, $event['Event']['start_token']), true ) )
-				); ?>
-				<h3>In Token</h3>
-				<?php echo h($event['Event']['start_token']); ?>
+		<div class="col-md-12">
+			<h2>Volunteer Time Tokens</h2>
+			<p class="text-muted">Show these time tokens and QR codes to your volunteers to help them track volunteer time.</p>
+			<div class="col-md-6">
+				<div class="well text-center">
+					<?php echo sprintf(
+						'<img src="http://chart.apis.google.com/chart?cht=qr&chs=150x150&chl=%s&chld=H|0">',
+						urlencode( $this->Html->Url(array('controller' => 'times', 'action' => 'in', 'volunteer' => true, $event['Event']['start_token']), true ) )
+					); ?>
+					<h3>In Token</h3>
+					<?php echo h($event['Event']['start_token']); ?>
+				</div>
 			</div>
-		</div>
-		<div class="col-md-6">
-			<div class="well text-center">
-				<?php echo sprintf(
-					'<img src="http://chart.apis.google.com/chart?cht=qr&chs=150x150&chl=%s&chld=H|0">',
-					urlencode( $this->Html->Url(array('controller' => 'times', 'action' => 'out', 'volunteer' => true, $event['Event']['stop_token']), true ) )
-				); ?>
-				<h3>Out Token</h3>
-				<?php echo h($event['Event']['stop_token']); ?>
+			<div class="col-md-6">
+				<div class="well text-center">
+					<?php echo sprintf(
+						'<img src="http://chart.apis.google.com/chart?cht=qr&chs=150x150&chl=%s&chld=H|0">',
+						urlencode( $this->Html->Url(array('controller' => 'times', 'action' => 'out', 'volunteer' => true, $event['Event']['stop_token']), true ) )
+					); ?>
+					<h3>Out Token</h3>
+					<?php echo h($event['Event']['stop_token']); ?>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -99,7 +104,7 @@
 	<div class="row">
 		<div class="col-md-12">
 
-			<h2>Volunteer Report</h2>
+			<h2>Volunteer Time Entries</h2>
 			<?php if( !empty($times) ) : ?>
 				<div class="table-responsive">
 					<table class="table table-striped">
