@@ -374,7 +374,7 @@ class UsersController extends AppController {
 		$sql_date_fmt = 'Y-m-d H:i:s';
 		$contain = array('Event');
 
-		if( !in_array($period, array('month', 'year', 'ytd', 'custom') ) )
+		if( !in_array($period, array('month', 'year', 'ytd', 'all', 'custom') ) )
 			$period = "month";
 
 		$order = array(
@@ -395,6 +395,9 @@ class UsersController extends AppController {
 			case 'ytd':
 				$sub_title = "Year-To-Date";
 				$conditions['Time.start_time >='] = date($sql_date_fmt, mktime(0,0,0,1,1, date('Y') ) );
+				break;
+			case 'all':
+				$sub_title = "All Activity";
 				break;
 			case 'custom':
 				$sub_title = "Custom Report";

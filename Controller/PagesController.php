@@ -82,14 +82,14 @@ class PagesController extends AppController {
 			$user->unbindModel( array('hasOne' => array('Recovery') ), false );
 
 			$time = new Time();
-			$time->unbindModel( array('belongsTo' => array('User', 'Event') ), false );
+			$time->unbindModel( array('belongsTo' => array('User') ), false );
 
 			$event = new Event( );
 			$event->unbindModel(array('hasAndBelongsToMany' => array('Address', 'Skill'), 'hasMany' => array('Time'), 'belongsTo' => array('Organization') ), false);
 
 			// TODO: unbind models so these counts are faster
 
-			$conditions = array('Time.stop_time IS NULL');
+			$conditions = array('Time.stop_time IS NULL', 'Event.stop_time >= NOW()');
 			$currently_volunteering = $time->find('count', array('conditions' => $conditions) );
 
 			$registered_volunteers = $user->find('count');

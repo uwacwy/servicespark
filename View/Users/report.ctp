@@ -16,7 +16,7 @@ $table = array(
 );
 
 // heading
-$this->PhpExcel->addTableHeader($table, array('name' => 'Cambria', 'bold' => true));
+$this->PhpExcel->addTableHeader($table, array('bold' => true));
 
 
 // data
@@ -40,4 +40,4 @@ foreach ($time_data as $time) {
 
 $this->PhpExcel->addTableFooter();
 date_default_timezone_set('America/Denver');
-$this->PhpExcel->output( __('%s-%s-activity-%s-%s.xlsx', Configure::read('Solution.name'), AuthComponent::user('username'), $period, date('Y-m-d-G-i') ) ); 
+$this->PhpExcel->output( __('%s-%s-activity-%s-%s.xlsx', Configure::read('Solution.name'), AuthComponent::user('username'), $period, date('d-M-Y') ) ); 

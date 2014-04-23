@@ -43,8 +43,8 @@ class AppController extends Controller {
 		'Tm' => array('className' => 'Time'),
 		'Duration',
 		'Utility',
-		'PhpExcel'
-		//'Form' => array('className' => 'BoostCake.BoostCakeForm'),
+		'PhpExcel',
+		'Form' => array('className' => 'BoostCake.BoostCakeForm'),
 		//'Paginator' => array('className' => 'BoostCake.BoostCakePaginator'),
 	);
 
