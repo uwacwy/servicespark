@@ -58,61 +58,8 @@
 			
 			<hr>
 			
-			<?php
-				if( !empty($event['Address']) ) 
-				{
-					echo '<div class="row">';
-					foreach( $event['Address'] as $address )
-					{
-						echo '<address class="col-md-3">';
-						switch($address['type'])
-						{
-							case 'physical':
-								echo '<strong>Physical Address</strong><br>';
-								break;
-							case 'mailing':
-								echo '<strong>Mailing Address</strong><br>';
-								break;
-							case 'both':
-								echo '<strong>Physical/Mailing Address</strong><br>';
-								break;
-						}
-						echo $address['address1'] . ' <br>';
-						if($address['address2'] != null)
-						{ 
-							echo $address['address2'] . ' <br>';
-						}
-						echo $address['city'] . ', ' . $address['state'] . '  ' . $address['zip'];
-						if( $address['type'] != 'mailing' )
-						{
-							echo '<br>'. $this->Html->link(
-								__('Map'),
-								sprintf(
-									'https://maps.google.com/?q=%s',
-									urlencode(
-										sprintf(
-											'%s, %s, %s, %s, %s',
-											$address['address1'],
-											$address['address2'],
-											$address['city'],
-											$address['state'],
-											$address['zip']
-										)
-									)
-								),
-								array('target' => '_blank')
-							);
-						}
-						echo '</address>';
-					}
-					echo '</div>';
-				}
-				else
-				{
-					echo sprintf('<p><em>%s</em></p>', __("There aren't any event addresses.  Add addresses to help volunteers navigate to your events") );
-				}
+			<?php echo $this->Element('print_addresses', array('addresses' => $event['Address']) ); ?>
 
-			?>
 
 			<hr>
 
