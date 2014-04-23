@@ -508,6 +508,8 @@ class UsersController extends AppController {
 		$sql_date_fmt = 'Y-m-d H:i:s';
 		$contain = array('Event' => array('Organization') );
 
+		$this->layout = null;
+
 		if( !in_array($period, array('month', 'year', 'ytd', 'custom', 'all') ) )
 			$period = "month";
 
@@ -546,7 +548,7 @@ class UsersController extends AppController {
 
 		$time_data = $this->User->Time->find('all', array('conditions' => $conditions, 'contain' => $contain, 'order' => $order) );
 
-		$this->set( compact('time_data') );
+		$this->set( compact('time_data', 'period') );
 
 
 	}

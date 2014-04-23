@@ -46,6 +46,17 @@ $periods = array('month' => __("Past Month"), 'year' => __("Past Year"), 'ytd' =
 		<h2>Detailed Activity</h2>
 		<p class="text-muted"><span class="glyphicon glyphicon-bookmark"></span> Filter your activity based on specified dates.  You can bookmark reports for easy access in the future.</p>
 
+		<div class="pull-right">
+			<?php echo $this->Html->link( __('Download As Microsoft Excel'),
+				array(
+					'controller' => 'users',
+					'action' => 'report',
+					$period,
+					'?' => $_SERVER['QUERY_STRING']
+				),
+				array('class' => 'btn btn-success')
+			); ?>
+		</div>
 			<ul class="nav nav-tabs">
 				<?php
 				if( !isset($period) )

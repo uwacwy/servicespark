@@ -21,17 +21,23 @@ $this->PhpExcel->addTableHeader($table, array('name' => 'Cambria', 'bold' => tru
 
 // data
 foreach ($time_data as $time) {
+
+    $i = $this->PhpExcel->_row;
+
     $this->PhpExcel->addTableRow(array(
     	$time['Event']['title'],
     	$time['Event']['description'],
     	$time['Event']['Organization']['name'],
-    	$time['Event']['start_time'],
-    	$time['Event']['stop_time'],
-    	$time['Time']['start_time'],
-    	$time['Time']['stop_time'],
+    	PHPExcel_Shared_Date::PHPToExcel(strtotime($time['Event']['start_time']), null, date_default_timezone_get() ),
+    	PHPExcel_Shared_Date::PHPToExcel(strtotime($time['Event']['stop_time']), null, date_default_timezone_get() ),
+    	PHPExcel_Shared_Date::PHPToExcel(strtotime($time['Time']['start_time']), null, date_default_timezone_get() ),
+    	PHPExcel_Shared_Date::PHPToExcel(strtotime($time['Time']['stop_time']), null, date_default_timezone_get() ),
     	$time['Time']['duration']
     ));
+    $this->PhpExcel->_xls->getActiveSheet()->getStyle("D$i:G$i")->getNumberFormat()->setFormatCode( 'm/d/yyyy h:mm AM/PM' );
+
 }
 
 $this->PhpExcel->addTableFooter();
-$this->PhpExcel->output(); 
+date_default_timezone_set('America/Denver');
+$this->PhpExcel->output( __('%s-%s-activity-%s-%s.xlsx', Configure::read('Solution.name'), AuthComponent::user('username'), $period, date('Y-m-d-G-i') ) ); 

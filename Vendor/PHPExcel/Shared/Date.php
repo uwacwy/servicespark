@@ -182,9 +182,9 @@ class PHPExcel_Shared_Date
 	 *	@return	mixed		Excel date/time value
 	 *							or boolean FALSE on failure
 	 */
-	public static function PHPToExcel($dateValue = 0, $adjustToTimezone = FALSE, $timezone = NULL) {
+	public static function PHPToExcel($dateValue = 0, $adjustToTimezone = FALSE, $timezone = 'UTC') {
 		$saveTimeZone = date_default_timezone_get();
-		date_default_timezone_set('UTC');
+		date_default_timezone_set($timezone);
 		$retValue = FALSE;
 		if ((is_object($dateValue)) && ($dateValue instanceof DateTime)) {
 			$retValue = self::FormattedPHPToExcel( $dateValue->format('Y'), $dateValue->format('m'), $dateValue->format('d'),

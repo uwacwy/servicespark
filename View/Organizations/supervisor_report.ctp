@@ -25,6 +25,7 @@ foreach ($userHours as $user) {
 }
 
 $this->PhpExcel->addTableFooter();
-$this->PhpExcel->output(); 
+$this->PhpExcel->save('php://output');
+//$this->PhpExcel->output(); 
 
 ?>
