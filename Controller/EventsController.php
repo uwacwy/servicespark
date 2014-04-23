@@ -376,7 +376,7 @@ class EventsController extends AppController {
 			
 			$address = $this->Event->Address->find('all');
 			$skills = null;
-			$this->set( compact('skills', 'address', 'organization') );
+			$this->set( compact('skills', 'organization') );
 
 			//debug($user_organizations);
 
@@ -405,6 +405,7 @@ class EventsController extends AppController {
 		}
 		
 		$event = $this->Event->findByEventId($id);
+		$user_organizations = $this->_GetUserOrganizationsByPermission('write');
 
 		if( $this->_CurrentUserCanWrite($event['Organization']['organization_id']) )
 		{
