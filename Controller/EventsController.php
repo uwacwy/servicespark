@@ -78,19 +78,19 @@ class EventsController extends AppController {
  * @param string $id
  * @return void
  */
-	// public function delete($id = null) {
-	// 	$this->Event->id = $id;
-	// 	if (!$this->Event->exists()) {
-	// 		throw new NotFoundException(__('Invalid event'));
-	// 	}
-	// 	$this->request->onlyAllow('post', 'delete');
-	// 	if ($this->Event->delete()) {
-	// 		$this->Session->setFlash(__('The event has been deleted.'), 'success');
-	// 	} else {
-	// 		$this->Session->setFlash(__('The event could not be deleted. Please, try again.'), 'danger');
-	// 	}
-	// 	return $this->redirect(array('action' => 'index'));
-	// }
+	public function delete($id = null) {
+		$this->Event->id = $id;
+		if (!$this->Event->exists()) {
+			throw new NotFoundException(__('Invalid event'));
+		}
+		$this->request->onlyAllow('post', 'delete');
+		if ($this->Event->delete()) {
+			$this->Session->setFlash(__('The event has been deleted.'), 'success');
+		} else {
+			$this->Session->setFlash(__('The event could not be deleted. Please, try again.'), 'danger');
+		}
+		return $this->redirect(array('action' => 'index'));
+	}
 
 
 	/**
@@ -106,7 +106,7 @@ class EventsController extends AppController {
 		else
 		{
 			return $this->redirect(array('coordinator' => true,
-				'controller' => 'events', 'action' => 'delete'));
+				'controller' => 'events', 'action' => 'index'));
 		}
 	}
 
@@ -297,32 +297,21 @@ class EventsController extends AppController {
 	*/
 	public function coordinator_delete($id = null)
 	{
-		$events = $this->Event->findByEventId($id);
-
-		if( $this->_CurrentUserCanWrite($events['Event']['organization_id']) )
+		$user_organizations = $this->_GetUserOrganizationsByPermission('write');
+		if( !$this->_CurrentUserCanWrite($user_organizations) )
 		{
-			$this->Event->delete($id);
-		}
-		else
-		{
-			//throw new ForbiddenException('You do not have permission...');
 			$this->Session->setFlash('You do not have permission.', 'danger');
 			return $this->redirect(array('coordinator' => true,
 				'controller' => 'events', 'action' => 'index'));
+		}
+		else
+		{
+			$this->delete($id);
 		}
 	}
 
 	public function coordinator_add($id = null)
 	{
-		// $user_organizations = $this->Event->Organization->Permission->find('list',
-		// 		array(
-		// 			'fields' => array('Permission.organization_id'),
-		// 			'conditions' => array(
-		// 				'Permission.write' => true
-		// 			)
-		// 		)
-		// 	);
-
 		$user_organizations = $this->_GetUserOrganizationsByPermission('write');
 
 		if( !empty($user_organizations) ) // do we have organizations?
@@ -375,7 +364,7 @@ class EventsController extends AppController {
 			}
 			
 			$address = $this->Event->Address->find('all');
-			$skills = null;
+			//$skills = null;
 			$this->set( compact('skills', 'address', 'organization') );
 
 			//debug($user_organizations);
@@ -400,15 +389,15 @@ class EventsController extends AppController {
 
 	public function coordinator_edit($id = null)
 	{
+		$user_organizations = $this->_GetUserOrganizationsByPermission('write');
 		if (!$this->Event->exists($id)) {
 			throw new NotFoundException(__('Invalid event'));
 		}
 		
 		$event = $this->Event->findByEventId($id);
 
-		if( $this->_CurrentUserCanWrite($event['Organization']['organization_id']) )
+		if( $this->_CurrentUserCanWrite($user_organizations) )
 		{
-
 			if ($this->request->is(array('post', 'put'))) 
 			{
 				if(! $this->Event->validTimes()) {
