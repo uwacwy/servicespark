@@ -10,7 +10,6 @@
 	<div class="col-md-12">
 		<?php echo $this->Form->create('User', $form_defaults); ?>
 		<?php echo $this->Form->input('user_id'); ?>
-		<?php debug($this->request->data); ?>
 		<h1>Editing your profile.  <small>Let's get this up-to-date.</small></h1>
 		<p>We need to know a little information before you can start managing your volunteer opportunities.</p>
 		<hr>
@@ -21,8 +20,8 @@
 			<div class="col-md-12">
 				<div class="well">
 					<?php
-						echo $this->Form->input('password_l', array('type' => 'password', 'label' => "Password") );
-						echo $this->Form->input('password_r', array('type' => 'password', 'label' => "Confirm Password") );
+						echo $this->Form->input('password_l', array('type' => 'password', 'label' => "Change Password") );
+						echo $this->Form->input('password_r', array('type' => 'password', 'label' => "Confirm Changed Password") );
 					?>
 				</div>
 			</div>

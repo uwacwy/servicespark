@@ -114,6 +114,8 @@ class UsersController extends AppController {
 		{
 			return $this->redirect( array('controller' => 'user', 'action' => 'index', 'prefix' => 'coordinator') );
 		}
+
+		$this->set('title_for_layout', __('Listing Users') );
 	}
 
 	public function coordinator_index()
@@ -498,6 +500,57 @@ class UsersController extends AppController {
 
 	}
 
+	/*
+		exports the user's time data to an Excel spreadsheet
+	*/
+	public function report($period = null)
+	{
+		$sql_date_fmt = 'Y-m-d H:i:s';
+		$contain = array('Event' => array('Organization') );
+
+		if( !in_array($period, array('month', 'year', 'ytd', 'custom', 'all') ) )
+			$period = "month";
+
+		$order = array(
+			'Event.stop_time DESC'
+		);
+		$conditions['Time.user_id'] = $this->Auth->user('user_id');
+
+		switch($period)
+		{
+			case 'month':
+				$conditions['Time.start_time >='] = date($sql_date_fmt, strtotime('1 month ago') );
+				break;
+			case 'year':
+				$conditions['Time.start_time >='] = date($sql_date_fmt, strtotime('1 year ago') );
+				break;
+			case 'ytd':
+				$conditions['Time.start_time >='] = date($sql_date_fmt, mktime(0,0,0,1,1, date('Y') ) );
+				break;
+			case 'all':
+				break;
+			case 'custom':
+				if( isset($this->request->query['start']) && isset($this->request->query['stop']) )
+				{
+					$start = $this->request->query['start'];
+					$stop = $this->request->query['stop'];
+					$date_start = mktime(0, 0, 0, $start['month'], $start['day'], $start['year']);
+					$date_stop = mktime(0, 0, 0, $stop['month'], $stop['day'], $stop['year']);
+					$conditions['Time.start_time >='] = date($sql_date_fmt, $date_start);
+					$conditions['Time.stop_time <='] = date($sql_date_fmt, $date_stop);
+
+					$sub_title = sprintf("%s - %s", date('F j, Y', $date_start), date('F j, Y', $date_stop) );					
+				}
+				break;
+		}
+
+		$time_data = $this->User->Time->find('all', array('conditions' => $conditions, 'contain' => $contain, 'order' => $order) );
+
+		$this->set( compact('time_data') );
+
+
+	}
+
 
 	/**
 	 * delete method
@@ -506,8 +559,10 @@ class UsersController extends AppController {
 	 * @param string $id
 	 * @return void
 	 */
-	public function delete($user_id = null)
+	public function volunteer_delete($user_id = null)
 	{
+		$user_id = $this->Auth->user('user_id');
+
 		if (!$this->User->exists($user_id))
 		{
 				throw new NotFoundException( __('Invalid user') );
