@@ -1,7 +1,7 @@
 <div class="row">
 	<div class="col-md-12">
 
-		<h2><?php echo __('Events'); ?></h2>
+		<h2><?php echo __('Upcoming Events'); ?></h2>
 
 		<div class="table-responsive">
 			<table cellpadding="0" cellspacing="0" class="table table-striped">
@@ -10,7 +10,7 @@
 					<th><?php echo $this->Paginator->sort('organization'); ?></th>
 					<th><?php echo $this->Paginator->sort('start_time'); ?></th>
 					<th><?php echo $this->Paginator->sort('stop_time'); ?></th>
-					<th class="actions"><?php echo __('Actions'); ?></th>
+					<th class="actions"></th>
 				</tr>
 				<?php foreach ($events as $event): ?>
 					<tr>

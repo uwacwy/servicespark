@@ -667,21 +667,14 @@ class EventsController extends AppController {
 
 	public function volunteer_index($id = null)
 	{
-		// $user_organizations = $this->_GetUserOrganizationsByPermission('publish');
-
-		// if( !$this->_CurrentUserCanPublish($user_organizations) )
-		// {
-		// 	$this->Session->setFlash('You do not have permission.', 'danger');
-		// 	return $this->redirect('../../events/');
-		// }
-
-		// $conditions = array(
-		// 	'Event.organization_id' => $user_organizations
-		// );
-
-		//$this->Paginator->settings['conditions'] = $conditions;
 		$this->Paginator->settings['limit'] = 15;
 		$this->Paginator->settings['contain'] = array('Organization');
+		$this->Paginator->settings['conditions'] = array(
+			'Event.stop_time > NOW()'
+		);
+		$this->Paginator->settings['order'] = array(
+			'Event.start_time ASC'
+		);
 
 		$events = $this->Paginator->paginate('Event');
 		$this->set( compact('events') );
@@ -690,17 +683,6 @@ class EventsController extends AppController {
 	public function volunteer_view($event_id = null)
 	{
 		$event = $this->Event->findByEventId($event_id);
-
-		// if( empty($event) )
-		// {
-		// 	throw new NotFoundException(__('Event does not exist') );
-		// }
-		// if( !$this->_CurrentUserCanPublish($event['Event']['organization_id']) )
-		// {
-		// 	$this->Session->setFlash('You do not have permission.','danger');
-		// 	return $this->redirect('../../events/view/'.$event_id);
-		// }
-
 		$this->set( compact('event') );
 	}
 

@@ -23,7 +23,7 @@
 						<th><?php echo $this->Paginator->sort('organization'); ?></th> 
 						<th><?php echo $this->Paginator->sort('start_time'); ?></th>
 						<th><?php echo $this->Paginator->sort('stop_time'); ?></th>
-						<th class="actions"><?php echo __('Actions'); ?></th>
+						<th class="actions"></th>
 					</tr>
 					<?php foreach ($events as $event): ?>
 					<tr>
