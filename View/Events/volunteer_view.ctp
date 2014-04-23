@@ -36,8 +36,7 @@
 			<hr>
 			
 			<?php echo $this->Element('print_addresses', array('addresses' => $event['Address']) ); ?>
-
-
+			
 			<hr>
 
 			<h3>Skills</h3>
