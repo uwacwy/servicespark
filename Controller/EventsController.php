@@ -539,7 +539,7 @@ class EventsController extends AppController {
 		$times = $this->Paginator->paginate('Time');
 
 		$conditions = array(
-			'Time.event_id' => $id
+			'Time.event_id' => $event_id
 		);
 		$fields = array(
 			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) )/60 as EventTotal'
@@ -597,8 +597,6 @@ class EventsController extends AppController {
 	{
 		$user_organizations = $this->_GetUserOrganizationsByPermission('read');
 
-
-
 		$sql_date_fmt = 'Y-m-d H:i:s';
 		$contain = array('Event');
 
@@ -614,7 +612,7 @@ class EventsController extends AppController {
 
 		if( !$this->_CurrentUserCanRead($event['Event']['organization_id']) )
 		{
-			$this->Session->setFlash('You cannot supervise this event');
+			$this->Session->setFlash(__('You may not supervise this event'), 'danger');
 			return $this->redirect(array('volunteer' => true,
 				'controller' => 'events', 'action' => 'view', $event_id));
 		}
