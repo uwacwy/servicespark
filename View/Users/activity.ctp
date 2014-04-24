@@ -49,15 +49,18 @@ $summary['custom'] = null;
 				<h2>Detailed Activity</h2>
 				<p>
 					<?php
-						echo sprintf('<a href="%1$s" class="btn btn-info btn-sm" title="%3$s"><span class="glyphicon glyphicon-bookmark"></span> %2$s</a>',
-							$this->Html->url(array('controller' => 'users','action' => 'activity',$period,'?' => $_SERVER['QUERY_STRING']) ),
+						echo $this->Utility->btn_link_icon(
 							__('%s: %s', Configure::read('Solution.name'), $periods[$period]),
-							__('Drag me to your bookmarks for easy access')
+							array('controller' => 'users','action' => 'activity',$period,'?' => $_SERVER['QUERY_STRING']),
+							'btn btn-info btn-sm',
+							'glyphicon-bookmark'
 						);
 						echo ' ';
-						echo sprintf('<a href="%s" class="btn btn-success btn-sm"><span class="glyphicon glyphicon-download-alt"></span> %s</a>',
-							$this->Html->url(array('controller' => 'users','action' => 'report',$period,'?' => $_SERVER['QUERY_STRING']) ),
-							__('Download as Microsoft Excel')
+						echo $this->Utility->btn_link_icon(
+							__('Download as Microsoft Excel'),
+							array('controller' => 'users','action' => 'report',$period,'?' => $_SERVER['QUERY_STRING']),
+							'btn btn-success btn-sm',
+							'glyphicon-download-alt'
 						);
 					?> 
 				</p>
