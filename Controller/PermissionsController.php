@@ -8,6 +8,6 @@ App::uses('AppController', 'Controller');
  */
 class PermissionsController extends AppController {
 
-	var $scaffold;
+	//var $scaffold;
 
 }

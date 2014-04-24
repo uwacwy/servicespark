@@ -34,104 +34,104 @@ class SkillsController extends AppController {
 		$this->set('query', $q);
 		$this->set('skills', $skills);
 		$this->set('_serialize', array('query', 'skills') );
-	}
+// 	}
 
-/**
- * index method
- *
- * @return void
- */
-	public function index() {
+// /**
+//  * index method
+//  *
+//  * @return void
+//  */
+// 	public function index() {
 
-		$this->Skill->recursive = 0;
-		$this->set('skills', $this->Paginator->paginate());
-	}
+// 		$this->Skill->recursive = 0;
+// 		$this->set('skills', $this->Paginator->paginate());
+// 	}
 
-/**
- * view method
- *
- * @throws NotFoundException
- * @param string $id
- * @return void
- */
-	public function view($id = null) {
-		if (!$this->Skill->exists($id)) {
-			throw new NotFoundException(__('Invalid skill'));
-		}
+// /**
+//  * view method
+//  *
+//  * @throws NotFoundException
+//  * @param string $id
+//  * @return void
+//  */
+// 	public function view($id = null) {
+// 		if (!$this->Skill->exists($id)) {
+// 			throw new NotFoundException(__('Invalid skill'));
+// 		}
 		
-		$options = array('conditions' => array('Skill.' . $this->Skill->primaryKey => $id));
-		$this->set('skill', $this->Skill->find('first', $options));
-	}
+// 		$options = array('conditions' => array('Skill.' . $this->Skill->primaryKey => $id));
+// 		$this->set('skill', $this->Skill->find('first', $options));
+// 	}
 
-/**
- * add method
- *
- * @return void
- */
-	public function add() {
-		if ($this->request->is('post')) {
-			$this->Skill->create();
+// /**
+//  * add method
+//  *
+//  * @return void
+//  */
+// 	public function add() {
+// 		if ($this->request->is('post')) {
+// 			$this->Skill->create();
 
-			if ($this->Skill->saveAll($this->request->data)) {
-				return $this->flash(__('The skill has been saved.'), array('action' => 'index'));
-			}
-		}
+// 			if ($this->Skill->saveAll($this->request->data)) {
+// 				return $this->flash(__('The skill has been saved.'), array('action' => 'index'));
+// 			}
+// 		}
 
-		$users = $this->Skill->User->find('list');
-		$events = $this->Skill->Event->find('list');
-		$this->set(compact('users','events'));
-	}
+// 		$users = $this->Skill->User->find('list');
+// 		$events = $this->Skill->Event->find('list');
+// 		$this->set(compact('users','events'));
+// 	}
 
-/**
- * edit method
- *
- * @throws NotFoundException
- * @param string $id
- * @return void
- */
-	public function edit($id = null) {
-		if (!$this->Skill->exists($id)) {
-			throw new NotFoundException(__('Invalid skill'));
-		}
+// /**
+//  * edit method
+//  *
+//  * @throws NotFoundException
+//  * @param string $id
+//  * @return void
+//  */
+// 	public function edit($id = null) {
+// 		if (!$this->Skill->exists($id)) {
+// 			throw new NotFoundException(__('Invalid skill'));
+// 		}
 
-		if ($this->request->is(array('post', 'put'))) {
-			if ($this->Skill->save($this->request->data)) {
-				return $this->flash(__('The skill has been saved.'), array('action' => 'index'));
-			}
-		} 
-		else {
-			$options = array('conditions' => array('Skill.' . $this->Skill->primaryKey => $id));
-			$this->request->data = $this->Skill->find('first', $options);
-		}
+// 		if ($this->request->is(array('post', 'put'))) {
+// 			if ($this->Skill->save($this->request->data)) {
+// 				return $this->flash(__('The skill has been saved.'), array('action' => 'index'));
+// 			}
+// 		} 
+// 		else {
+// 			$options = array('conditions' => array('Skill.' . $this->Skill->primaryKey => $id));
+// 			$this->request->data = $this->Skill->find('first', $options);
+// 		}
 
-		$users = $this->Skill->User->find('list');
-		$this->set(compact('users'));
+// 		$users = $this->Skill->User->find('list');
+// 		$this->set(compact('users'));
 
-		$events = $this->Skill->Event->find('list');
-		$this->set(compact('events'));
-	}
+// 		$events = $this->Skill->Event->find('list');
+// 		$this->set(compact('events'));
+// 	}
 
-/**
- * delete method
- *
- * @throws NotFoundException
- * @param string $id
- * @return void
- */
-	public function delete($id = null) {
-		$this->Skill->id = $id;
+// /**
+//  * delete method
+//  *
+//  * @throws NotFoundException
+//  * @param string $id
+//  * @return void
+//  */
+// 	public function delete($id = null) {
+// 		$this->Skill->id = $id;
 
-		if (!$this->Skill->exists()) {
-			throw new NotFoundException(__('Invalid skill'));
-		}
+// 		if (!$this->Skill->exists()) {
+// 			throw new NotFoundException(__('Invalid skill'));
+// 		}
 
-		$this->request->onlyAllow('post', 'delete');
+// 		$this->request->onlyAllow('post', 'delete');
 
-		if ($this->Skill->delete()) {
-			return $this->flash(__('The skill has been deleted.'), array('action' => 'index'));
-		} 
-		else {
-			return $this->flash(__('The skill could not be deleted. Please, try again.'), array('action' => 'index'));
-		}
-	}
+// 		if ($this->Skill->delete()) {
+// 			return $this->flash(__('The skill has been deleted.'), array('action' => 'index'));
+// 		} 
+// 		else {
+// 			return $this->flash(__('The skill could not be deleted. Please, try again.'), array('action' => 'index'));
+// 		}
+// 	}
 }
