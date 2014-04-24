@@ -37,6 +37,71 @@ class OrganizationsController extends AppController {
 
 
 /**
+ * go_join method
+ *
+ * @return void
+ */
+	public function go_join()
+	{
+		return $this->redirect(
+			array(
+					'volunteer' => true,
+					'controller' => 'organizations',
+					'action' => 'join',
+					$id)
+		);
+	}
+
+
+/**
+ * go_add method
+ *
+ * @return void
+ */
+	public function go_add() {
+		return $this->redirect(
+			array(
+					'volunteer' => true,
+					'controller' => 'organizations',
+					'action' => 'add',
+					$id)
+		);
+	}
+
+
+/**
+ * go_index method
+ *
+ * @return void
+ */
+	public function go_index() {
+		return $this->redirect(
+			array(
+					'volunteer' => false,
+					'controller' => 'organizations',
+					'action' => 'index',
+					$id)
+		);
+	}
+
+
+/**
+ * view method
+ *
+ * @throws NotFoundException
+ * @param string $id
+ * @return void
+ */
+	public function index() 
+	{
+		$this->Paginator->settings['contain'] = array();
+
+		$organizations = $this->Paginator->paginate();
+
+		$this->set(compact('organizations'));
+	}
+
+/**
  * view method
  *
  * @throws NotFoundException
@@ -295,8 +360,6 @@ class OrganizationsController extends AppController {
 
 			$userHours = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
 			$this->set(compact('userHours', 'events'));
-
-			debug($userHours);
 
 
 	 		// summary all time

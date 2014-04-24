@@ -1,11 +1,3 @@
-<?php
-	/*
-		index.ctp
-		--
-		This form allows users to publish their activity to organizations.
-	*/
-?>
-
 <div class="row">
 	<div class="col-md-12">
 		<?php echo $this->Form->create('Organization', $form_defaults); ?>
