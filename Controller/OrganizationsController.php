@@ -320,17 +320,7 @@ class OrganizationsController extends AppController {
 	{
 		if( $this->_CurrentUserCanRead( $organization_id ) || $this->_CurrentUserCanWrite( $organization_id ) )
 		{
-			if ($this->request->is('post'))
-			{
-				return $this->redirect(
-					array(
-						'supervisor' => true,
-						'controller' => 'organizations',
-						'action' => 'report',
-						$organization_id
-					)
-				);
-			}
+			$this->set('organization_id', $organization_id);
 
 			$sql_date_fmt = 'Y-m-d H:i:s';
 
@@ -361,10 +351,7 @@ class OrganizationsController extends AppController {
 			$userHours = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
 			$this->set(compact('userHours', 'events'));
 
-			$this->set('organization_id', $organization_id);
-
 	 		// summary all time
-			//$users = $this->Organization->Permission->find('list');
 			$users = $this->_GetUsersByOrganization($organization_id);
 
 	 		$conditions = array(
@@ -897,7 +884,13 @@ class OrganizationsController extends AppController {
 
 					$this->Organization->Permission->save($conditions);
 
-					return $this->redirect(array('action' => 'index'));
+					return 	$this->redirect(
+						array(
+							'volunteer' => false,
+							'controller' => 'users',
+							'action' => 'activity'
+						)
+					);
 				} 
 				else 
 				{
