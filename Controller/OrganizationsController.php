@@ -24,7 +24,7 @@ class OrganizationsController extends AppController {
  *
  * @return void
  */
-	public function go_leave()
+	public function go_leave($id = null)
 	{
 		return $this->redirect(
 			array(
@@ -41,7 +41,7 @@ class OrganizationsController extends AppController {
  *
  * @return void
  */
-	public function go_join()
+	public function go_join($id = null)
 	{
 		return $this->redirect(
 			array(
@@ -61,10 +61,10 @@ class OrganizationsController extends AppController {
 	public function go_add() {
 		return $this->redirect(
 			array(
-					'volunteer' => true,
-					'controller' => 'organizations',
-					'action' => 'add',
-					$id)
+				'volunteer' => true,
+				'controller' => 'organizations',
+				'action' => 'add'
+			)
 		);
 	}
 
@@ -74,7 +74,7 @@ class OrganizationsController extends AppController {
  *
  * @return void
  */
-	public function go_index() {
+	public function go_index($id = null) {
 		return $this->redirect(
 			array(
 					'volunteer' => false,

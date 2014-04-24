@@ -78,19 +78,19 @@ class EventsController extends AppController {
  * @param string $id
  * @return void
  */
-	// public function delete($id = null) {
-	// 	$this->Event->id = $id;
-	// 	if (!$this->Event->exists()) {
-	// 		throw new NotFoundException(__('Invalid event'));
-	// 	}
-	// 	$this->request->onlyAllow('post', 'delete');
-	// 	if ($this->Event->delete()) {
-	// 		$this->Session->setFlash(__('The event has been deleted.'), 'success');
-	// 	} else {
-	// 		$this->Session->setFlash(__('The event could not be deleted. Please, try again.'), 'danger');
-	// 	}
-	// 	return $this->redirect(array('action' => 'index'));
-	// }
+	public function delete($id = null) {
+		$this->Event->id = $id;
+		if (!$this->Event->exists()) {
+			throw new NotFoundException(__('Invalid event'));
+		}
+		$this->request->onlyAllow('post', 'delete');
+		if ($this->Event->delete()) {
+			$this->Session->setFlash(__('The event has been deleted.'), 'success');
+		} else {
+			$this->Session->setFlash(__('The event could not be deleted. Please, try again.'), 'danger');
+		}
+		return $this->redirect(array('action' => 'index'));
+	}
 
 
 	/**
@@ -106,7 +106,7 @@ class EventsController extends AppController {
 		else
 		{
 			return $this->redirect(array('coordinator' => true,
-				'controller' => 'events', 'action' => 'delete'));
+				'controller' => 'events', 'action' => 'index'));
 		}
 	}
 
@@ -297,15 +297,14 @@ class EventsController extends AppController {
 	*/
 	public function coordinator_delete($id = null)
 	{
-		$events = $this->Event->findByEventId($id);
+		$user_organizations = $this->_GetUserOrganizationsByPermission('write');
 
-		if( $this->_CurrentUserCanWrite($events['Event']['organization_id']) )
+		if( $this->_CurrentUserCanWrite($user_organizations) )
 		{
-			$this->Event->delete($id);
+			$this->delete($id);
 		}
 		else
 		{
-			//throw new ForbiddenException('You do not have permission...');
 			$this->Session->setFlash('You do not have permission.', 'danger');
 			return $this->redirect(array('coordinator' => true,
 				'controller' => 'events', 'action' => 'index'));
