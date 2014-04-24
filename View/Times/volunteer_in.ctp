@@ -21,8 +21,9 @@
 				<small><?php echo h($event['Organization']['name']); ?></small>
 			</h1>
 
-			<p><?php echo h($event['Event']['description']); ?>&nbsp;</p>
-
+			<blockquote>
+				<p><?php echo h($event['Event']['description']); ?>&nbsp;</p>
+			</blockquote>
 			<div class="table-responsive">
 				<table class="table table-bordered table-condensed">
 					<tr>
@@ -35,28 +36,6 @@
 							<strong>stop time</strong><br>
 							<?php echo sprintf('%s<br>', date('l M j, Y', strtotime($event['Event']['stop_time'])) ); ?>
 							<?php echo sprintf('%s', date('g:i a', strtotime($event['Event']['stop_time'])) ); ?>
-						</td>
-						<?php
-							if( count($event['Address']) > 0)
-							{
-								foreach($event['Address'] as $address)
-								{
-									$rtn = "";
-									$rtn .= sprintf('<strong>%s</strong><br>', $address['type']);
-									$rtn .= sprintf('%s<br>', $address['address1'] );
-									if( !empty($address['address2']) )
-									{
-										$rtn .= sprintf('%s<br>', $address['address2'] );
-									}
-									$rtn .= sprintf('%s, %s %s', $address['city'], $address['state'], $address['zip'] );
-
-									echo sprintf('<td>%s</td>', $rtn);
-								}
-							}
-						?>
-						<td>
-							<strong>checked in</strong><br>
-							<?php echo count($event['Time']); ?>
 						</td>
 					</tr>
 				</table>

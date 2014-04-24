@@ -36,6 +36,6 @@
 				?>
 			</div>
 
-		<?php echo $this->Form->End('Clock Out'); ?>
+		<?php echo $this->Form->End( array('label' => __('Clock Out'), 'class' => 'btn btn-success btn-lg' ) ); ?>
 </div>
 </div>
