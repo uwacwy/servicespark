@@ -62,11 +62,29 @@ class AppController extends Controller {
 	{
 		$this->set('super_admin', $this->_CurrentUserIsSuperAdmin() );
 
+		if( $this->Session->check('can_coordinate.exp') && $this->Session->read('can_coordinate.exp') <= time() )
+		{
+			$this->Session->delete('can_coordinate.exp');
+			$this->Session->delete('can_coordinate');
+		}
+
+		if( $this->Session->check('can_supervise.exp') && $this->Session->read('can_supervise.exp') <= time() )
+		{
+			$this->Session->delete('can_supervise.exp');
+			$this->Session->delete('can_supervise');
+		}
+
 		if( !$this->Session->check('can_coordinate') )
+		{
 			$this->Session->write('can_coordinate', (count($this->_GetUserOrganizationsByPermission('write') ) > 0 ) );
+			$this->Session->write('can_coordinate.exp', strtotime('+1 minute') );
+		}
 
 		if( !$this->Session->check('can_supervise') )
+		{
 			$this->Session->write('can_supervise', (count($this->_GetUserOrganizationsByPermission('read') ) > 0 ) );
+			$this->Session->write('can_supervise.exp', strtotime('+1 minute') );
+		}
 
 		$this->set('form_defaults', array(
 				'class' => 'form',
