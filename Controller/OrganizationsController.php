@@ -318,7 +318,7 @@ class OrganizationsController extends AppController {
 */
 	public function supervisor_view($organization_id = null) 
 	{
-		if( $this->_CurrentUserCanRead( $organization_id ) )
+		if( $this->_CurrentUserCanRead( $organization_id ) || $this->_CurrentUserCanWrite( $organization_id ) )
 		{
 			if ($this->request->is('post'))
 			{
