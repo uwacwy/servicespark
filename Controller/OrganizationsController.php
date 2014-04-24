@@ -361,6 +361,7 @@ class OrganizationsController extends AppController {
 			$userHours = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
 			$this->set(compact('userHours', 'events'));
 
+			$this->set('organization_id', $organization_id);
 
 	 		// summary all time
 			//$users = $this->Organization->Permission->find('list');
@@ -476,7 +477,7 @@ class OrganizationsController extends AppController {
 			return $this->redirect(
 				array(
 					'volunteer' => false,
-					'controller' => $organizations,
+					'controller' => 'organizations',
 					'action' => 'index'
 				)
 			);
@@ -815,30 +816,24 @@ class OrganizationsController extends AppController {
 	{
 
 		if ($this->request->is(array('post', 'put'))) 
-		{
-			$i = 0;
-			foreach($this->request->data['Organization']['Organization'] as $organization)
+		{	
+			foreach($this->request->data['Organization'] as $organization)
 			{
-				$entry['Permission'] = array(
-					'user_id' => $this->Auth->user('user_id'),
-					'organization_id' => $this->request->data['Organization']['Organization'][$i],
-					'publish' => true
-				);
+				//debug($organization);
 
-				$this->Organization->Permission->create();
-				$this->Organization->Permission->save($entry);
-				
-				$organization_ids['Organization']['Organization'][] = $this->Organization->id;
-
-				$i++;
+				if($organization['publish'] == '1') {
+					
+					$entry['Permission'] = array(
+						'user_id' => $this->Auth->user('user_id'),
+						'organization_id' => $organization['organization_id'],
+						'publish' => true
+					);
+					$this->Organization->Permission->create();
+					$this->Organization->Permission->save($entry);
+					debug($entry);
+				}
 			}
 
-			unset($this->request->data['Organization']['Organization']);
-
-			if(!empty($organization_ids))
-			{
-				$this->request->data['Organization']['Organization'] = $organization_ids;
-			}
 			return 	$this->redirect(
 				array(
 					'volunteer' => false,
@@ -854,7 +849,13 @@ class OrganizationsController extends AppController {
 			)
 		);
 
-		$organizations = $this->Organization->find('list', array('conditions' => $conditions));
+		$this->Paginator->settings = array(
+			'conditions' => $conditions,
+			'limit' => 10,
+			'contain' => array()
+		);
+
+		$organizations = $this->Paginator->paginate();
 		$this->set(compact('organizations'));
 	}
 
