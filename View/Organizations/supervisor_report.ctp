@@ -6,6 +6,7 @@ $this->PhpExcel->setDefaultFont('Calibri', 12);
 $table = array(
     array('label' => __('Last Name'), 'width' => 'auto', 'filter' => true),
     array('label' => __('First Name'), 'width' => 'auto', 'filter' => true),
+    array('label' => __('Email'), 'width' => 'auto', 'filter' => true),
     array('label' => __('Number Events'), 'width' => 'auto', 'filter' => true),
     array('label' => __('Total Hours'), 'width' => 'auto')
 );
@@ -19,13 +20,14 @@ foreach ($userHours as $user) {
     $this->PhpExcel->addTableRow(array(
         $user['User']['last_name'],
         $user['User']['first_name'],
+        $user['User']['email'],
         $user[0]['UserNumberEvents'],
         $user[0]['UserSumTime']
     ));
 }
 
 $this->PhpExcel->addTableFooter();
-$this->PhpExcel->save('php://output');
-//$this->PhpExcel->output(); 
+//$this->PhpExcel->save('php://output');
+$this->PhpExcel->output(); 
 
 ?>
