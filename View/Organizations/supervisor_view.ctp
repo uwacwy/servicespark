@@ -27,9 +27,14 @@
 				</div>
 			</div>
 		</div>
-
-		<?php echo $this->Form->create('Organization', $form_defaults); ?>
-		<?php echo $this->Form->end(array('label' => "Generate Excel for this Organization", 'class' => 'btn btn-success')); ?>
+		<?php
+			echo $this->Utility->btn_link_icon(
+				__('Download as Microsoft Excel'),
+				array('supervisor' => true, 'controller' => 'organizations','action' => 'report', $organization_id),
+				'btn btn-success btn-sm',
+				'glyphicon-download-alt'
+			);
+		?>
 		
 		<h2>Members</h2>
 		<div class="table-responsive">

@@ -361,6 +361,7 @@ class OrganizationsController extends AppController {
 			$userHours = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
 			$this->set(compact('userHours', 'events'));
 
+			$this->set('organization_id', $organization_id);
 
 	 		// summary all time
 			//$users = $this->Organization->Permission->find('list');
@@ -476,7 +477,7 @@ class OrganizationsController extends AppController {
 			return $this->redirect(
 				array(
 					'volunteer' => false,
-					'controller' => $organizations,
+					'controller' => 'organizations',
 					'action' => 'index'
 				)
 			);
@@ -853,7 +854,7 @@ class OrganizationsController extends AppController {
 			'limit' => 10,
 			'contain' => array()
 		);
-		
+
 		$organizations = $this->Paginator->paginate();
 		$this->set(compact('organizations'));
 	}
