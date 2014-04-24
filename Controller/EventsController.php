@@ -92,7 +92,6 @@ class EventsController extends AppController {
 		return $this->redirect(array('action' => 'index'));
 	}
 
-
 	/**
 			ADMIN
 			URL: localhost/admin/events/...
@@ -487,6 +486,49 @@ class EventsController extends AppController {
 		$this->set( compact('events') );
 	}
 
+	public function coordinator_report($event_id = null)
+	{
+		$user_organizations = $this->_GetUserOrganizationsByPermission('read');
+
+		$sql_date_fmt = 'Y-m-d H:i:s';
+		$contain = array('Event');
+
+		$event = $this->Event->find('first', array('conditions' => array('Event.event_id' => $event_id) ) );
+
+		if( empty($event) )
+		{
+			throw new NotFoundException( __('Page Not Found') );
+		}
+
+		if( !$this->_CurrentUserCanRead($event['Event']['organization_id']) )
+		{
+			$this->Session->setFlash(__('You may not supervise this event'), 'danger');
+			return $this->redirect(array('volunteer' => true,
+				'controller' => 'events', 'action' => 'view', $event_id));
+		}
+
+
+		$conditions = array(
+			'Time.event_id' => $event_id
+		);
+		$fields = array(
+			'Time.*',
+			'User.*',
+			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) )/60 as OrganizationAllTime',
+			'COUNT( Time.time_id ) as TimeEntryCount'
+		);
+		$group = array(
+			'Time.user_id'
+		);
+		
+		$times = $this->Event->Time->find('all', array(
+			'conditions' => $conditions,
+			'fields' => $fields,
+			'group' => $group
+		));
+		$this->set( compact('times', 'event') );
+	}
+
 	public function coordinator_view($event_id = null)
 	{
 		$user_organizations = $this->_GetUserOrganizationsByPermission('write');
@@ -550,7 +592,7 @@ class EventsController extends AppController {
 		// versus
 
 //		$times = $this->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
-		
+		$this->set('event_id', $event_id);
 		$this->set( compact('times', 'event') );
 	}
 
@@ -593,15 +635,12 @@ class EventsController extends AppController {
 		$this->set( compact('events') );
 	}
 
-	public function supervisor_view($event_id = null)
+	public function supervisor_report($event_id = null)
 	{
 		$user_organizations = $this->_GetUserOrganizationsByPermission('read');
 
 		$sql_date_fmt = 'Y-m-d H:i:s';
 		$contain = array('Event');
-
-		// summary all time
-		//$users = $this->_GetUsersByOrganization($event_id);
 
 		$event = $this->Event->find('first', array('conditions' => array('Event.event_id' => $event_id) ) );
 
@@ -630,6 +669,56 @@ class EventsController extends AppController {
 		$group = array(
 			'Time.user_id'
 		);
+		
+		$times = $this->Event->Time->find('all', array(
+			'conditions' => $conditions,
+			'fields' => $fields,
+			'group' => $group
+		));
+		$this->set( compact('times', 'event') );
+	}
+
+	public function supervisor_view($event_id = null)
+	{
+		$user_organizations = $this->_GetUserOrganizationsByPermission('write');
+
+		// if( !$this->_CurrentUserCanRead($user_organizations) )
+		// {
+		// 	$this->Session->setFlash('You do not have permission.', 'danger');
+		// 	return $this->redirect(array('supervisor' => true,
+		// 		'controller' => 'events', 'action' => 'view', $event_id));
+		// }
+
+		$sql_date_fmt = 'Y-m-d H:i:s';
+		$contain = array('Event');
+
+		// summary all time
+		//$users = $this->_GetUsersByOrganization($event_id);
+
+		$event = $this->Event->find('first', array('conditions' => array('Event.event_id' => $event_id) ) );
+
+		if( empty($event) )
+		{
+			throw new NotFoundException( __('Page Not Found') );
+		}
+
+		if( !$this->_CurrentUserCanWrite($event['Event']['organization_id']) )
+		{
+			return $this->redirect( array('supervisor' => true, 'controller' => 'events', 'action' => 'view', $event_id) );
+		}
+
+		$conditions = array(
+			'Time.event_id' => $event_id
+		);
+		$fields = array(
+			'Time.*',
+			'User.*',
+			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) )/60 as OrganizationAllTime',
+			'COUNT( Time.time_id ) as TimeEntryCount'
+		);
+		$group = array(
+			'Time.user_id'
+		);
 
 		// juxtapose this with the actual Time->find('all', $options) syntax
 		$this->Paginator->settings = array(
@@ -640,10 +729,19 @@ class EventsController extends AppController {
 		);
 		$times = $this->Paginator->paginate('Time');
 
+		$conditions = array(
+			'Time.event_id' => $event_id
+		);
+		$fields = array(
+			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) )/60 as EventTotal'
+		);
+		$event_total = $this->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
+		$this->set( compact('event_total') );
+
 		// versus
 
 //		$times = $this->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
-		
+		$this->set('event_id', $event_id);
 		$this->set( compact('times', 'event') );
 	}
 

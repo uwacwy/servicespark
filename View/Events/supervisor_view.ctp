@@ -58,6 +58,14 @@
 			<hr>
 			
 			<h3>Volunteer Time Entries</h3>
+			<?php
+				echo $this->Utility->btn_link_icon(
+					__('Download as Microsoft Excel'),
+					array('supervisor' => true, 'controller' => 'events','action' => 'report', $event_id),
+					'btn btn-success btn-sm',
+					'glyphicon-download-alt'
+				);
+			?>
 			<?php if( !empty($times) ) : ?>
 				<div class="table-responsive">
 					<table class="table table-striped">
