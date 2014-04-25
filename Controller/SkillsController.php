@@ -27,14 +27,17 @@ class SkillsController extends AppController {
 		$q = null;
 		if( isset( $this->params->query['q'] ) )
 		{
-			$q = $this->params->query['q'];
-			$conditions = array('Skill.skill LIKE' => "%$q%" );
+			$q = strtolower( $this->params->query['q'] );
+			$conditions = array(
+				'LOWER(Skill.skill) LIKE' => "%$q%",
+				'Skill.hidden' => false
+			);
 			$skills = $this->Skill->find('list', array('conditions' => $conditions) );			
 		}
 		$this->set('query', $q);
 		$this->set('skills', $skills);
 		$this->set('_serialize', array('query', 'skills') );
-// 	}
+	}
 
 // /**
 //  * index method

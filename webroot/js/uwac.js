@@ -41,6 +41,58 @@ $(document).ready(function(){
 
 	}
 
+	$('input.username').each(function(){
+		var $this = $(this);
+
+		$this.parent().append( $("<p><span class=\"help-block\">Type a username to see if it's available.</span></p>") );
+
+		$this.keyup(function(){
+
+			var state = {
+				message: "Type a username to see if it's available.",
+				css_class: "form-group"
+			};
+			
+			if($this.val().length == 0 )
+			{
+				$this.parent().attr('class', state.css_class);
+				$this.parent().find('p .help-block').text(state.message);
+				return; 
+
+			}
+
+			$.ajax(
+				{
+					url: "/users/check.json",
+					dataType: 'json',
+					data: {
+						username: $this.val()
+					},
+					success: function( data ) {
+						if( data.valid )
+						{
+							state = {
+								message: "This username is available!",
+								css_class: "form-group has-success"
+							};
+						}
+						else
+						{
+							state = {
+								message: "This username is taken.  Please try another.",
+								css_class: "form-group has-error"
+							}
+						}
+
+						$this.parent().attr('class', state.css_class);
+						$this.parent().find('p .help-block').text(state.message);
+					}
+				}
+			);
+
+		});
+	});
+
 	$('.add-address').each(function(){
 		var $tgt = $(this).attr('data-target');
 		console.log($tgt);

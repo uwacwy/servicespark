@@ -16,7 +16,8 @@ class UsersController extends AppController {
 	 * @var array
 	 */
 	public $components = array(
-		'Paginator'
+		'Paginator',
+		'RequestHandler'
 	);
 
 
@@ -24,7 +25,7 @@ class UsersController extends AppController {
 	{
 		parent::beforeFilter();
 		// Allow users to register and logout.
-		$this->Auth->allow('register', 'login', 'logout');
+		$this->Auth->allow('register', 'login', 'logout', 'check');
 	}
 
 	public function go_login()
@@ -174,6 +175,23 @@ class UsersController extends AppController {
 
 	// 	$this->set( compact('user') );
 	// }
+
+	public function check()
+	{
+		$username = ( isset($this->params->query['username']) )? $this->params->query['username']: '';
+		$conditions = array('User.username' => $this->params->query['username']);
+		$count = ( $this->User->find('count', array('conditions' => $conditions) ) );
+
+		$valid = true;
+		if( $count == 1)
+		{
+			$valid = false;
+		}
+
+		$this->set( compact('valid') );
+		$this->set('_serialize', array('valid') );
+
+	}
 
 
 /**
