@@ -24,7 +24,7 @@ class OrganizationsController extends AppController {
  *
  * @return void
  */
-	public function go_leave()
+	public function go_leave($id = null)
 	{
 		return $this->redirect(
 			array(
@@ -35,6 +35,71 @@ class OrganizationsController extends AppController {
 		);
 	}
 
+
+/**
+ * go_join method
+ *
+ * @return void
+ */
+	public function go_join($id = null)
+	{
+		return $this->redirect(
+			array(
+					'volunteer' => true,
+					'controller' => 'organizations',
+					'action' => 'join',
+					$id)
+		);
+	}
+
+
+/**
+ * go_add method
+ *
+ * @return void
+ */
+	public function go_add() {
+		return $this->redirect(
+			array(
+				'volunteer' => true,
+				'controller' => 'organizations',
+				'action' => 'add'
+			)
+		);
+	}
+
+
+/**
+ * go_index method
+ *
+ * @return void
+ */
+	public function go_index($id = null) {
+		return $this->redirect(
+			array(
+					'volunteer' => false,
+					'controller' => 'organizations',
+					'action' => 'index',
+					$id)
+		);
+	}
+
+
+/**
+ * view method
+ *
+ * @throws NotFoundException
+ * @param string $id
+ * @return void
+ */
+	public function index() 
+	{
+		$this->Paginator->settings['contain'] = array();
+
+		$organizations = $this->Paginator->paginate();
+
+		$this->set(compact('organizations'));
+	}
 
 /**
  * view method
@@ -54,35 +119,8 @@ class OrganizationsController extends AppController {
 													'Event.' . $this->Organization->primaryKey => $id) );
 		$this->set('organization', $this->Organization->find('first', $organizationOptions));
 		$events = $this->Organization->Event->find('all', $eventOptions);
-		//debug($events);	
+		
 		$this->set(compact('events'));
-	}
-
-
-/**
- * delete method
- *
- * @throws NotFoundException
- * @param string $id
- * @return void
- */
-	private function delete($id = null) 
-	{
-		$this->Organization->id = $id;
-		if (!$this->Organization->exists()) 
-		{
-			throw new NotFoundException(__('Invalid organization'));
-		}
-		$this->request->onlyAllow('post', 'delete');
-		if ($this->Organization->delete()) 
-		{
-			$this->Session->setFlash(__('The organization has been deleted.'));
-		} 
-		else 
-		{
-			$this->Session->setFlash(__('The organization could not be deleted. Please, try again.'));
-		}
-		return $this->redirect(array('action' => 'index'));
 	}
 
 
@@ -280,19 +318,9 @@ class OrganizationsController extends AppController {
 */
 	public function supervisor_view($organization_id = null) 
 	{
-		if( $this->_CurrentUserCanRead( $organization_id ) )
+		if( $this->_CurrentUserCanRead( $organization_id ) || $this->_CurrentUserCanWrite( $organization_id ) )
 		{
-			if ($this->request->is('post'))
-			{
-				return $this->redirect(
-					array(
-						'supervisor' => true,
-						'controller' => 'organizations',
-						'action' => 'report',
-						$organization_id
-					)
-				);
-			}
+			$this->set('organization_id', $organization_id);
 
 			$sql_date_fmt = 'Y-m-d H:i:s';
 
@@ -323,11 +351,7 @@ class OrganizationsController extends AppController {
 			$userHours = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
 			$this->set(compact('userHours', 'events'));
 
-			debug($userHours);
-
-
 	 		// summary all time
-			//$users = $this->Organization->Permission->find('list');
 			$users = $this->_GetUsersByOrganization($organization_id);
 
 	 		$conditions = array(
@@ -434,70 +458,13 @@ class OrganizationsController extends AppController {
 
 			$userHours = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
 			$this->set(compact('userHours', 'events'));
-
-
-	 		// summary all time
-			//$users = $this->Organization->Permission->find('list');
-			$users = $this->_GetUsersByOrganization($organization_id);
-
-	 		$conditions = array(
-	 			'Time.user_id' => $this->Auth->user('user_id')
-	 		);
-	 		$fields = array(
-	 			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as OrganizationAllTime'
-	 		);
-			$summary_all_time = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
-	 		$this->set( compact('summary_all_time') );
-
-
-			// summary month
-	  		$conditions = array(
-	 			'Time.start_time >=' => date($sql_date_fmt, strtotime('1 month ago') ),
-				'Time.user_id' => $users
-	  		);
-	  		$fields = array(
-				'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as OrganizationPastMonth'
-			);
-			$summary_past_month = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
-			$this->set( compact('summary_past_month') );
-
-
-			// summary year
-			$conditions = array(
-				'Time.user_id' => $users,
-				'Time.start_time >=' => date($sql_date_fmt, strtotime('1 year ago') )
-				
-	  		);
-			$fields = array(
-				'Time.*',
-				'User.*',
-				'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as OrganizationPastYear',
-				'COUNT( Time.time_id ) as TimeEntryCount'
-			);
-			$group = array(
-				'Time.user_id'
-	  		);
-			$summary_past_year = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
-			$this->set( compact('summary_past_year') );
-
-
-			// year-to-date
-			$conditions = array(
-				'Time.user_id' => $this->Auth->user('user_id'),
-				'Time.start_time >=' => date($sql_date_fmt, mktime(0,0,0,1,1, date('Y') ) )
-			);
-			$fields = array(
-				'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as OrganizationYTD'
-			);
-			$summary_ytd = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
-			$this->set( compact('summary_ytd') );
 		}
 		else
 		{
 			return $this->redirect(
 				array(
 					'volunteer' => false,
-					'controller' => $organizations,
+					'controller' => 'organizations',
 					'action' => 'index'
 				)
 			);
@@ -836,30 +803,24 @@ class OrganizationsController extends AppController {
 	{
 
 		if ($this->request->is(array('post', 'put'))) 
-		{
-			$i = 0;
-			foreach($this->request->data['Organization']['Organization'] as $organization)
+		{	
+			foreach($this->request->data['Organization'] as $organization)
 			{
-				$entry['Permission'] = array(
-					'user_id' => $this->Auth->user('user_id'),
-					'organization_id' => $this->request->data['Organization']['Organization'][$i],
-					'publish' => true
-				);
+				//debug($organization);
 
-				$this->Organization->Permission->create();
-				$this->Organization->Permission->save($entry);
-				
-				$organization_ids['Organization']['Organization'][] = $this->Organization->id;
-
-				$i++;
+				if($organization['publish'] == '1') {
+					
+					$entry['Permission'] = array(
+						'user_id' => $this->Auth->user('user_id'),
+						'organization_id' => $organization['organization_id'],
+						'publish' => true
+					);
+					$this->Organization->Permission->create();
+					$this->Organization->Permission->save($entry);
+					debug($entry);
+				}
 			}
 
-			unset($this->request->data['Organization']['Organization']);
-
-			if(!empty($organization_ids))
-			{
-				$this->request->data['Organization']['Organization'] = $organization_ids;
-			}
 			return 	$this->redirect(
 				array(
 					'volunteer' => false,
@@ -875,7 +836,13 @@ class OrganizationsController extends AppController {
 			)
 		);
 
-		$organizations = $this->Organization->find('list', array('conditions' => $conditions));
+		$this->Paginator->settings = array(
+			'conditions' => $conditions,
+			'limit' => 10,
+			'contain' => array()
+		);
+
+		$organizations = $this->Paginator->paginate();
 		$this->set(compact('organizations'));
 	}
 
@@ -917,7 +884,13 @@ class OrganizationsController extends AppController {
 
 					$this->Organization->Permission->save($conditions);
 
-					return $this->redirect(array('action' => 'index'));
+					return 	$this->redirect(
+						array(
+							'volunteer' => false,
+							'controller' => 'users',
+							'action' => 'activity'
+						)
+					);
 				} 
 				else 
 				{

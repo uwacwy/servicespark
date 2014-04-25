@@ -58,6 +58,14 @@
 			<hr>
 			
 			<h3>Volunteer Time Entries</h3>
+			<?php
+				echo $this->Utility->btn_link_icon(
+					__('Download as Microsoft Excel'),
+					array('supervisor' => true, 'controller' => 'events','action' => 'report', $event_id),
+					'btn btn-success btn-sm',
+					'glyphicon-download-alt'
+				);
+			?>
 			<?php if( !empty($times) ) : ?>
 				<div class="table-responsive">
 					<table class="table table-striped">
@@ -92,7 +100,14 @@
 									}
 								?></td>
 								<td class="text-right"><?php
-									echo h( sprintf( __('%s hr'), number_format($time['Time']['duration'], 2, '.', ',') ) );
+									if( $time['Time']['stop_time'] != null )
+									{
+										echo number_format( $time['Time']['duration'], 2) . "&nbsp;hr";
+									}
+									else
+									{
+										echo "&mdash;";
+									}
 									$grand_total_time += $time['Time']['duration'];
 								?></td>
 							

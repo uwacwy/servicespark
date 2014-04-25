@@ -1,11 +1,3 @@
-<?php
-	/*
-		leave.ctp
-		--
-		This form allows users to leave associated organizations.
-	*/
-?>
-
 <div class="row">
 	<div class="col-md-12">
 		<h1>Are you no longer affiliated with an organization? </h1>

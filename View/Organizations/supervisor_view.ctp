@@ -27,9 +27,14 @@
 				</div>
 			</div>
 		</div>
-
-		<?php echo $this->Form->create('Organization', $form_defaults); ?>
-		<?php echo $this->Form->end(array('label' => "Generate Excel for this Organization", 'class' => 'btn btn-success')); ?>
+		<?php
+			echo $this->Utility->btn_link_icon(
+				__('Download as Microsoft Excel'),
+				array('supervisor' => true, 'controller' => 'organizations','action' => 'report', $organization_id),
+				'btn btn-success btn-sm',
+				'glyphicon-download-alt'
+			);
+		?>
 		
 		<h2>Members</h2>
 		<div class="table-responsive">
@@ -37,9 +42,9 @@
 				<thead>  
 			  		<tr>
 			  			<th>Name</th>
+			  			<th>Email</th>
 			  			<th>Number of Events</th>
 			  			<th>Total Volunteer Hours</th>
-			  			<th>Action</th>
 			  		</tr>
 			  	</thead>
 			  	<tbody>
@@ -50,24 +55,13 @@
 					  			<?php echo $hours['User']['last_name']; ?>
 				  			</td>
 				  			<td>
+					  			<?php echo $hours['User']['email']; ?>
+				  			</td>
+				  			<td>
 				  				<?php echo $hours['0']['UserNumberEvents']; ?>
 				  			</td>
 				  			<td>
 				  				<?php echo $hours['0']['UserSumTime']; ?>
-				  			</td>
-				  			<td>
-				  				<?php echo $this->Html->link('View Details',
-				  					array(
-				  						'volunteer' => false,
-				  						'controller' => 'users',
-				  						'action' => 'activity',
-				  						$hours['User']['user_id']
-				  					),
-				  					array(
-				  						'class' => 'btn btn-sm btn-default'
-				  					)
-				  				);
-				  				?>
 				  			</td>
 				  		</tr>
 			  		<?php endforeach; ?>

@@ -19,7 +19,7 @@
 							<td>
 								<?php echo $this->Html->link(__('View'),
 									array(
-										'coordinator' => false,
+										'supervisor' => true,
 										'controller' => 'organizations',
 										'action' => 'view',
 										$organization['Organization']['organization_id']
