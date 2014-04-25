@@ -148,11 +148,18 @@ global $solution_name;
 	  					);
 	  				?>
 	  				<li class="divider"></li>
-	  				<li class="dropdown-header"><?php echo h( __('Accounts') ); ?></li>
+	  				<li class="dropdown-header"><?php echo h( __('Your Account') ); ?></li>
+	  				<?php
+	  					echo sprintf($item_sprint,
+	  						$this->Html->url( array('controller' => 'users', 'action' => 'login', 'go' => false) ),
+	  						'<span class="glyphicon glyphicon-user"></span> ',
+	  						__('Login to %s', Configure::read('Solution.name') )
+	  					);
+	  				?>
 	  				<?php
 	  					echo sprintf($item_sprint,
 	  						$this->Html->url( array('controller' => 'users', 'action' => 'register', 'go' => false) ),
-	  						'<span class="glyphicon glyphicon-user"></span> ',
+	  						'<span class="glyphicon glyphicon-plus"></span> ',
 	  						__('Create %s Account', Configure::read('Solution.name') )
 	  					);
 	  				?>
