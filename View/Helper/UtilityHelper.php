@@ -13,4 +13,9 @@ class UtilityHelper extends AppHelper
 	{
 		
 	}
+
+	public function no_wrap($string)
+	{
+		return str_replace(' ', '&nbsp;', trim($string) );
+	}
 }

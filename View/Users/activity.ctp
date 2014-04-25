@@ -103,24 +103,22 @@ $summary['custom'] = null;
 										<strong><?php echo $this->Html->link( $time_entry['Event']['title'], array('volunteer' => true, 'controller' => 'events', 'action' => 'view', $time_entry['Event']['event_id']) );?>&nbsp;</strong>
 										<br><?php echo h($time_entry['Event']['description']); ?>&nbsp;
 										<br>
-											<?php echo h( date($datetime_fmt, strtotime($time_entry['Event']['start_time']) ) ); ?> - 
-											<?php echo h( date($time_fmt, strtotime($time_entry['Event']['stop_time']) ) ); ?>
+											<?php echo $this->Duration->format($time_entry['Event']['start_time'], $time_entry['Event']['stop_time']); ?>
 									</td>
 									<td>
-										<?php echo h( date($datetime_fmt, strtotime($time_entry['Time']['start_time']) ) ); ?>&nbsp;
+										<?php echo $this->Utility->no_wrap( h( date($datetime_fmt, strtotime($time_entry['Time']['start_time']) ) ) ); ?>&nbsp;
 									</td>
 									<td>
 										<?php
 											if( $time_entry['Time']['stop_time'] != null )
 											{
-												echo h( date($datetime_fmt, strtotime($time_entry['Time']['stop_time']) ) );
+												echo $this->Utility->no_wrap( h( date($datetime_fmt, strtotime($time_entry['Time']['stop_time']) ) ) );
 											}
 											else
 											{
 												echo "<em>missed punch</em>";
 											}
-										?>
-										&nbsp;
+										?>&nbsp;
 									</td>
 									<td>
 										<?php
@@ -132,8 +130,7 @@ $summary['custom'] = null;
 											{
 												echo "&mdash;";
 											}
-										?>
-										&nbsp;
+										?>&nbsp;
 									</td>
 								</tr>
 							<?php
