@@ -62,28 +62,32 @@ class AppController extends Controller {
 	{
 		$this->set('super_admin', $this->_CurrentUserIsSuperAdmin() );
 
-		if( $this->Session->check('can_coordinate.exp') && $this->Session->read('can_coordinate.exp') <= time() )
+		$can_supervise = $can_coordinate = false;
+
+		if( $this->Session->check('can_coordinate_exp') && $this->Session->read('can_coordinate_exp') <= time() )
 		{
-			$this->Session->delete('can_coordinate.exp');
+			$this->Session->delete('can_coordinate_exp');
 			$this->Session->delete('can_coordinate');
 		}
 
-		if( $this->Session->check('can_supervise.exp') && $this->Session->read('can_supervise.exp') <= time() )
+		if( $this->Session->check('can_supervise_exp') && $this->Session->read('can_supervise_exp') <= time() )
 		{
-			$this->Session->delete('can_supervise.exp');
+			$this->Session->delete('can_supervise_exp');
 			$this->Session->delete('can_supervise');
 		}
 
 		if( !$this->Session->check('can_coordinate') )
 		{
-			$this->Session->write('can_coordinate', (count($this->_GetUserOrganizationsByPermission('write') ) > 0 ) );
-			$this->Session->write('can_coordinate.exp', strtotime('+1 minute') );
+			if( count($this->_GetUserOrganizationsByPermission('write')) > 0 )
+				$this->Session->write('can_coordinate', true );
+			$this->Session->write('can_coordinate_exp', strtotime('+30 seconds') );
 		}
 
 		if( !$this->Session->check('can_supervise') )
 		{
-			$this->Session->write('can_supervise', (count($this->_GetUserOrganizationsByPermission('read') ) > 0 ) );
-			$this->Session->write('can_supervise.exp', strtotime('+1 minute') );
+			if( count($this->_GetUserOrganizationsByPermission('read')) > 0 )
+				$this->Session->write('can_supervise', true );
+			$this->Session->write('can_supervise_exp', strtotime('+30 seconds') );
 		}
 
 		$this->set('form_defaults', array(

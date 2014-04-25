@@ -20,12 +20,8 @@ $(document).ready(function(){
 
 	function injectFormControl ( parent, val, key )
 	{
-
-		console.log('injecting form control to parent ' + parent.attr('id'))
-		console.log('key is ' + key);
 		if( key == null )
 		{
-			console.log('creating NEW skill');
 			$input = $('<input type="hidden" name="data[Skill][New][]" />').attr('value', val);
 		}
 		else
@@ -44,7 +40,7 @@ $(document).ready(function(){
 	$('input.username').each(function(){
 		var $this = $(this);
 
-		$this.parent().append( $("<p><span class=\"help-block\">Type a username to see if it's available.</span></p>") );
+		$this.parent().append( $("<p><span class=\"help-block\"></span></p>") );
 
 		$this.keyup(function(){
 
@@ -95,7 +91,6 @@ $(document).ready(function(){
 
 	$('.add-address').each(function(){
 		var $tgt = $(this).attr('data-target');
-		console.log($tgt);
 		$(this).on('click', function(e){
 			e.preventDefault();
 
@@ -103,7 +98,6 @@ $(document).ready(function(){
 				idx : $('.address').length,
 				tgt : $tgt
 			};
-			console.log( Mustache.render('Adding address {{idx}} to {{tgt}}', data));
 
 			$( Mustache.render(mustaches.address, data) ).prependTo($tgt);
 
@@ -126,8 +120,6 @@ $(document).ready(function(){
 		var $parent = $(this).parent().addClass('ui-widget');
 
 		var $target = $( $(this).attr('data-target') );
-
-		console.log($(this).attr('id') + " has been bound to a skills autocomplete and is appending new Skills to " + $(this).attr('data-target') );
 
 		$target.delegate('.autocomplete-cancel', 'click', function(e) {
 			e.preventDefault();

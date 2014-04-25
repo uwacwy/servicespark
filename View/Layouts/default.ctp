@@ -120,167 +120,202 @@ global $solution_name;
 	<div class="collapse navbar-collapse" id="ss-navbar">
 
 	  <ul class="nav navbar-nav">
-		<?php if( $super_admin ) : ?>
-			<?php
+	  	<?php
+	  		$dropdown_sprint = '<a href="%s" class="dropdown-toggle" data-toggle="dropdown">%s <b class="caret"></b></a>';
+	  		$item_sprint = '<li><a href="%s">%s%s</a></li>';
+	  	?>
+	  	<?php if( !AuthComponent::user('user_id') ): ?>
+	  		<li class="dropdown">
+	  			<?php echo sprintf($dropdown_sprint,
+	  				$this->Html->url( array('controller' => 'events', 'action' => 'index', 'go' => false) ),
+	  				__('Explore %s', Configure::read('Solution.name') )
+	  				);
+	  			?>
+	  			<ul class="dropdown-menu">
+	  				<li class="dropdown-header"><?php echo h( __('Events') ); ?></li>
+	  				<?php
+	  					echo sprintf($item_sprint,
+		  					$this->Html->url( array('controller' => 'events', 'action' => 'index', 'go' => false) ),
+		  					'<span class="glyphicon glyphicon-calendar"></span> ',
+		  					__('Ongoing and Upcoming Events')
+		  				);
+	  				?>
+	  				<?php
+	  					echo sprintf($item_sprint,
+	  						$this->Html->url( array('controller' => 'events', 'action' => 'search', 'go' => false) ),
+	  						'<span class="glyphicon glyphicon-search"></span> ',
+	  						__('Search Events')
+	  					);
+	  				?>
+	  				<li class="divider"></li>
+	  				<li class="dropdown-header"><?php echo h( __('Accounts') ); ?></li>
+	  				<?php
+	  					echo sprintf($item_sprint,
+	  						$this->Html->url( array('controller' => 'users', 'action' => 'register', 'go' => false) ),
+	  						'<span class="glyphicon glyphicon-user"></span> ',
+	  						__('Create %s Account', Configure::read('Solution.name') )
+	  					);
+	  				?>
+	  				<?php
+	  					echo sprintf($item_sprint,
+	  						$this->Html->url( array('controller' => 'recoveries', 'action' => 'user', 'go' => false) ),
+	  						'<span class="glyphicon glyphicon-question-sign"></span> ',
+	  						__('Lost Password Recovery')
+	  					);
+	  				?>
+	  			</ul>
+	  		</li>
+	 	 <?php endif; ?>
 
-			$admin_menu = array(
-				'users' => array(
-					'label' => __('Users'),
-					'actions' => array(
-						'register' => __('Register New User'),
-						'find' => __('Search Users')
-					)
-				),
-				'organizations' => array(
-					'label' => __('Organizations'),
-					'actions' => array(
-						'add' => __('Create Organization'),
-						'search' => __('Search Organizations')
-					)
-				),
-				'events' => array(
-					'label' => __('Events'),
-					'actions' => array(
-						'add' => __('New Event'),
-						'index' => __('List Events')
-					)
-				),
-				'addresses' => array(
-					'label' => __('Addresses'),
-					'actions' => array(
-						'index' => __('List Addresses'),
-						'add' => __('Add Address')
-					)
-				),
-				'skills' => array(
-					'label' => __('Skills'),
-					'actions' => array(
-						'index' => __('List Skills'),
-						'add' => __('Add a Skill')
-					)
-				),
-				'times' => array(
-					'label' => __('Time'),
-					'actions' => array(
-						'index' => __('List Time Punches')
-					)
-				),
-				'permissions' => array(
-					'label' => __('Permissions'),
-					'actions' => array(
-						'add' => __('Grant New Permission')
-					)
-				)
-			);
-			foreach($admin_menu as $controller => $properties) : ?>
-				<li class="dropdown">
-					<?php
-						echo sprintf('<a href="%s" class="dropdown-toggle" data-toggle="dropdown">%s <b class="caret"></b></a>',
-							$this->Html->url( array('controller' => $controller, 'action' => 'index', 'admin' => true) ),
-							h($properties['label'])
-						);
-					?>
-					<ul class="dropdown-menu">
-						<?php
-							foreach($properties['actions'] as $action => $label)
-							{
-								echo sprintf('<li><a href="%s">%s</a></li>',
-									$this->Html->url( array('controller' => $controller, 'action' => $action, 'admin' => true) ),
-									h($label)
-								);
-							}
-						?>
-					</ul>
-				</li>
-			<?php endforeach; ?>
 
-		<?php else : ?>
-			<?php
-			
-			$user_menu = array(
-				'organizations' => array(
-					'label' => __('Organizations'),
-					'actions' => array(
-						'join' => __('Join an Organization'),
-						'leave' => __('Leave an Organization'),
-						'add' => __('New Organization'),
-						'index' => __('Manage my Organizations')
-					)
-				),
-				'events' => array(
-					'label' => __('Events'),
-					'actions' => array(
-						'add' => __('New Event'),
-						'index' => __('List Events'),
-						'search' => __('Search Events'),
-						'matches' => __('Events For Me')
-					)
-				)
-			);
-
-			foreach($user_menu as $controller => $properties) : ?>
-				<li class="dropdown">
-					<?php
-						echo sprintf('<a href="%s" class="dropdown-toggle" data-toggle="dropdown">%s <b class="caret"></b></a>',
-							$this->Html->url( array('controller' => $controller, 'action' => 'index', 'admin' => false, 'coordinator' => true) ),
-							h($properties['label'])
-						);
-					?>
-					<ul class="dropdown-menu">
-						<?php
-							foreach($properties['actions'] as $action => $label)
-							{
-								echo sprintf('<li><a href="%s">%s</a></li>',
-									$this->Html->url( array('controller' => $controller, 'action' => $action, 'go' => true) ),
-									h($label)
-								);
-							}
-						?>
-					</ul>
-				</li>
-			<?php endforeach; ?>
-		<?php endif; ?>
-
-		<?php if( $this->Session->read('can_supervise') ): ?>
+	  	<?php if( AuthComponent::user('user_id') ): ?>
 			<li class="dropdown">
-				<?php
-					echo sprintf('<a href="%S" class="dropdown-toggle" data-toggle="dropdown">%s <b class="caret"></b></a>',
-						$this->Html->url( array('controller' => 'organizations', 'action' => 'index', 'supervisor' => true) ),
-						'Supervisor'
+				<?php echo sprintf($dropdown_sprint,
+					$this->Html->url( array('controller' => 'events', 'action' => 'index', 'volunteer' => true) ),
+					__('Volunteer')
 					);
 				?>
 				<ul class="dropdown-menu">
-					<li class="dropdown-header"><?php echo __('Organizations'); ?></li>
-					<li><?php echo $this->Html->link(__('My Organizations'), array('controller'=>'organizations', 'action' => 'index', 'supervisor' => true)); ?></li>
-					<li><?php echo $this->Html->link( __('Leave an Organization'), array('controller' => 'organizations', 'action' => 'leave', 'supervisor' => true) ); ?></li>
+					<li class="dropdown-header"><?php echo h( __('Events') ); ?></li>
+					<?php
+						echo sprintf($item_sprint,
+	  					$this->Html->url( array('controller' => 'events', 'action' => 'index', 'volunteer' => true) ),
+	  					'<span class="glyphicon glyphicon-calendar"></span> ',
+	  					__('Ongoing and Upcoming Events')
+	  				);
+					?>
+					<?php
+						echo sprintf($item_sprint,
+							$this->Html->url( array('controller' => 'events', 'action' => 'search', 'volunteer' => true) ),
+							'<span class="glyphicon glyphicon-search"></span> ',
+							__('Search Events')
+						);
+					?>
 					<li class="divider"></li>
-					<li class="dropdown-header"><?php echo __('Events'); ?></li>
-					<li><?php echo $this->Html->link(__('My Events'), array('controller' => 'events', 'action' => 'index', 'supervisor' => true) ); ?></li>
-					<li><?php echo $this->Html->link(__('Create Event'), array('controller' => 'events', 'action' => 'add', 'supervisor' => true) ); ?> </li>
+					<li class="dropdown-header"><?php echo h( __('Organizations') ); ?></li>
+					<?php
+						echo sprintf($item_sprint,
+							$this->Html->url( array('controller' => 'organizations', 'action' => 'join', 'volunteer' => true) ),
+							'<span class="glyphicon glyphicon-remove-circle"></span> ',
+							__('Join Organizations')
+						);
+					?>
+					<?php
+						echo sprintf($item_sprint,
+							$this->Html->url( array('controller' => 'organizations', 'action' => 'leave', 'volunteer' => true) ),
+							'<span class="glyphicon glyphicon-remove-circle"></span> ',
+							__('Leave An Organizations')
+						);
+					?>
+					<li class="divider"></li>
+					<li class="dropdown-header"><?php echo h( __('Accounts') ); ?></li>
+					<?php
+						echo sprintf($item_sprint,
+							$this->Html->url( array('controller' => 'users', 'action' => 'register', 'volunteer' => true) ),
+							'<span class="glyphicon glyphicon-user"></span> ',
+							__('Create %s Account', Configure::read('Solution.name') )
+						);
+					?>
+					<?php
+						echo sprintf($item_sprint,
+							$this->Html->url( array('controller' => 'recoveries', 'action' => 'user', 'volunteer' => true) ),
+							'<span class="glyphicon glyphicon-question-sign"></span> ',
+							__('Lost Password Recovery')
+						);
+					?>
 				</ul>
 			</li>
-		<?php endif; ?>
+	  	<?php endif ?>
 
-		<?php if( $this->Session->read('can_coordinate') ): ?>
-			<li class="dropdown">
-				<?php
-					echo sprintf('<a href="%S" class="dropdown-toggle" data-toggle="dropdown">%s <b class="caret"></b></a>',
-						$this->Html->url( array('controller' => 'organizations', 'action' => 'index', 'coordinator' => true) ),
-						'Coordinator'
+	  	<?php if( AuthComponent::user('user_id') && SessionComponent::read('can_supervise') ): ?>
+	  		<li class="dropdown">
+				<?php 
+					echo sprintf($dropdown_sprint,
+						$this->Html->url( array('controller' => 'events', 'action' => 'index', 'supervisor' => true) ),
+						__('Supervise')
 					);
 				?>
 				<ul class="dropdown-menu">
-					<li class="dropdown-header"><?php echo __('Organizations'); ?></li>
-					<li><?php echo $this->Html->link(__('My Organizations'), array('controller'=>'organizations', 'action' => 'index', 'coordinator' => true)); ?></li>
-					<li><?php echo $this->Html->link( __('Leave an Organization'), array('controller' => 'organizations', 'action' => 'leave', 'coordinator' => true) ); ?></li>
+					<li class="dropdown-header"><?php echo h( __('Organizations') ); ?></li>
+					<?php
+						echo sprintf($item_sprint,
+							$this->Html->url( array('controller' => 'organizations', 'action' => 'index', 'supervisor' => true) ),
+							'<span class="glyphicon glyphicon-bullhorn"></span> ',
+							__('My Supervising Organizations')
+						);
+					?>
+					<?php
+						echo sprintf($item_sprint,
+							$this->Html->url( array('controller' => 'organizations', 'action' => 'leave', 'supervisor' => true) ),
+							'<span class="glyphicon glyphicon-remove-circle"></span> ',
+							__('Leave Supervising Organizations')
+						);
+					?>
 					<li class="divider"></li>
-					<li class="dropdown-header"><?php echo __('Events'); ?></li>
-					<li><?php echo $this->Html->link(__('My Events'), array('controller' => 'events', 'action' => 'index', 'coordinator' => true) ); ?></li>
-					<li><?php echo $this->Html->link(__('Create Event'), array('controller' => 'events', 'action' => 'add', 'coordinator' => true) ); ?> </li>
+					<li class="dropdown-header"><?php echo h( __('Events') ); ?></li>
+					<?php
+						echo sprintf($item_sprint,
+							$this->Html->url( array('controller' => 'events', 'action' => 'index', 'supervisor' => true) ),
+							'<span class="glyphicon glyphicon-info-sign"></span> ',
+							__('Supervisor Dashboard')
+						);
+					?>
 				</ul>
 			</li>
-		<?php endif; ?>
+	  	<?php endif; ?>
 
+	  	<?php if( AuthComponent::user('user_id') && SessionComponent::read('can_coordinate') ): ?>
+	  		<li class="dropdown">
+				<?php 
+					echo sprintf($dropdown_sprint,
+						$this->Html->url( array('controller' => 'events', 'action' => 'index', 'coordinator' => true) ),
+						__('Coordinate')
+					);
+				?>
+				<ul class="dropdown-menu">
+					<li class="dropdown-header"><?php echo h( __('Organizations') ); ?></li>
+					<?php
+						echo sprintf($item_sprint,
+							$this->Html->url( array('controller' => 'organizations', 'action' => 'index', 'coordinator' => true) ),
+							'<span class="glyphicon glyphicon-bullhorn"></span> ',
+							__('My Coordinating Organizations')
+						);
+					?>
+					<?php
+						echo sprintf($item_sprint,
+							$this->Html->url( array('controller' => 'organizations', 'action' => 'leave', 'coordinator' => true) ),
+							'<span class="glyphicon glyphicon-remove-circle"></span> ',
+							__('Leave Coordinating Organizations')
+						);
+					?>
+					<li class="divider"></li>
+					<li class="dropdown-header"><?php echo h( __('Events') ); ?></li>
+					<?php
+						echo sprintf($item_sprint,
+							$this->Html->url( array('controller' => 'events', 'action' => 'index', 'coordinator' => true) ),
+							'<span class="glyphicon glyphicon-info-sign"></span> ',
+							__('Coordinator Dashboard')
+						);
+					?>
+					<?php
+						echo sprintf($item_sprint,
+							$this->Html->url( array('controller' => 'events', 'action' => 'add', 'coordinator' => true) ),
+							'<span class="glyphicon glyphicon-plus"></span> ',
+							__('Create an Event')
+						);
+					?>
+				</ul>
+			</li>
+	  	<?php endif; ?>
+
+	  	<?php
+	  		$inline_form = $form_defaults;
+	  		$inline_form['class'] = 'navbar-form navbar-left';
+	  		$inline_form['type'] = 'get';
+	  		$inline_form['action'] = 'index';
+	  	echo $this->Form->create('Search', $inline_form); ?>
+	  		<?php echo $this->Form->input('query', array('placeholder' => __('search %s', Configure::read('Solution.name') ), 'label' => false ) ); ?>
+	  	<?php echo $this->form->end( array('label' => 'search', 'class' => 'btn btn-default', 'div' => false) ); ?>
 
 		</ul>
 
