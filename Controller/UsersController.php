@@ -271,7 +271,7 @@ class UsersController extends AppController {
 			if ( $this->User->save($entry) )
 			{
 				$this->Session->setFlash( __('This account has been created.  Login with your username and password.'), 'success' );
-				$this->redirect( array('controller' => 'users', 'action' => 'login') );
+				return $this->redirect( array('controller' => 'users', 'action' => 'login') );
 
 			}
 			else
@@ -280,7 +280,7 @@ class UsersController extends AppController {
 			}
 		}
 
-		$this->set( 'title_for_layout', __('Create An Account') );
+		//$this->set( 'title_for_layout', __('Create An Account') );
 
 	}
 
