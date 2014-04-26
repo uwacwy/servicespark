@@ -61,7 +61,9 @@
 				  				<?php echo $hours['0']['UserNumberEvents']; ?>
 				  			</td>
 				  			<td>
-				  				<?php echo $hours['0']['UserSumTime']; ?>
+				  				<?php 
+				  				echo h(number_format($hours['0']['UserSumTime'], 2) );
+				  				?>
 				  			</td>
 				  		</tr>
 			  		<?php endforeach; ?>
