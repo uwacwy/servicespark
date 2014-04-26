@@ -73,7 +73,7 @@ class UsersController extends AppController {
 					$this->User->Recovery->delete( $this->Auth->user('user_id') );
 				}	
 
-	        	$this->redirect( $this->Auth->redirect() );
+	        	return $this->redirect( $this->Auth->redirectUrl() );
 	    	}
 	    	$this->Session->setFlash(__('Invalid username or password, try again'), 'danger');
 		}
@@ -280,7 +280,7 @@ class UsersController extends AppController {
 			}
 		}
 
-		//$this->set( 'title_for_layout', __('Create An Account') );
+		$this->set( 'title_for_layout', __('Create An Account') );
 
 	}
 
