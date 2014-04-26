@@ -77,6 +77,7 @@ class UsersController extends AppController {
 	    	}
 	    	$this->Session->setFlash(__('Invalid username or password, try again'), 'danger');
 		}
+
 		$title_for_layout = sprintf( __('Login to %s'), Configure::read('Solution.name') );
 		$this->set( compact('title_for_layout') );
 	}
@@ -89,7 +90,9 @@ class UsersController extends AppController {
 	public function logout()
 	{
 		$this->Session->delete('can_coordinate');
+		$this->Session->delete('can_coordinate_exp');
 		$this->Session->delete('can_supervise');
+		$this->Session->delete('can_supervise_exp');
 		
 		return $this->redirect( $this->Auth->logout() );
 	}
@@ -268,7 +271,7 @@ class UsersController extends AppController {
 			if ( $this->User->save($entry) )
 			{
 				$this->Session->setFlash( __('This account has been created.  Login with your username and password.'), 'success' );
-				$this->redirect( $this->_Redirector(null, 'users', 'login') );
+				$this->redirect( array('controller' => 'users', 'action' => 'login') );
 
 			}
 			else
