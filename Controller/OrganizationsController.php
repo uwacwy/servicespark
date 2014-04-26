@@ -355,7 +355,7 @@ class OrganizationsController extends AppController {
 			$users = $this->_GetUsersByOrganization($organization_id);
 
 	 		$conditions = array(
-	 			'Time.user_id' => $this->Auth->user('user_id')
+	 			'Time.user_id' => $users
 	 		);
 	 		$fields = array(
 	 			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as OrganizationAllTime'
@@ -397,7 +397,7 @@ class OrganizationsController extends AppController {
 
 			// year-to-date
 			$conditions = array(
-				'Time.user_id' => $this->Auth->user('user_id'),
+				'Time.user_id' => $users,
 				'Time.start_time >=' => date($sql_date_fmt, mktime(0,0,0,1,1, date('Y') ) )
 			);
 			$fields = array(
