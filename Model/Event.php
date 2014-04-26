@@ -88,8 +88,7 @@ class Event extends AppModel
 			'className' => 'Skill',
 			'joinTable' => 'events_skills',
 			'foreignKey' => 'event_id',
-			'associationForeignKey' => 'skill_id',
-			'conditions' => array('Skill.hidden' => false)
+			'associationForeignKey' => 'skill_id'
 		)
 	);
 
