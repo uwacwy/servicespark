@@ -337,7 +337,7 @@ class OrganizationsController extends AppController {
 			$events = $this->Organization->Event->find('all', array('conditions' => array('Event.event_id' => $event_ids)));
 
 			$conditions = array(
-				'Time.event_id' => $event_ids
+				'Time.user_id' => $users
 			);
 			$fields = array(
 				'User.*',
