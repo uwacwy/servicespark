@@ -211,7 +211,7 @@ global $solution_name;
 						echo sprintf($item_sprint,
 							$this->Html->url( array('controller' => 'organizations', 'action' => 'leave', 'volunteer' => true) ),
 							'<span class="glyphicon glyphicon-remove-circle"></span> ',
-							__('Leave An Organizations')
+							__('Leave An Organization')
 						);
 					?>
 					<li class="divider"></li>
