@@ -1,11 +1,13 @@
-<?php if( !empty($addresses) ) :
+<?php
+
+if( !isset($title) )
+{
+	$title = 'Addresses';
+}
+
+if( !empty($addresses) ) :
 
 	$map_sprint = '<iframe width="100%%" height="300" frameborder="0" style="border:0" src="https://www.google.com/maps/embed/v1/place?key=%1$s&amp;q=%2$s"></iframe>';
-
-	if( !isset($title) )
-	{
-		$title = 'Addresses';
-	}
 
 ?>
 <div class="row">
@@ -65,4 +67,7 @@
 
 	</div>
 </div>
+<?php else: ?>
+	<p><em>This event doesn't have any addresses.</em></p>
+
 <?php endif; ?>
