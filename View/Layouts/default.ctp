@@ -218,14 +218,14 @@ global $solution_name;
 					<li class="dropdown-header"><?php echo h( __('Accounts') ); ?></li>
 					<?php
 						echo sprintf($item_sprint,
-							$this->Html->url( array('controller' => 'users', 'action' => 'register', 'volunteer' => true) ),
+							$this->Html->url( array('controller' => 'users', 'action' => 'register', 'volunteer' => false) ),
 							'<span class="glyphicon glyphicon-user"></span> ',
 							__('Create %s Account', Configure::read('Solution.name') )
 						);
 					?>
 					<?php
 						echo sprintf($item_sprint,
-							$this->Html->url( array('controller' => 'recoveries', 'action' => 'user', 'volunteer' => true) ),
+							$this->Html->url( array('controller' => 'recoveries', 'action' => 'user', 'volunteer' => false) ),
 							'<span class="glyphicon glyphicon-question-sign"></span> ',
 							__('Lost Password Recovery')
 						);
