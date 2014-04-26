@@ -224,6 +224,7 @@ class UsersController extends AppController {
 	{
 		//unset( $this->request->data['User']['password'] );
 
+
 		if ($this->request->is('post'))
 		{
 			$entry = $this->request->data;

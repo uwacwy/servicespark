@@ -61,6 +61,7 @@ $(document).ready(function(){
 				{
 					url: "/users/check.json",
 					dataType: 'json',
+					type: 'get',
 					data: {
 						username: $this.val()
 					},
