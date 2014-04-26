@@ -141,7 +141,7 @@
 								<td><?php echo h($time['User']['last_name']); ?></td>
 								<td><?php echo h($clock_in->format('F j, Y, g:i a')); ?></td>
 								<td><?php
-									if( isset($clock_out) )
+									if( $time['Time']['stop_time'] != null)
 									{
 										echo h($clock_out->format('F j, Y, g:i a'));
 									}
