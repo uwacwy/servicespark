@@ -16,4 +16,5 @@
  * @license       http://www.opensource.org/licenses/mit-license.php MIT License
  */
 ?>
+ajax view is rendering
 <?php echo $this->fetch('content'); ?>

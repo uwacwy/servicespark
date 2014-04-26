@@ -50,6 +50,7 @@ class UsersController extends AppController {
 
 	public function login()
 	{
+		$this->layout = 'default';
 		if ($this->request->is('post'))
 		{
 	    	if ($this->Auth->login())
