@@ -248,8 +248,13 @@ class UsersController extends AppController {
 				$entry['User']['password'] = $entry['User']['password_l'];
 			}
 
-			$address_ids = $this->_ProcessAddresses($this->request->data['Address'], $this->User->Address);
-			$skill_ids = $this->_ProcessSkills($this->request->data['Skill'], $this->User->Skill);
+			$address_ids = $skill_ids = null;
+
+			if( isset( $this->request->data['Address']) )
+				$address_ids = $this->_ProcessAddresses($this->request->data['Address'], $this->User->Address);
+			
+			if( isset($this->request->data['Skill']) )
+				$skill_ids = $this->_ProcessSkills($this->request->data['Skill'], $this->User->Skill);
 
 			unset( $entry['Address'], $entry['Skill'] );
 
@@ -329,6 +334,8 @@ class UsersController extends AppController {
 				--
 				many methods use the skill and address parsers;  this will make them easier to maintain
 			*/
+			$skill_ids = $address_ids = null;
+
 			if( isset($this->request->data['Skill']) )
 				$skill_ids = $this->_ProcessSkills($this->request->data['Skill'], $this->User->Skill);
 			if( isset($this->request->data['Address']) )

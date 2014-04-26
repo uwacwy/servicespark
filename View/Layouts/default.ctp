@@ -175,7 +175,7 @@ global $solution_name;
 	 	 <?php endif; ?>
 
 
-	  	<?php if( AuthComponent::user('user_id') ): ?>
+	  	<?php if( AuthComponent::user('user_id') != null): ?>
 			<li class="dropdown">
 				<?php echo sprintf($dropdown_sprint,
 					$this->Html->url( array('controller' => 'events', 'action' => 'index', 'volunteer' => true) ),
@@ -234,7 +234,9 @@ global $solution_name;
 			</li>
 	  	<?php endif ?>
 
-	  	<?php if( AuthComponent::user('user_id') && $this->Session->read('can_supervise') ): ?>
+	  	<?php if( AuthComponent::user('user_id') 
+	  	&& $this->Session->check('can_supervise') 
+	  	&& $this->Session->read('can_supervise') ): ?>
 	  		<li class="dropdown">
 				<?php 
 					echo sprintf($dropdown_sprint,
@@ -271,7 +273,9 @@ global $solution_name;
 			</li>
 	  	<?php endif; ?>
 
-	  	<?php if( AuthComponent::user('user_id') && $this->Session->read('can_coordinate') ): ?>
+	  	<?php if( AuthComponent::user('user_id') 
+	  	&& $this->Session->check('can_coordinate')
+	  	&& $this->Session->read('can_coordinate') ): ?>
 	  		<li class="dropdown">
 				<?php 
 					echo sprintf($dropdown_sprint,
