@@ -680,7 +680,7 @@ class EventsController extends AppController {
 
 	public function supervisor_view($event_id = null)
 	{
-		$user_organizations = $this->_GetUserOrganizationsByPermission('write');
+		$user_organizations = $this->_GetUserOrganizationsByPermission('read');
 
 		// if( !$this->_CurrentUserCanRead($user_organizations) )
 		// {
@@ -702,9 +702,9 @@ class EventsController extends AppController {
 			throw new NotFoundException( __('Page Not Found') );
 		}
 
-		if( !$this->_CurrentUserCanWrite($event['Event']['organization_id']) )
+		if( !$this->_CurrentUserCanRead($event['Event']['organization_id']) )
 		{
-			return $this->redirect( array('supervisor' => true, 'controller' => 'events', 'action' => 'view', $event_id) );
+			return $this->redirect( array('volunteer' => true, 'controller' => 'events', 'action' => 'view', $event_id) );
 		}
 
 		$conditions = array(

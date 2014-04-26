@@ -234,7 +234,7 @@ global $solution_name;
 			</li>
 	  	<?php endif ?>
 
-	  	<?php if( AuthComponent::user('user_id') && SessionComponent::read('can_supervise') ): ?>
+	  	<?php if( AuthComponent::user('user_id') && $this->Session->read('can_supervise') ): ?>
 	  		<li class="dropdown">
 				<?php 
 					echo sprintf($dropdown_sprint,
@@ -271,7 +271,7 @@ global $solution_name;
 			</li>
 	  	<?php endif; ?>
 
-	  	<?php if( AuthComponent::user('user_id') && SessionComponent::read('can_coordinate') ): ?>
+	  	<?php if( AuthComponent::user('user_id') && $this->Session->read('can_coordinate') ): ?>
 	  		<li class="dropdown">
 				<?php 
 					echo sprintf($dropdown_sprint,
