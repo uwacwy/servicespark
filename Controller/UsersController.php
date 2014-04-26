@@ -221,7 +221,7 @@ class UsersController extends AppController {
 	 */
 	public function register()
 	{
-		unset( $this->request->data['User']['password'] );
+		//unset( $this->request->data['User']['password'] );
 
 		if ($this->request->is('post'))
 		{
