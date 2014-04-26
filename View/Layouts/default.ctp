@@ -203,7 +203,7 @@ global $solution_name;
 					<?php
 						echo sprintf($item_sprint,
 							$this->Html->url( array('controller' => 'organizations', 'action' => 'join', 'volunteer' => true) ),
-							'<span class="glyphicon glyphicon-remove-circle"></span> ',
+							'<span class="glyphicon glyphicon-asterisk"></span> ',
 							__('Join Organizations')
 						);
 					?>
