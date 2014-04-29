@@ -157,6 +157,13 @@ global $solution_name;
 					<li class="dropdown-header"><?php echo h( __('Organizations') ); ?></li>
 					<?php
 						echo sprintf($item_sprint,
+							$this->Html->url( array('controller' => 'organizations', 'action' => 'add', 'volunteer' => true) ),
+							'<span class="glyphicon glyphicon-plus"></span> ',
+							__('Create Organization')
+						);
+					?>
+					<?php
+						echo sprintf($item_sprint,
 							$this->Html->url( array('controller' => 'organizations', 'action' => 'join', 'volunteer' => true) ),
 							'<span class="glyphicon glyphicon-asterisk"></span> ',
 							__('Join Organizations')

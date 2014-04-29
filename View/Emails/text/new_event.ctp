@@ -20,9 +20,8 @@ A new service opportunity has been created that you might be interested in!
 	}
 }
 ?>
-
 You can learn more about this event at
-<?php echo $this->Html->url( array('volunteer' => true, 'controller' => 'events', 'action' => 'view', $event['Event']['event_id']), true ); ?> 
+<<?php echo $this->Html->url( array('volunteer' => true, 'controller' => 'events', 'action' => 'view', $event['Event']['event_id']), true ); ?>> 
 
 If you have any questions about this event, please contact an event coordinator:
 <?php

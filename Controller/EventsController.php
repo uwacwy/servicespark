@@ -383,7 +383,6 @@ class EventsController extends AppController {
 					{
 						foreach($users as $user)
 						{
-							debug($user);
 							$Email = new CakeEmail();
 							$Email->viewVars( compact('user', 'event') );
 							$Email->template('NewEvent')
@@ -407,6 +406,7 @@ class EventsController extends AppController {
 			$address = $this->Event->Address->find('all');
 			$skills = null;
 			$this->set( compact('skills', 'organization') );
+			$this->set('title_for_layout', __('Creating New Event') );
 
 			//debug($user_organizations);
 
