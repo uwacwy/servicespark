@@ -28,51 +28,6 @@ global $solution_name;
 	<title>
 		<?php echo $title_for_layout; ?> &ndash; <?php echo Configure::read('Solution.name'); ?>
 	</title>
-	<style>
-		.stat{font-weight:bold; font-size: 48px;display: block;}
-		a.asc:after { content: "\e155"; }
-		a.desc:after { content: "\e156"; }
-		a.asc:after,
-		a.desc:after {
-			position: relative;
-			top: 1px;
-			display: inline-block;
-			font-family: 'Glyphicons Halflings';
-			font-style: normal;
-			font-weight: normal;
-			color: #000;
-			margin-left: 7px;
-			line-height: 1;
-			-webkit-font-smoothing: antialiased;
-			-moz-osx-font-smoothing: grayscale;
-		}
-
-		.form-inline .form-group label,
-		.form-inline .form-group input,
-		.form-inline .form-group select
-		{
-			margin-right: 5px;
-			margin-left: 5px;
-		}
-
-		.append-bottom
-		{
-			margin-bottom: 1.5em !important;
-		}
-		.append-top
-		{
-			margin-top: 1.5em;
-		}
-		.prepend-left
-		{
-			margin-left: 20px;
-		}
-		.collapse-top
-		{
-			margin-top: 0 !important;
-			padding-top: 0 !important;
-		}
-	</style>
 	<?php		
 		echo $this->Html->css('autocomplete');
 		
@@ -324,9 +279,10 @@ global $solution_name;
 	  		$inline_form['class'] = 'navbar-form navbar-left';
 	  		$inline_form['type'] = 'get';
 	  		$inline_form['action'] = 'index';
-	  	echo $this->Form->create('Search', $inline_form); ?>
-	  		<?php echo $this->Form->input('query', array('placeholder' => __('search %s', Configure::read('Solution.name') ), 'label' => false ) ); ?>
-	  	<?php echo $this->form->end( array('label' => 'search', 'class' => 'btn btn-default', 'div' => false) ); ?>
+			// echo $this->Form->create('Search', $inline_form); 
+			// echo $this->Form->input('query', array('placeholder' => __('search %s', Configure::read('Solution.name') ), 'label' => false ) );
+			// echo $this->form->end( array('label' => 'search', 'class' => 'btn btn-default', 'div' => false) );
+	  	?>
 
 		</ul>
 
@@ -374,6 +330,7 @@ global $solution_name;
 				<label>Login</label>
 				<?php
 					echo $this->Form->input('username', array('placeholder' => 'username'));
+					echo ' ';
 					echo $this->Form->input('password', array('placeholder' => 'password'));
 				?>
 			<?php echo $this->Form->end(array('label'=> 'Login', 'class' => 'btn btn-primary', 'div' => array('class' =>'form-group'))); ?>

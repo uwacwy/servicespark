@@ -54,7 +54,11 @@ class AppController extends Controller {
 		'Auth' => array(
 			'loginRedirect' => array('controller' => 'users', 'action' => 'activity'),
 			'logoutRedirect' => array('controller' => 'pages', 'action' => 'display', 'home'),
-			'flashElement' => 'danger'
+			'flash' => array(
+				'element' => 'danger',
+				'key' => 'auth',
+				'params' => array('class' => 'alert-danger')
+			)
 		)
 	);
 

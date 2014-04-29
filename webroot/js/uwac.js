@@ -59,7 +59,7 @@ $(document).ready(function(){
 
 			$.ajax(
 				{
-					url: "/users/check.json",
+					url: "/users/check/",
 					dataType: 'json',
 					type: 'get',
 					data: {

@@ -16,8 +16,7 @@ class UsersController extends AppController {
 	 * @var array
 	 */
 	public $components = array(
-		'Paginator',
-		'RequestHandler'
+		'Paginator'
 	);
 
 
@@ -50,7 +49,6 @@ class UsersController extends AppController {
 
 	public function login()
 	{
-		$this->layout = 'default';
 		if ($this->request->is('post'))
 		{
 	    	if ($this->Auth->login())
@@ -182,6 +180,9 @@ class UsersController extends AppController {
 
 	public function check()
 	{
+
+		header('Content-type: application/json');
+
 		$username = ( isset($this->params->query['username']) )? $this->params->query['username']: '';
 		$conditions = array('User.username' => $this->params->query['username']);
 		$count = ( $this->User->find('count', array('conditions' => $conditions) ) );
@@ -191,9 +192,9 @@ class UsersController extends AppController {
 		{
 			$valid = false;
 		}
+		$this->autoRender = false;
 
-		$this->set( compact('valid') );
-		$this->set('_serialize', array('valid') );
+		echo json_encode( compact('valid') );
 
 	}
 
@@ -272,6 +273,16 @@ class UsersController extends AppController {
 
 			if ( $this->User->save($entry) )
 			{
+				$user = $this->User->find('first', array('conditions' => array('User.user_id' => $this->User->id) ) );
+				$Email = new CakeEmail();
+				$Email->viewVars( compact('entry') );
+				$Email->template('NewUser')
+						->emailFormat('text')
+						->to( $user['User']['email'], __('%s %s', $user['User']['first_name'], $user['User']['last_name']) )
+						->from( 'volunteer@unitedwayalbanycounty.org' )
+						->subject( __('[%1$s] Welcome to %1$s, %2$s!', Configure::read('Solution.name'), $user['User']['first_name']) )
+						->send();
+
 				$this->Session->setFlash( __('This account has been created.  Login with your username and password.'), 'success' );
 				return $this->redirect( array('controller' => 'users', 'action' => 'login') );
 

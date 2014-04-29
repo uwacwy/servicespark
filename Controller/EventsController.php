@@ -1,5 +1,7 @@
 <?php
 App::uses('AppController', 'Controller');
+
+App::uses('CakeEmail', 'Network/Email');
 /**
  * Events Controller
  *
@@ -362,8 +364,38 @@ class EventsController extends AppController {
 				$this->Event->create();
 				if ($this->Event->saveAll($this->request->data)) 
 				{
+					$conditions = array(
+						'Event.event_id' => $this->Event->id
+					);
+					$contain = array('Address', 'Organization' => array('Permission.write = 1' => 'User'), 'Skill' => array('User'));
+					$event = $this->Event->find('first', compact('conditions', 'contain') );
+
+					foreach ($event['Skill'] as $skill)
+					{
+						foreach( $skill['User'] as $user )
+						{
+							$users[$user['user_id']] = $user;
+							$users[$user['user_id']]['Skills'][] = $skill;
+						}
+					}
+
+					if ( !empty($users) )
+					{
+						foreach($users as $user)
+						{
+							debug($user);
+							$Email = new CakeEmail();
+							$Email->viewVars( compact('user', 'event') );
+							$Email->template('NewEvent')
+								->emailFormat('text')
+								->to( $user['email'], $user['full_name'] )
+								->from( 'volunteer@unitedwayalbanycounty.org' )
+								->subject( __('[%s] %s for %s', Configure::read('Solution.name'), $event['Event']['title'], $user['full_name'] ) )
+								->send();
+						}						
+					}
+
 					$this->Session->setFlash(__('The event has been saved.'), 'success');
-					//debug($this->request->data);
 					return $this->redirect(array('controller' => 'events', 'action' => 'view', $this->Event->id, 'coordinator' => true));
 				} 
 				else 
