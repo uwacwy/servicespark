@@ -1,8 +1,10 @@
-uwac-volunteer
-==============
+# ServiceSpark
 
-Fall/Spring 2013 Senior Design project
+ServiceSpark is a powerful tool to help volunteer coordinators and volunteers keep tabs on hours, be notified of volunteer opportunities.
 
-A powerful tool to help volunteer coordinators and volunteers keep tabs on hours, be notified of volunteer opportunities.
+## Install
+Install CakePHP on your webserver.  Replace the contents of the `app/` directory with this repository (typically just `git clone https://github.com/uwacwy/uwac-volunteer.git app/`)
 
-Built on CakePHP, HTML5, CSS3, Bootstrap
+Add routing prefixes for go/, volunteer/, supervisor/, coordinator/, admin/
+
+Adjust the timezone for DB connection and PHP installation if necessary.
