@@ -474,7 +474,7 @@ class EventsController extends AppController {
 			$address = $this->Event->Address->find('all');
 			$skills = null;
 			$this->set( compact('skills', 'address', 'organization') );
-
+			$this->set('title_for_layout', __('Editing Event - '. $event['Event']['title']) );
 			//debug($user_organizations);
 
 			$this->set('organizations', $this->Event->Organization->find(
@@ -513,7 +513,7 @@ class EventsController extends AppController {
 		$this->Paginator->settings['limit'] = 15;
 
 		$events = $this->Paginator->paginate();
-
+		$this->set('title_for_layout', __('Coordinator Events Dashboard') );
 		//$events = $this->Event->find('all', array('conditions' => $conditions) ) ;
 		$this->set( compact('events') );
 	}
@@ -620,7 +620,7 @@ class EventsController extends AppController {
 		);
 		$event_total = $this->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
 		$this->set( compact('event_total') );
-
+		$this->set('title_for_layout', __('Viewing Event - '. $event['Event']['title']) );
 		// versus
 
 //		$times = $this->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
@@ -662,6 +662,7 @@ class EventsController extends AppController {
 		$this->Paginator->settings['conditions'] = $conditions;
 		$this->Paginator->settings['limit'] = 15;
 		$this->Paginator->settings['contain'] = array('Organization');
+		$this->set('title_for_layout', __('Supervisor Event Dashboard') );
 
 		$events = $this->Paginator->paginate('Event');
 		$this->set( compact('events') );
@@ -775,6 +776,7 @@ class EventsController extends AppController {
 //		$times = $this->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
 		$this->set('event_id', $event_id);
 		$this->set( compact('times', 'event') );
+		$this->set('title_for_layout', __('Viewing Event - '. $event['Event']['title']) );
 	}
 
 	/**
@@ -806,12 +808,14 @@ class EventsController extends AppController {
 
 		$events = $this->Paginator->paginate('Event');
 		$this->set( compact('events') );
+		$this->set('title_for_layout', __('Upcoming Events') );
 	}
 
 	public function volunteer_view($event_id = null)
 	{
 		$event = $this->Event->findByEventId($event_id);
 		$this->set( compact('event') );
+		$this->set('title_for_layout', __('Viewing Event - '. $event['Event']['title']) );
 	}
 
 	/**
@@ -837,6 +841,7 @@ class EventsController extends AppController {
 			'Event.start_time ASC'
 		);
 		$this->set('events', $this->Paginator->paginate());	
+		$this->set('title_for_layout', __('Upcoming Events') );
 	}
 
 	public function view($id = null)
@@ -849,6 +854,7 @@ class EventsController extends AppController {
 		$event = $this->Event->find('first', $options);
 		$this->request->data = $event;
 		$this->set( compact('event') );
+		$this->set('title_for_layout', __('Viewing Event - '. $event['Event']['title']) );
 
 	}
 
