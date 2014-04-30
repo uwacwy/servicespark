@@ -143,6 +143,9 @@ class OrganizationsController extends AppController {
 		$pag_organizations = $this->Paginator->paginate();
 
 		$this->set(compact('pag_organizations'));
+
+		$title_for_layout = sprintf( __('View your organizations'));
+		$this->set( compact('title_for_layout') );
 	}
 
 
@@ -252,6 +255,9 @@ class OrganizationsController extends AppController {
 
 		$addresses = $this->Organization->Address->find('all');
 		$this->set(compact('addresses'));
+
+		$title_for_layout = sprintf( __('Edit this organization'));
+		$this->set( compact('title_for_layout') );
 	}
 
 
@@ -284,6 +290,9 @@ class OrganizationsController extends AppController {
 				)
 			);
 		}
+
+		$title_for_layout = sprintf( __('Delete this organization'));
+		$this->set( compact('title_for_layout') );
 	}
 
 
@@ -306,6 +315,9 @@ class OrganizationsController extends AppController {
 		$pag_organizations = $this->Paginator->paginate();
 
 		$this->set(compact('pag_organizations'));
+
+		$title_for_layout = sprintf( __('View your supervising organizations'));
+		$this->set( compact('title_for_layout') );
 	}
 
 
@@ -403,6 +415,9 @@ class OrganizationsController extends AppController {
 			);
 			$summary_ytd = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
 			$this->set( compact('summary_ytd') );
+
+			$title_for_layout = sprintf( __('Supervise this organization'), Configure::read('Solution.name') );
+			$this->set( compact('title_for_layout') );
 		}
 		else
 		{
@@ -517,6 +532,9 @@ class OrganizationsController extends AppController {
 
 			$data = $this->Paginator->paginate();
 			$this->set(compact('data'));
+
+			$title_for_layout = sprintf( __('Leave this organization'));
+			$this->set( compact('title_for_layout') );
 		}
 		else
 		{
@@ -616,6 +634,9 @@ class OrganizationsController extends AppController {
 
 		$data = $this->Paginator->paginate();
 		$this->set( compact('data') );
+
+		$title_for_layout = sprintf( __('Leave this organization'));
+			$this->set( compact('title_for_layout') );
 	}
 
 
@@ -705,6 +726,9 @@ class OrganizationsController extends AppController {
 		$data = $this->Paginator->paginate();
 		$this->set( compact('data') );
 
+		$title_for_layout = sprintf( __('Leave this organization'));
+			$this->set( compact('title_for_layout') );
+
 	}
 
 
@@ -787,6 +811,9 @@ class OrganizationsController extends AppController {
 
 		$data = $this->Paginator->paginate();
 		$this->set( compact('data') );
+
+		$title_for_layout = sprintf( __('Leave this organization'));
+			$this->set( compact('title_for_layout') );
 	}
 
 
@@ -842,6 +869,9 @@ class OrganizationsController extends AppController {
 
 		$organizations = $this->Paginator->paginate();
 		$this->set(compact('organizations'));
+
+		$title_for_layout = sprintf( __('Join an organization'));
+			$this->set( compact('title_for_layout') );
 	}
 
 
@@ -856,6 +886,8 @@ class OrganizationsController extends AppController {
 	{
 		if($this->Auth->user('user_id') ) 
 		{
+			$title_for_layout = sprintf( __('Create an organization'));
+			$this->set( compact('title_for_layout') );
 			if ($this->request->is('post'))
 			{
 				// create address entry
