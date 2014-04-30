@@ -1,5 +1,7 @@
 <?php
 App::uses('AppController', 'Controller');
+
+App::uses('CakeEmail', 'Network/Email');
 /**
  * Events Controller
  *
@@ -362,8 +364,37 @@ class EventsController extends AppController {
 				$this->Event->create();
 				if ($this->Event->saveAll($this->request->data)) 
 				{
+					$conditions = array(
+						'Event.event_id' => $this->Event->id
+					);
+					$contain = array('Address', 'Organization' => array('Permission.write = 1' => 'User'), 'Skill' => array('User'));
+					$event = $this->Event->find('first', compact('conditions', 'contain') );
+
+					foreach ($event['Skill'] as $skill)
+					{
+						foreach( $skill['User'] as $user )
+						{
+							$users[$user['user_id']] = $user;
+							$users[$user['user_id']]['Skills'][] = $skill;
+						}
+					}
+
+					if ( !empty($users) )
+					{
+						foreach($users as $user)
+						{
+							$Email = new CakeEmail();
+							$Email->viewVars( compact('user', 'event') );
+							$Email->template('NewEvent')
+								->emailFormat('text')
+								->to( $user['email'], $user['full_name'] )
+								->from( 'volunteer@unitedwayalbanycounty.org' )
+								->subject( __('[%s] %s for %s', Configure::read('Solution.name'), $event['Event']['title'], $user['full_name'] ) )
+								->send();
+						}						
+					}
+
 					$this->Session->setFlash(__('The event has been saved.'), 'success');
-					//debug($this->request->data);
 					return $this->redirect(array('controller' => 'events', 'action' => 'view', $this->Event->id, 'coordinator' => true));
 				} 
 				else 
@@ -375,6 +406,7 @@ class EventsController extends AppController {
 			$address = $this->Event->Address->find('all');
 			$skills = null;
 			$this->set( compact('skills', 'organization') );
+			$this->set('title_for_layout', __('Creating New Event') );
 
 			//debug($user_organizations);
 
@@ -442,7 +474,7 @@ class EventsController extends AppController {
 			$address = $this->Event->Address->find('all');
 			$skills = null;
 			$this->set( compact('skills', 'address', 'organization') );
-
+			$this->set('title_for_layout', __('Editing Event - '. $event['Event']['title']) );
 			//debug($user_organizations);
 
 			$this->set('organizations', $this->Event->Organization->find(
@@ -481,7 +513,7 @@ class EventsController extends AppController {
 		$this->Paginator->settings['limit'] = 15;
 
 		$events = $this->Paginator->paginate();
-
+		$this->set('title_for_layout', __('Coordinator Events Dashboard') );
 		//$events = $this->Event->find('all', array('conditions' => $conditions) ) ;
 		$this->set( compact('events') );
 	}
@@ -588,7 +620,7 @@ class EventsController extends AppController {
 		);
 		$event_total = $this->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
 		$this->set( compact('event_total') );
-
+		$this->set('title_for_layout', __('Viewing Event - '. $event['Event']['title']) );
 		// versus
 
 //		$times = $this->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
@@ -630,6 +662,7 @@ class EventsController extends AppController {
 		$this->Paginator->settings['conditions'] = $conditions;
 		$this->Paginator->settings['limit'] = 15;
 		$this->Paginator->settings['contain'] = array('Organization');
+		$this->set('title_for_layout', __('Supervisor Event Dashboard') );
 
 		$events = $this->Paginator->paginate('Event');
 		$this->set( compact('events') );
@@ -743,6 +776,7 @@ class EventsController extends AppController {
 //		$times = $this->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
 		$this->set('event_id', $event_id);
 		$this->set( compact('times', 'event') );
+		$this->set('title_for_layout', __('Viewing Event - '. $event['Event']['title']) );
 	}
 
 	/**
@@ -774,12 +808,14 @@ class EventsController extends AppController {
 
 		$events = $this->Paginator->paginate('Event');
 		$this->set( compact('events') );
+		$this->set('title_for_layout', __('Upcoming Events') );
 	}
 
 	public function volunteer_view($event_id = null)
 	{
 		$event = $this->Event->findByEventId($event_id);
 		$this->set( compact('event') );
+		$this->set('title_for_layout', __('Viewing Event - '. $event['Event']['title']) );
 	}
 
 	/**
@@ -805,6 +841,7 @@ class EventsController extends AppController {
 			'Event.start_time ASC'
 		);
 		$this->set('events', $this->Paginator->paginate());	
+		$this->set('title_for_layout', __('Upcoming Events') );
 	}
 
 	public function view($id = null)
@@ -817,6 +854,7 @@ class EventsController extends AppController {
 		$event = $this->Event->find('first', $options);
 		$this->request->data = $event;
 		$this->set( compact('event') );
+		$this->set('title_for_layout', __('Viewing Event - '. $event['Event']['title']) );
 
 	}
 

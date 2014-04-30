@@ -52,9 +52,13 @@ class AppController extends Controller {
 		'Paginator',
 		'Session',
 		'Auth' => array(
-			'loginRedirect' => '/users/activity',
-			'logoutRedirect' => '/',
-			'flashElement' => 'danger'
+			'loginRedirect' => array('controller' => 'users', 'action' => 'activity'),
+			'logoutRedirect' => array('controller' => 'pages', 'action' => 'display', 'home'),
+			'flash' => array(
+				'element' => 'danger',
+				'key' => 'auth',
+				'params' => array('class' => 'alert-danger')
+			)
 		)
 	);
 

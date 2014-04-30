@@ -16,8 +16,7 @@ class UsersController extends AppController {
 	 * @var array
 	 */
 	public $components = array(
-		'Paginator',
-		'RequestHandler'
+		'Paginator'
 	);
 
 
@@ -73,10 +72,11 @@ class UsersController extends AppController {
 					$this->User->Recovery->delete( $this->Auth->user('user_id') );
 				}	
 
-	        	$this->redirect( $this->Auth->redirect() );
+	        	return $this->redirect( $this->Auth->redirectUrl() );
 	    	}
 	    	$this->Session->setFlash(__('Invalid username or password, try again'), 'danger');
 		}
+
 		$title_for_layout = sprintf( __('Login to %s'), Configure::read('Solution.name') );
 		$this->set( compact('title_for_layout') );
 	}
@@ -89,7 +89,9 @@ class UsersController extends AppController {
 	public function logout()
 	{
 		$this->Session->delete('can_coordinate');
+		$this->Session->delete('can_coordinate_exp');
 		$this->Session->delete('can_supervise');
+		$this->Session->delete('can_supervise_exp');
 		
 		return $this->redirect( $this->Auth->logout() );
 	}
@@ -178,6 +180,9 @@ class UsersController extends AppController {
 
 	public function check()
 	{
+
+		header('Content-type: application/json');
+
 		$username = ( isset($this->params->query['username']) )? $this->params->query['username']: '';
 		$conditions = array('User.username' => $this->params->query['username']);
 		$count = ( $this->User->find('count', array('conditions' => $conditions) ) );
@@ -187,9 +192,9 @@ class UsersController extends AppController {
 		{
 			$valid = false;
 		}
+		$this->autoRender = false;
 
-		$this->set( compact('valid') );
-		$this->set('_serialize', array('valid') );
+		echo json_encode( compact('valid') );
 
 	}
 
@@ -218,7 +223,8 @@ class UsersController extends AppController {
 	 */
 	public function register()
 	{
-		unset( $this->request->data['User']['password'] );
+		//unset( $this->request->data['User']['password'] );
+
 
 		if ($this->request->is('post'))
 		{
@@ -248,8 +254,13 @@ class UsersController extends AppController {
 				$entry['User']['password'] = $entry['User']['password_l'];
 			}
 
-			$address_ids = $this->_ProcessAddresses($this->request->data['Address'], $this->User->Address);
-			$skill_ids = $this->_ProcessSkills($this->request->data['Skill'], $this->User->Skill);
+			$address_ids = $skill_ids = null;
+
+			if( isset( $this->request->data['Address']) )
+				$address_ids = $this->_ProcessAddresses($this->request->data['Address'], $this->User->Address);
+			
+			if( isset($this->request->data['Skill']) )
+				$skill_ids = $this->_ProcessSkills($this->request->data['Skill'], $this->User->Skill);
 
 			unset( $entry['Address'], $entry['Skill'] );
 
@@ -262,8 +273,18 @@ class UsersController extends AppController {
 
 			if ( $this->User->save($entry) )
 			{
+				$user = $this->User->find('first', array('conditions' => array('User.user_id' => $this->User->id) ) );
+				$Email = new CakeEmail();
+				$Email->viewVars( compact('entry') );
+				$Email->template('NewUser')
+						->emailFormat('text')
+						->to( $user['User']['email'], __('%s %s', $user['User']['first_name'], $user['User']['last_name']) )
+						->from( 'volunteer@unitedwayalbanycounty.org' )
+						->subject( __('[%1$s] Welcome to %1$s, %2$s!', Configure::read('Solution.name'), $user['User']['first_name']) )
+						->send();
+
 				$this->Session->setFlash( __('This account has been created.  Login with your username and password.'), 'success' );
-				$this->redirect( $this->_Redirector(null, 'users', 'login') );
+				return $this->redirect( array('controller' => 'users', 'action' => 'login') );
 
 			}
 			else
@@ -329,6 +350,8 @@ class UsersController extends AppController {
 				--
 				many methods use the skill and address parsers;  this will make them easier to maintain
 			*/
+			$skill_ids = $address_ids = null;
+
 			if( isset($this->request->data['Skill']) )
 				$skill_ids = $this->_ProcessSkills($this->request->data['Skill'], $this->User->Skill);
 			if( isset($this->request->data['Address']) )

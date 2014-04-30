@@ -28,51 +28,6 @@ global $solution_name;
 	<title>
 		<?php echo $title_for_layout; ?> &ndash; <?php echo Configure::read('Solution.name'); ?>
 	</title>
-	<style>
-		.stat{font-weight:bold; font-size: 48px;display: block;}
-		a.asc:after { content: "\e155"; }
-		a.desc:after { content: "\e156"; }
-		a.asc:after,
-		a.desc:after {
-			position: relative;
-			top: 1px;
-			display: inline-block;
-			font-family: 'Glyphicons Halflings';
-			font-style: normal;
-			font-weight: normal;
-			color: #000;
-			margin-left: 7px;
-			line-height: 1;
-			-webkit-font-smoothing: antialiased;
-			-moz-osx-font-smoothing: grayscale;
-		}
-
-		.form-inline .form-group label,
-		.form-inline .form-group input,
-		.form-inline .form-group select
-		{
-			margin-right: 5px;
-			margin-left: 5px;
-		}
-
-		.append-bottom
-		{
-			margin-bottom: 1.5em !important;
-		}
-		.append-top
-		{
-			margin-top: 1.5em;
-		}
-		.prepend-left
-		{
-			margin-left: 20px;
-		}
-		.collapse-top
-		{
-			margin-top: 0 !important;
-			padding-top: 0 !important;
-		}
-	</style>
 	<?php		
 		echo $this->Html->css('autocomplete');
 		
@@ -113,7 +68,7 @@ global $solution_name;
 		<span class="icon-bar"></span>
 		<span class="icon-bar"></span>
 	  </button>
-	  <a class="navbar-brand" href="<? echo $this->Html->url('/'); ?>"><?php echo Configure::read('Solution.name'); ?></a>
+	  <a class="navbar-brand" href="<?php echo $this->Html->url('/'); ?>"><?php echo Configure::read('Solution.name'); ?></a>
 	</div>
 
 	<!-- Collect the nav links, forms, and other content for toggling -->
@@ -175,7 +130,7 @@ global $solution_name;
 	 	 <?php endif; ?>
 
 
-	  	<?php if( AuthComponent::user('user_id') ): ?>
+	  	<?php if( AuthComponent::user('user_id') != null): ?>
 			<li class="dropdown">
 				<?php echo sprintf($dropdown_sprint,
 					$this->Html->url( array('controller' => 'events', 'action' => 'index', 'volunteer' => true) ),
@@ -202,8 +157,15 @@ global $solution_name;
 					<li class="dropdown-header"><?php echo h( __('Organizations') ); ?></li>
 					<?php
 						echo sprintf($item_sprint,
+							$this->Html->url( array('controller' => 'organizations', 'action' => 'add', 'volunteer' => true) ),
+							'<span class="glyphicon glyphicon-plus"></span> ',
+							__('Create Organization')
+						);
+					?>
+					<?php
+						echo sprintf($item_sprint,
 							$this->Html->url( array('controller' => 'organizations', 'action' => 'join', 'volunteer' => true) ),
-							'<span class="glyphicon glyphicon-remove-circle"></span> ',
+							'<span class="glyphicon glyphicon-asterisk"></span> ',
 							__('Join Organizations')
 						);
 					?>
@@ -211,21 +173,21 @@ global $solution_name;
 						echo sprintf($item_sprint,
 							$this->Html->url( array('controller' => 'organizations', 'action' => 'leave', 'volunteer' => true) ),
 							'<span class="glyphicon glyphicon-remove-circle"></span> ',
-							__('Leave An Organizations')
+							__('Leave An Organization')
 						);
 					?>
 					<li class="divider"></li>
 					<li class="dropdown-header"><?php echo h( __('Accounts') ); ?></li>
 					<?php
 						echo sprintf($item_sprint,
-							$this->Html->url( array('controller' => 'users', 'action' => 'register', 'volunteer' => true) ),
+							$this->Html->url( array('controller' => 'users', 'action' => 'register', 'volunteer' => false) ),
 							'<span class="glyphicon glyphicon-user"></span> ',
 							__('Create %s Account', Configure::read('Solution.name') )
 						);
 					?>
 					<?php
 						echo sprintf($item_sprint,
-							$this->Html->url( array('controller' => 'recoveries', 'action' => 'user', 'volunteer' => true) ),
+							$this->Html->url( array('controller' => 'recoveries', 'action' => 'user', 'volunteer' => false) ),
 							'<span class="glyphicon glyphicon-question-sign"></span> ',
 							__('Lost Password Recovery')
 						);
@@ -234,7 +196,9 @@ global $solution_name;
 			</li>
 	  	<?php endif ?>
 
-	  	<?php if( AuthComponent::user('user_id') && $this->Session->read('can_supervise') ): ?>
+	  	<?php if( AuthComponent::user('user_id') 
+	  	&& $this->Session->check('can_supervise') 
+	  	&& $this->Session->read('can_supervise') ): ?>
 	  		<li class="dropdown">
 				<?php 
 					echo sprintf($dropdown_sprint,
@@ -271,7 +235,9 @@ global $solution_name;
 			</li>
 	  	<?php endif; ?>
 
-	  	<?php if( AuthComponent::user('user_id') && $this->Session->read('can_coordinate') ): ?>
+	  	<?php if( AuthComponent::user('user_id') 
+	  	&& $this->Session->check('can_coordinate')
+	  	&& $this->Session->read('can_coordinate') ): ?>
 	  		<li class="dropdown">
 				<?php 
 					echo sprintf($dropdown_sprint,
@@ -320,9 +286,10 @@ global $solution_name;
 	  		$inline_form['class'] = 'navbar-form navbar-left';
 	  		$inline_form['type'] = 'get';
 	  		$inline_form['action'] = 'index';
-	  	echo $this->Form->create('Search', $inline_form); ?>
-	  		<?php echo $this->Form->input('query', array('placeholder' => __('search %s', Configure::read('Solution.name') ), 'label' => false ) ); ?>
-	  	<?php echo $this->form->end( array('label' => 'search', 'class' => 'btn btn-default', 'div' => false) ); ?>
+			// echo $this->Form->create('Search', $inline_form); 
+			// echo $this->Form->input('query', array('placeholder' => __('search %s', Configure::read('Solution.name') ), 'label' => false ) );
+			// echo $this->form->end( array('label' => 'search', 'class' => 'btn btn-default', 'div' => false) );
+	  	?>
 
 		</ul>
 
@@ -370,6 +337,7 @@ global $solution_name;
 				<label>Login</label>
 				<?php
 					echo $this->Form->input('username', array('placeholder' => 'username'));
+					echo ' ';
 					echo $this->Form->input('password', array('placeholder' => 'password'));
 				?>
 			<?php echo $this->Form->end(array('label'=> 'Login', 'class' => 'btn btn-primary', 'div' => array('class' =>'form-group'))); ?>

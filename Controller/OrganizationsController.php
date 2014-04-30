@@ -891,7 +891,7 @@ class OrganizationsController extends AppController {
 			if ($this->request->is('post'))
 			{
 				// create address entry
-				$address_ids = $this->_ProcessAddresses($this->request->data['Address'], $this->Organization->Address);
+				$address_ids = isset( $this->request->data['Address'] ) ? $this->_ProcessAddresses($this->request->data['Address'], $this->Organization->Address) : null;
 
 				unset( $this->request->data['Address'] );
 
@@ -904,7 +904,7 @@ class OrganizationsController extends AppController {
 
 				if ($this->Organization->save($this->request->data))
 				{
-					$this->Session->setFlash(__('The organization has been created.'));
+					$this->Session->setFlash(__('The organization has been created.'), 'success');
 
 					$conditions['Permission'] = array( 
 						'user_id' => $this->Auth->user('user_id'),
