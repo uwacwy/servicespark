@@ -9,7 +9,7 @@ if($user_attending) : ?>
 	<p>
 		<?php echo $this->Html->link(__("Cancel RSVP"),
 			array('volunteer' => true, 'controller' => 'events', 'action' => 'cancel_rsvp', $event['Event']['event_id']),
-			array('class' => 'btn btn-md btn-danger')
+			array('class' => 'btn btn-sm btn-danger')
 		); ?>
 				<?php
 		if ( $rsvp_count == 0 )
@@ -25,7 +25,7 @@ if($user_attending) : ?>
 		<?php
 		echo $this->Html->link(__("RSVP"),
 			array('volunteer' => true, 'controller' => 'events', 'action' => 'rsvp', $event['Event']['event_id']),
-			array('class' => 'btn btn-success')
+			array('class' => 'btn btn-md btn-success')
 		);
 		?>
 		<?php
