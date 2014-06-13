@@ -909,7 +909,7 @@ class OrganizationsController extends AppController {
 					$conditions['Permission'] = array( 
 						'user_id' => $this->Auth->user('user_id'),
 						'organization_id' => $this->Organization->id,
-						'write' => true
+						'read' => true
 					);
 
 					$this->Organization->Permission->save($conditions);
