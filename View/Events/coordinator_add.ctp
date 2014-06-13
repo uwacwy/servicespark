@@ -27,6 +27,7 @@
 						?>
 					</div>
 					<?php
+						echo $this->Form->input('rsvp_desired');
 						echo $this->Form->input('organization_id', array('class' => 'form-control') );
 					?>
 				</div>
