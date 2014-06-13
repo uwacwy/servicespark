@@ -42,7 +42,7 @@ $(document).ready(function(){
 
 		$this.parent().append( $("<p><span class=\"help-block\"></span></p>") );
 
-		$this.keyup(function(){
+		$this.on("keyup blur", function(){
 
 			var state = {
 				message: "Type a username to see if it's available.",
@@ -66,7 +66,7 @@ $(document).ready(function(){
 						username: $this.val()
 					},
 					success: function( data ) {
-						if( data.valid )
+						if( data.valid == true )
 						{
 							state = {
 								message: "This username is available!",
@@ -76,7 +76,7 @@ $(document).ready(function(){
 						else
 						{
 							state = {
-								message: "This username is taken.  Please try another.",
+								message: data.valid[0],
 								css_class: "form-group has-error"
 							}
 						}

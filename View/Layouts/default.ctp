@@ -96,11 +96,11 @@ global $solution_name;
 		  				);
 	  				?>
 	  				<?php
-	  					echo sprintf($item_sprint,
-	  						$this->Html->url( array('controller' => 'events', 'action' => 'search', 'go' => false) ),
-	  						'<span class="glyphicon glyphicon-search"></span> ',
-	  						__('Search Events')
-	  					);
+	  					// echo sprintf($item_sprint,
+	  					// 	$this->Html->url( array('controller' => 'events', 'action' => 'search', 'go' => false) ),
+	  					// 	'<span class="glyphicon glyphicon-search"></span> ',
+	  					// 	__('Search Events')
+	  					// );
 	  				?>
 	  				<li class="divider"></li>
 	  				<li class="dropdown-header"><?php echo h( __('Your Account') ); ?></li>
@@ -147,11 +147,11 @@ global $solution_name;
 	  				);
 					?>
 					<?php
-						echo sprintf($item_sprint,
-							$this->Html->url( array('controller' => 'events', 'action' => 'search', 'volunteer' => true) ),
-							'<span class="glyphicon glyphicon-search"></span> ',
-							__('Search Events')
-						);
+						// echo sprintf($item_sprint,
+						// 	$this->Html->url( array('controller' => 'events', 'action' => 'search', 'volunteer' => true) ),
+						// 	'<span class="glyphicon glyphicon-search"></span> ',
+						// 	__('Search Events')
+						// );
 					?>
 					<li class="divider"></li>
 					<li class="dropdown-header"><?php echo h( __('Organizations') ); ?></li>

@@ -183,15 +183,23 @@ class UsersController extends AppController {
 
 		header('Content-type: application/json');
 
-		$username = ( isset($this->params->query['username']) )? $this->params->query['username']: '';
-		$conditions = array('User.username' => $this->params->query['username']);
-		$count = ( $this->User->find('count', array('conditions' => $conditions) ) );
 
-		$valid = true;
-		if( $count == 1)
+
+		$username = ( isset($this->params->query['username']) )? $this->params->query['username']: '';
+
+		$validate['username'] = $username;
+
+		$this->User->set($validate);
+
+		if( $this->User->validates( array('fieldList' => array('username') ) ) )
 		{
-			$valid = false;
+			$valid = true;
 		}
+		else
+		{
+			$valid = $this->User->validationErrors['username'];
+		}
+
 		$this->autoRender = false;
 
 		echo json_encode( compact('valid') );

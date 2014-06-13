@@ -268,7 +268,7 @@ $summary['custom'] = null;
 					<td><?php 
 						echo $this->Html->link(
 							__('Coordinate'),
-							array('coordinator' => true, 'controller' => 'organizations', 'action' => 'view', $org['Organization']['organization_id']),
+							array('go' => true, 'controller' => 'organizations', 'action' => 'view', $org['Organization']['organization_id']),
 							array('class' => 'btn btn-primary btn-xs')
 						);
 						echo " ";echo $this->Html->link(

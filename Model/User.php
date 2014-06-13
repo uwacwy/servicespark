@@ -24,9 +24,11 @@ class User extends AppModel
 
 	public $validate = array(
 		'username' => array(
-			'unique' => array(
-				'rule' => 'isUnique',
-				'message' => 'That username is taken.'
+			'That username is taken.' => array(
+				'rule' => 'isUnique'
+			),
+			'Your username must be at least 3 characters with no spaces.' => array(
+				'rule' => '/^[a-zA-Z0-9_]{3,}$/i'
 			)
 		),
 		'email' => array(
