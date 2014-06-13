@@ -31,6 +31,8 @@
 								array('label' => 'Stop Date', 'type' => 'datetime', 'separator' => " ", 'div' => array('class' => 'append-bottom form-group') ) );
 						
 						echo '</div>';
+						
+						echo $this->Form->input('desired_volunteers');
 
 						echo $this->Form->input('organization_id', array('class' => 'form-control') );
 					?>

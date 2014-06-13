@@ -20,6 +20,9 @@ A new service opportunity has been created that you might be interested in!
 	}
 }
 ?>
+RSVP to this event by clicking
+<<?php echo $this->Html->url( array('volunteer' => true, 'controller' => 'events', 'action' => 'rsvp', $event['Event']['event_id']), true); ?>>
+
 You can learn more about this event at
 <<?php echo $this->Html->url( array('volunteer' => true, 'controller' => 'events', 'action' => 'view', $event['Event']['event_id']), true ); ?>> 
 

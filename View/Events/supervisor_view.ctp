@@ -32,6 +32,29 @@
 				<?php echo h($event['Event']['title']); ?>
 				<small><?php echo $this->Duration->format($startTime->format(DateTime::W3C), $stopTime->format(DateTime::W3C) ); ?></small></h1>
 			<blockquote><?php echo h($event['Event']['description']); ?></blockquote>
+
+			<?php
+			$rsvp_count = count($event['Rsvp']);
+			if($user_attending) : ?>
+				<p>
+					<?php echo $this->Html->link(__("Cancel RSVP"),
+						array('volunteer' => true, 'controller' => 'events', 'action' => 'cancel_rsvp', $event['Event']['event_id']),
+						array('class' => 'btn btn-md btn-danger')
+					); ?>
+					<?php echo __('You\'re attending with %s other volunteer.', number_format($rsvp_count - 1) ); ?>
+				</p>
+			<?php else: ?>
+				<p>
+					<?php
+					echo $this->Html->link(__("RSVP"),
+						array('volunteer' => true, 'controller' => 'events', 'action' => 'rsvp', $event['Event']['event_id']),
+						array('class' => 'btn btn-success')
+					);
+					echo ' ';
+					echo __('You\'ll join %s other volunteers', number_format($rsvp_count) );
+					?>
+				</p>
+			<?php endif; ?>
 			
 			<hr>
 			

@@ -549,7 +549,6 @@ class UsersController extends AppController {
 		$this->set( compact('title_for_layout') );
 
 
-
 	}
 
 	/*

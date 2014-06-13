@@ -15,7 +15,7 @@
 		<?php echo $this->Html->link( __('Create New Event'), array('coordinator' => true, 'controller' => 'events', 'action' => 'add'), array('class' => 'btn btn-primary')); ?>
 	</div>
 
-	<h2><?php echo h( __('Events') ); ?></h2>
+	<h2><?php echo h( __('Event Dashboard') ); ?></h2>
 	<p class="text-muted"><?php echo h( __('These are events for organizations for which you are a coordinator') ); ?></p>
 
 <?php if( !empty($events) ): ?>
@@ -26,6 +26,7 @@
 				<th><?php echo $this->Paginator->sort('Organization.name', __('Organization') ); ?></th> 
 				<th><?php echo $this->Paginator->sort('start_time', __('Start Time') ); ?></th>
 				<th><?php echo $this->Paginator->sort('stop_time', __('Stop Time') ); ?></th>
+				<th>RSVP Progress</th>
 				<th class="actions text-right">&nbsp;</th>
 		</tr>
 		<?php foreach ($events as $event): ?>
@@ -38,6 +39,20 @@
 
 				<td> <?php $stopTime = new DateTime($event['Event']['stop_time']);
 					echo $stopTime->format('F j, Y, g:i a'); ?>&nbsp;</td>
+
+				<td>
+				
+					<?php
+						$current = $event['Event']['rsvp_count'];
+					$desired = $event['Event']['rsvp_desired'];
+					$pct = $event['Event']['rsvp_percent'];
+					?>
+				<div class="progress" title="<?php echo number_format($pct, 0); ?>%" >
+					<div class="progress-bar" role="progressbar" aria-valuenow="<?php echo $current; ?>" aria-valuemin="0" aria-valuemax="<?php echo max($current, $desired); ?>" style="width: <?php echo min($pct, 100); ?>%;">
+						<?php echo ($pct > 20) ? number_format( $pct, 0) . '%' : ''; ?>
+					</div>
+				</div>
+				</td>
 
 				<td class="actions text-right">
 					<?php

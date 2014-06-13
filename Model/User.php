@@ -63,6 +63,9 @@ class User extends AppModel
 		'Permission' => array(
 			'dependent' => true // when the User is deleted, all Permission entries are deleted
 		),
+		'Rsvp' => array(
+			'dependent' => true
+		),
 		'Time' => array(
 			'dependent' => true // when the User is deleted, all Time entries are deleted
 		),

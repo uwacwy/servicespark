@@ -55,6 +55,24 @@
 				<?php echo h($event['Event']['title']); ?>
 				<small><?php echo $this->Duration->format($startTime->format(DateTime::W3C), $stopTime->format(DateTime::W3C) ); ?></small></h1>
 			<blockquote><?php echo h($event['Event']['description']); ?></blockquote>
+			<?php
+				$rsvp_count = $event['Event']['rsvp_count'];
+				echo $this->Element('rsvp', compact('rsvp_count', 'user_attending') );
+			?>
+			<div class="progress">
+				<?php
+					$current = $event['Event']['rsvp_count'];
+					$desired = $event['Event']['rsvp_desired'];
+					$pct = $event['Event']['rsvp_percent'];
+				?>
+				<div class="progress-bar" role="progressbar" aria-valuenow="<?php echo $current; ?>" aria-valuemin="0" aria-valuemax="<?php echo max($current, $desired); ?>" style="width: <?php echo min($pct, 100); ?>%;">
+					<?php echo number_format( $pct, 0); ?>%
+				</div>
+			</div>
+			<p>Currently <strong><?php echo number_format($current, 0); ?></strong> of <?php echo number_format($desired, 0); ?> volunteer goal.</p>
+
+
+			
 			
 			<hr>
 			

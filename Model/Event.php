@@ -14,6 +14,9 @@ class Event extends AppModel
 	public $primaryKey = 'event_id';
 	public $displayField = 'title';
 	public $actsAs = array('Containable');
+	public $virtualFields = array(
+		'rsvp_percent' => '(Event.rsvp_count / Event.rsvp_desired)*100'
+	);
 
 	/*
 		all fields required
@@ -95,6 +98,9 @@ class Event extends AppModel
 	public $hasMany = array(
 		'Time' => array(
 			'dependent' => true, // when an event is deleted, related time will be dleted
+		),
+		'Rsvp' => array(
+			'dependent' => true,
 		),
 		'Comment' => array(
 			'dependent' => true,

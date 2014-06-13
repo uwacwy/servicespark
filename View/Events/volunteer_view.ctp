@@ -32,6 +32,11 @@
 				<?php echo h($event['Event']['title']); ?>
 				<small><?php echo $this->Duration->format($startTime->format(DateTime::W3C), $stopTime->format(DateTime::W3C) ); ?></small></h1>
 			<blockquote><?php echo h($event['Event']['description']); ?></blockquote>
+
+			<?php
+				$rsvp_count = count($event['Rsvp']);
+				echo $this->Element('rsvp', compact('rsvp_count', 'user_attending') );
+			?>
 			
 			<hr>
 			

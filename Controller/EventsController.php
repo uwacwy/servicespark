@@ -629,9 +629,12 @@ class EventsController extends AppController {
 		$c_order = array('Comment.created ASC');
 		$comments = $this->Event->Comment->find('threaded', array('conditions' => $c_conditions, 'contain' => $c_contain, 'order' => $c_order) );
 
+		$user_attending = ($this->Event->Rsvp->find('count', array('conditions' => array('Rsvp.user_id' => $this->Auth->user('user_id'), 'Rsvp.event_id' => $event_id)) ) == 1)? true : false;
+
+
 //		$times = $this->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
 		$this->set('event_id', $event_id);
-		$this->set( compact('times', 'event', 'comments') );
+		$this->set( compact('times', 'event', 'comments', 'user_attending') );
 	}
 
 	/**
@@ -782,11 +785,14 @@ class EventsController extends AppController {
 		$c_order = array('Comment.created ASC');
 		$comments = $this->Event->Comment->find('threaded', array('conditions' => $c_conditions, 'contain' => $c_contain, 'order' => $c_order) );
 
+		$user_attending = ($this->Event->Rsvp->find('count', array('conditions' => array('Rsvp.user_id' => $this->Auth->user('user_id'), 'Rsvp.event_id' => $event_id)) ) == 1)? true : false;
+
+
 		// versus
 
 //		$times = $this->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
 		$this->set('event_id', $event_id);
-		$this->set( compact('times', 'event', 'comments') );
+		$this->set( compact('times', 'event', 'comments', 'user_attending') );
 		$this->set('title_for_layout', __('Viewing Event - '. $event['Event']['title']) );
 	}
 
@@ -822,10 +828,42 @@ class EventsController extends AppController {
 		$this->set('title_for_layout', __('Upcoming Events') );
 	}
 
-	public function volunteer_view($event_id = null)
+	public function volunteer_rsvp($event_id)
 	{
-		$event = $this->Event->findByEventId($event_id);
+		//$this->autoRender = false;
 
+		$user_id = $this->Auth->user('user_id');
+
+		$conditions = array('Rsvp.user_id' => $user_id, 'Rsvp.event_id' => $event_id);
+		$contain = array();
+
+		if( $this->Event->Rsvp->find('count', compact('conditions', 'contain') ) < 1)
+		{
+			$this->Event->Rsvp->save( array('Rsvp' => array('user_id' => $user_id, 'event_id' => $event_id) ) );
+		}
+
+		return $this->redirect( array('go' => true, 'controller' => 'events', 'action' => 'view', $event_id) );
+	}
+
+	public function volunteer_cancel_rsvp($event_id)
+	{
+		$user_id = $this->Auth->user('user_id');
+
+		$conditions = array('Rsvp.user_id' => $user_id, 'Rsvp.event_id' => $event_id);
+
+		$rsvp = $this->Event->Rsvp->find('first', compact('conditions') );
+
+		//debug($rsvp);
+
+		if( isset($rsvp['Rsvp']['rsvp_id']) )
+			$this->Event->Rsvp->delete($rsvp['Rsvp']['rsvp_id']);
+
+		$this->redirect( array('go' => true, 'controller' => 'events', 'action' => 'view', $event_id) );
+
+	}
+
+	public function volunteer_comment($event_id)
+	{
 		if( $this->request->is('post') )
 		{
 			$save['Comment']['event_id'] = $event_id;
@@ -835,19 +873,31 @@ class EventsController extends AppController {
 
 			if( $this->Event->Comment->save($save) )
 			{
-				return $this->redirect( array($event_id, '#' => sprintf('comment-%s', $this->Event->Comment->id) ) );
+				return $this->redirect( array('go' => true, 'controller' => 'events', 'action' => 'view', $event_id, '#' => sprintf('comment-%s', $this->Event->Comment->id) ) );
 			}
 			else
 			{
 				debug('Comment did not save');
 			}
 		}
+	}
 
+	public function volunteer_delete_comment($comment_id)
+	{
+		$conditions = array('Comment.user_id' => $this->Auth->user('user_id'), 'Comment.comment_id' => $comment_id);
+		$this->Event->Comment->deleteAll($conditions);
+		return $this->redirect($this->referer());
+	}
+
+	public function volunteer_view($event_id = null)
+	{
+		$event = $this->Event->findByEventId($event_id);
 		$c_conditions = array('Comment.event_id' => $event_id);
 		$c_contain = array('User', 'ParentComment' => array('User'));
 		$c_order = array('Comment.created ASC');
+		$user_attending = ($this->Event->Rsvp->find('count', array('conditions' => array('Rsvp.user_id' => $this->Auth->user('user_id'), 'Rsvp.event_id' => $event_id)) ) == 1)? true : false;
 		$comments = $this->Event->Comment->find('threaded', array('conditions' => $c_conditions, 'contain' => $c_contain, 'order' => $c_order) );
-		$this->set( compact('event', 'comments') );
+		$this->set( compact('event', 'comments', 'user_attending') );
 		$this->set('title_for_layout', __('Viewing Event - '. $event['Event']['title']) );
 	}
 

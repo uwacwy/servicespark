@@ -129,6 +129,10 @@
 {
   margin-bottom: 1em;
 }
+.comment .comment-reply
+{
+  margin-left: 43px;
+}
 .comment-reply
 {
   margin-bottom: 1em;
