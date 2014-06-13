@@ -95,6 +95,9 @@ class Event extends AppModel
 	public $hasMany = array(
 		'Time' => array(
 			'dependent' => true, // when an event is deleted, related time will be dleted
+		),
+		'Comment' => array(
+			'dependent' => true,
 		)
 
 	);

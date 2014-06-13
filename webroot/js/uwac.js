@@ -8,6 +8,18 @@ $(document).ready(function(){
 
 	$('.cake-sql-log').addClass('table table-striped');
 
+	$('.comment .comment-reply').hide();
+
+	$('.comments').on('click', '.comment-reply-trigger', function(e){
+		e.preventDefault();
+		$(this).toggleClass('active inactive').parent().find(".comment-reply").slideToggle();
+		console.log('displaying comment form');
+		return false;
+	});
+	$('body').on('change cut paste drop keydown', '.reply-body', function(e){
+		$(this).height(0).height( $(this).get(0).scrollHeight + 20);
+	});
+
 	var $body = $('body');
 	function split( val )
 	{

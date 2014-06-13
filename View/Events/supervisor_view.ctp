@@ -56,6 +56,17 @@
 			<?php endif; ?>
 
 			<hr>
+
+			<h3>Comments</h3>
+			<?php if ( !empty($comments) ) : ?>
+				<?php echo $this->Comment->formatComments($comments, $event['Event']['event_id']); ?>
+			<?php else : ?>
+				<p><em>There are no event comments at this time.</em></p>
+			<?php endif; ?>
+			<h4>Leave a Comment</h4>
+			<?php echo $this->Comment->commentForm($event['Event']['event_id'], null, 'leave a comment...'); ?>
+
+			<hr>
 			
 			<h3>Volunteer Time Entries</h3>
 			<?php

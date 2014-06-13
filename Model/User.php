@@ -65,6 +65,9 @@ class User extends AppModel
 		),
 		'Time' => array(
 			'dependent' => true // when the User is deleted, all Time entries are deleted
+		),
+		'Comment' => array(
+			'dependent' => true
 		)
 
 	);

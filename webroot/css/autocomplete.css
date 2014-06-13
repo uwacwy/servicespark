@@ -102,3 +102,68 @@
       margin-top: 0 !important;
       padding-top: 0 !important;
     }
+
+.list-style-none
+{
+  list-style: none;
+}
+.comments
+{
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.comment-reply-trigger
+{
+  margin-bottom: 7px;
+}
+.inactive .when-active
+{
+  display: none;
+}
+.active .when-active
+{
+  display: inline;
+}
+.comment
+{
+  margin-bottom: 1em;
+}
+.comment-reply
+{
+  margin-bottom: 1em;
+}
+.reply-body
+{
+  display: block;
+  width: 100%;
+  height: 3em;
+  margin-bottom: 1em;
+  resize: vertical;
+}
+.comment-body
+{
+  margin: 1em 0 1em;
+}
+.comment .comment-body,
+.comment .comment-meta
+{
+  display: block;
+}
+.comment-meta .user-gravatar
+{
+  float: left;
+  margin-right: 7px;
+}
+.comment .comment-author
+{
+  font-weight: bold;
+}
+.comment.child
+{
+  margin-left: 43px;
+}
+.comment .at-username
+{
+  font-weight: normal;
+}

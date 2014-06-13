@@ -109,6 +109,17 @@
 		</div>
 		<hr>
 
+		<h2>Email Preferences</h2>
+		<p>We will send you emails from time to time.  If you are receiving too many emails, you can unsubscribe here.</p>
+		<div class="row">
+			<div class="col-md-12">
+				<ul class="list-style-none">
+					<li><?php echo $this->Form->input('User.email_mentions', array('label' => __("Email me when I'm mentioned in a comment."), 'class' => 'checkbox' ) ); ?></li>
+					<li><?php echo $this->Form->input('User.email_participation', array('label' => __("Email me when there is a reply to a conversation I'm involved in."), 'class' => 'checkbox') ); ?></li>
+				</ul>
+			</div>
+		</div>
+
 		<h2>Does Everything Look Good?</h2>
 
 		<?php echo $this->Form->end(array('label' => "Save Profile", 'class' => 'btn btn-lg btn-primary')); ?>

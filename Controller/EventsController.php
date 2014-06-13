@@ -23,6 +23,7 @@ class EventsController extends AppController {
  * @var array
  */
 	public $components = array('Paginator');
+	public $helpers = array('Comment');
 
 
 	public function go_view($event_id)
@@ -623,9 +624,14 @@ class EventsController extends AppController {
 		$this->set('title_for_layout', __('Viewing Event - '. $event['Event']['title']) );
 		// versus
 
+		$c_conditions = array('Comment.event_id' => $event_id);
+		$c_contain = array('User', 'ParentComment' => array('User'));
+		$c_order = array('Comment.created ASC');
+		$comments = $this->Event->Comment->find('threaded', array('conditions' => $c_conditions, 'contain' => $c_contain, 'order' => $c_order) );
+
 //		$times = $this->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
 		$this->set('event_id', $event_id);
-		$this->set( compact('times', 'event') );
+		$this->set( compact('times', 'event', 'comments') );
 	}
 
 	/**
@@ -771,11 +777,16 @@ class EventsController extends AppController {
 		$event_total = $this->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
 		$this->set( compact('event_total') );
 
+		$c_conditions = array('Comment.event_id' => $event_id);
+		$c_contain = array('User', 'ParentComment' => array('User'));
+		$c_order = array('Comment.created ASC');
+		$comments = $this->Event->Comment->find('threaded', array('conditions' => $c_conditions, 'contain' => $c_contain, 'order' => $c_order) );
+
 		// versus
 
 //		$times = $this->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
 		$this->set('event_id', $event_id);
-		$this->set( compact('times', 'event') );
+		$this->set( compact('times', 'event', 'comments') );
 		$this->set('title_for_layout', __('Viewing Event - '. $event['Event']['title']) );
 	}
 
@@ -814,7 +825,29 @@ class EventsController extends AppController {
 	public function volunteer_view($event_id = null)
 	{
 		$event = $this->Event->findByEventId($event_id);
-		$this->set( compact('event') );
+
+		if( $this->request->is('post') )
+		{
+			$save['Comment']['event_id'] = $event_id;
+			$save['Comment']['parent_id'] = ( isset($this->request->data['Comment']['parent_id']) )? $this->request->data['Comment']['parent_id'] : null;
+			$save['Comment']['user_id'] = $this->Auth->user('user_id');
+			$save['Comment']['body'] = $this->request->data['Comment']['body'];
+
+			if( $this->Event->Comment->save($save) )
+			{
+				return $this->redirect( array($event_id, '#' => sprintf('comment-%s', $this->Event->Comment->id) ) );
+			}
+			else
+			{
+				debug('Comment did not save');
+			}
+		}
+
+		$c_conditions = array('Comment.event_id' => $event_id);
+		$c_contain = array('User', 'ParentComment' => array('User'));
+		$c_order = array('Comment.created ASC');
+		$comments = $this->Event->Comment->find('threaded', array('conditions' => $c_conditions, 'contain' => $c_contain, 'order' => $c_order) );
+		$this->set( compact('event', 'comments') );
 		$this->set('title_for_layout', __('Viewing Event - '. $event['Event']['title']) );
 	}
 
