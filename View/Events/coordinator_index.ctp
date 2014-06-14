@@ -26,7 +26,7 @@
 				<th><?php echo $this->Paginator->sort('Organization.name', __('Organization') ); ?></th> 
 				<th><?php echo $this->Paginator->sort('start_time', __('Start Time') ); ?></th>
 				<th><?php echo $this->Paginator->sort('stop_time', __('Stop Time') ); ?></th>
-				<th>RSVP Progress</th>
+				<th><?php echo $this->Paginator->sort('rsvp_percent', __('RSVP Progress') ); ?></th>
 				<th class="actions text-right">&nbsp;</th>
 		</tr>
 		<?php foreach ($events as $event): ?>
