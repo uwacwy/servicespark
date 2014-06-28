@@ -97,7 +97,7 @@
 						array('coordinator' => true, 'controller' => 'organizations', 'action' => 'view', $event['Organization']['organization_id'])
 					); ?><br>
 					<i class="glyphicon glyphicon-time"></i> <?php 
-						echo $this->Duration->format($event['Event']['start_time'], $event['Event']['stop_time'] ); ?>
+						echo $this->Utility->no_wrap($this->Duration->format($event['Event']['start_time'], $event['Event']['stop_time'] )); ?>
 					<div>
 						<?php
 							echo $this->Html->link(__('Edit'),
@@ -107,7 +107,7 @@
 							echo ' ';						
 							echo $this->Form->postLink(__('Delete'),
 								array('action' => 'delete', $event['Event']['event_id']),
-								array('class' => 'text-danger'),
+								array('class' => 'text-danger '),
 								__('Are you sure you want to delete event #%s?  This will delete all Time Entry data and cannot be recovered.', $event['Event']['event_id'])
 							);
 						?>
