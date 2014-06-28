@@ -96,7 +96,7 @@
 						$event['Organization']['name'],
 						array('coordinator' => true, 'controller' => 'organizations', 'action' => 'view', $event['Organization']['organization_id'])
 					); ?><br>
-					<i class="glyphicon glyphicon-time"></i> <?php 
+					<i class="glyphicon glyphicon-time"></i>&nbsp;<?php 
 						echo $this->Utility->no_wrap($this->Duration->format($event['Event']['start_time'], $event['Event']['stop_time'] )); ?>
 					<div>
 						<?php
