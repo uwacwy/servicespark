@@ -51,19 +51,6 @@
 					<?php echo __("Details"); ?></th>
 			</tr>
 		</thead>
-		<?php
-		/*
-		<tr>
-				<th><?php echo $this->Paginator->sort('title', __('Event Title') ); ?></th>
-				<th><?php echo $this->Paginator->sort('Organization.name', __('Organization') ); ?></th> 
-				<th><?php echo $this->Paginator->sort('start_time', __('Start Time') ); ?></th>
-				<th><?php echo $this->Paginator->sort('stop_time', __('Stop Time') ); ?></th>
-				<th><?php echo $this->Paginator->sort('comment_count', __('Comments') ); ?></th>
-				<th><?php echo $this->Paginator->sort('rsvp_percent', __('RSVP Progress') ); ?></th>
-				<th class="actions text-right">&nbsp;</th>
-		</tr>
-		*/
-		?>
 		<tbody>
 		<?php foreach ($events as $event): ?>
 			<tr>
@@ -92,11 +79,11 @@
 					</div>
 				</td>
 				<td class="hidden-xs hidden-sm">
-					<?php echo $this->Html->link(
+					by <?php echo $this->Html->link(
 						$event['Organization']['name'],
 						array('coordinator' => true, 'controller' => 'organizations', 'action' => 'view', $event['Organization']['organization_id'])
 					); ?><br>
-					<i class="glyphicon glyphicon-time"></i>&nbsp;<?php 
+					<?php 
 						echo $this->Utility->no_wrap($this->Duration->format($event['Event']['start_time'], $event['Event']['stop_time'] )); ?>
 					<div>
 						<?php
@@ -114,44 +101,7 @@
 					</div>
 				</td>
 			</tr>
-			<!--
-			<tr>
-				<td><?php echo h($event['Event']['title']); ?>&nbsp;</td>
-				<td><?php echo h($event['Organization']['name']); ?>&nbsp;</td>
 
-				<td> <?php $startTime = new DateTime($event['Event']['start_time']);
-					echo $startTime->format('F j, Y, g:i a'); ?>&nbsp;</td>
-
-				<td> <?php $stopTime = new DateTime($event['Event']['stop_time']);
-					echo $stopTime->format('F j, Y, g:i a'); ?>&nbsp;</td>
-				<td><?php echo h($event['Event']['comment_count']); ?></td>
-
-				<td>
-				
-					
-				</td>
-
-				<td class="actions text-right">
-					<?php
-						echo $this->Html->link(__('View'),
-							array('action' => 'view', $event['Event']['event_id']),
-							array('class' => 'btn btn-success btn-xs')
-						);
-						echo ' ';
-						echo $this->Html->link(__('Edit'),
-							array('action' => 'edit', $event['Event']['event_id']),
-							array('class' => 'btn btn-primary btn-xs')
-						);
-						echo ' ';						
-						echo $this->Form->postLink(__('Delete'),
-							array('action' => 'delete', $event['Event']['event_id']),
-							array('class' => 'btn btn-danger btn-xs'),
-							__('Are you sure you want to delete event #%s?  This will delete all Time Entry data and cannot be recovered.', $event['Event']['event_id'])
-						);
-					?>
-				</td>
-			</tr>
-		-->
 		<?php endforeach; ?>
 	</tbody>
 		</table>
