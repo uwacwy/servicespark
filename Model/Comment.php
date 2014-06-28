@@ -24,6 +24,10 @@ class Comment extends AppModel
 
 		$conditions = array('Event.event_id' => $comment['Comment']['event_id']);
 		$contain = array(
+			'Rsvp' => array(
+				'fields' => array(),
+				'User'
+			),
 			'Organization' => array(
 				'fields' => array(),
 				'Permission.write = 1' => array(
@@ -34,48 +38,56 @@ class Comment extends AppModel
 
 		$event = $this->Event->find('first', compact('conditions', 'contain'));
 
-		foreach( $event['Organization']['Permission'] as $coordinator )
-		{
-			$recipients[ $coordinator['User']['user_id'] ]['User'] = $coordinator['User'];
-			$recipients[ $coordinator['User']['user_id'] ]['coordinating'] = true;
-		}
+		//debug($event['Rsvp']);
 
-		foreach( $mentioned_users as $mentioned_user )
+		foreach( $event['Rsvp'] as $attending )
 		{
-			if($mentioned_user['User']['email_mentions'])
+			if($attending['User']['email_attending'])
 			{
-				$recipients[ $mentioned_user['User']['user_id'] ]['User'] = $mentioned_user['User'];
-				$recipients[ $mentioned_user['User']['user_id'] ]['mentioned'] = true;
+				$recipients[ $attending['User']['user_id'] ]['User'] = $attending['User'];
+				$recipients[ $attending['User']['user_id'] ]['attending'] = true;
 			}
 		}
 
-		foreach($event['Comment'] as $cmt)
+		foreach( $event['Organization']['Permission'] as $coordinating )
+		{
+			$recipients[ $coordinating['User']['user_id'] ]['User'] = $coordinating['User'];
+			$recipients[ $coordinating['User']['user_id'] ]['coordinating'] = true;
+		}
+
+		foreach( $mentioned_users as $mentioned )
+		{
+			if($mentioned['User']['email_mentions'])
+			{
+				$recipients[ $mentioned['User']['user_id'] ]['User'] = $mentioned['User'];
+				$recipients[ $mentioned['User']['user_id'] ]['mentioned'] = true;
+			}
+		}
+
+		foreach($event['Comment'] as $participating)
 		{
 			if( 
 				strtotime($event['Event']['stop_time']) < time() // email when the event is current
-				&& $cmt['User']['email_participation'] // and if the user allows it
+				&& $participating['User']['email_participation'] // and if the user allows it
 			) // event is old; retire participation anymore
 			{
-				$recipients[ $cmt['User']['user_id'] ]['User'] = $cmt['User'];
-				$recipients[ $cmt['User']['user_id'] ]['participating'] = true;
+				$recipients[ $participating['User']['user_id'] ]['User'] = $participating['User'];
+				$recipients[ $participating['User']['user_id'] ]['participating'] = true;
 			}
 		}
 
 		// do not notify the current user about what they just did.
 		unset($recipients[AuthComponent::user('user_id')]);
 
-		// debug($event);
-		// debug($recipients);
-		// debug($comment);
-
-
-		App::uses('CakeEmail', 'Network/Email');
-
+		//debug($event);
+		//debug($recipients);
+		//debug($comment);
 		//debug($subject);
 		//debug($message);
 
 		//return;
 
+		App::uses('CakeEmail', 'Network/Email');
 		foreach ($recipients as $recipient)
 		{
 			$subject = __('[%s] New Comment on "%s"', 
@@ -108,6 +120,8 @@ class Comment extends AppModel
 			);
 
 			$message .= __("\n\n----\nYou are receiving this email because...");
+			if( isset($recipient['attending']) )
+				$message .= __("\n- you are attending this event");
 			if( isset($recipient['participating']) )
 				$message .= __("\n- you have previously left a comment on this event.");
 			if( isset($recipient['coordinating']) )

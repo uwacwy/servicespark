@@ -116,6 +116,7 @@
 				<ul class="list-style-none">
 					<li><?php echo $this->Form->input('User.email_mentions', array('label' => __("Email me when I'm mentioned in a comment."), 'class' => 'checkbox' ) ); ?></li>
 					<li><?php echo $this->Form->input('User.email_participation', array('label' => __("Email me when there is a reply to a conversation I'm involved in."), 'class' => 'checkbox') ); ?></li>
+					<li><?php echo $this->Form->input('User.email_attending', array('label' => __("Email me when a comment is posted on an event I am attending. (Events I RSVP to)."), 'class' => 'checkbox') ); ?></li>
 				</ul>
 			</div>
 		</div>

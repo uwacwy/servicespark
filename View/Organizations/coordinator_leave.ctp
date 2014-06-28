@@ -1,10 +1,9 @@
 <div class="row">
 	<div class="col-md-12">
-		<h1>Do you want to stop supervising an organization? </h1>
-		<h1><small>Leave any organization you supervise. </small></h1>
-		<hr>
+		<h2>Stop Coordinating </h2>
+		<blockquote>You can leave any organization as a coordinator.  You will no longer receive notifications or be able to coordinate events.</blockquote>
 
-		<h2> Here are your organizations</h2>
+		<h3>You coordinate for the following organizations.</h3>
 		<div class="table-responsive">
 			<table class="table table-striped">
 				<thead>
