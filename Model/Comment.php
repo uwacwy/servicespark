@@ -150,9 +150,14 @@ class Comment extends AppModel
 	var $belongsTo = array(
 		'ParentComment' => array(
 			'className' => 'Comment',
-			'foreignKey' => 'parent_id'
+			'foreignKey' => 'parent_id',
+			'counterCache' => true
 		),
 		'User',
-		'Event'
+		'Event' => array(
+			'className' => 'Event',
+			'foreignKey' => 'event_id',
+			'counterCache' => true
+		)
 	);
 }

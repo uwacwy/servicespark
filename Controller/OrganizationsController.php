@@ -148,6 +148,11 @@ class OrganizationsController extends AppController {
 		$this->set( compact('title_for_layout') );
 	}
 
+	public function coordinator_view($organization_id = null)
+	{
+		return $this->redirect( array('supervisor' => true, 'controller' => 'organizations', 'action' => 'view', $organization_id) );
+	}
+
 
 /**
  * coordinator_edit
