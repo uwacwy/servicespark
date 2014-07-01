@@ -36,6 +36,11 @@ class Event extends AppModel
 				'message' => 'You must add an event description.'
 			)
 		),
+		'rsvp_desired' => array(
+			'rule' => 'naturalNumber',
+			'message' => 'You must specify how many volunteers your event requires.',
+			'required' => true
+		),
 		'start_time' => array(
 			'lt_stop_time' => array(
 				'rule' => array('date_compare', 'lt', 'stop_time'),
