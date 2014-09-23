@@ -151,7 +151,6 @@ class Comment extends AppModel
 		'ParentComment' => array(
 			'className' => 'Comment',
 			'foreignKey' => 'parent_id',
-			'counterCache' => true
 		),
 		'User',
 		'Event' => array(

@@ -21,18 +21,6 @@
 			<small><?php echo $this->Duration->format($event['Event']['start_time'], $event['Event']['stop_time']); ?></small>
 		</h1>
 		<blockquote><?php echo h($event['Event']['description']); ?></blockquote>
-		<?php if (!empty($event['Skill']) ) : ?>
-			<h3>Skills</h3>
-			<p class="lead">
-				<?php foreach ($event['Skill'] as $skill) : ?>
-					<?php
-						echo $this->Html->tag('span', $skill['skill'], array('class' => 'label label-info', 'title' => __('If you enjoy %s, consider volunteering for this event.', $skill['skill']) ) );
-						echo ' ';
-					?>
-				<?php endforeach; ?>
-			</p>
-		<?php endif; ?>
-
 		<hr>
 			<?php echo $this->Element('print_addresses', array('addresses' => $event['Address']) ); ?>
 		<hr>
