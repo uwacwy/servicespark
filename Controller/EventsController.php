@@ -507,7 +507,8 @@ class EventsController extends AppController {
 		// }
 
 		$conditions = array(
-			'Event.organization_id' => $user_organizations
+			'Event.organization_id' => $user_organizations,
+			'Event.stop_time >=' => date('Y-m-d H:i:s', time())
 		);
 
 		$this->Paginator->settings['conditions'] = $conditions;

@@ -38,6 +38,6 @@
 		</div>
 		<hr>
 
-		<?php echo $this->Form->end(array('label' => "Create This Organizations", 'class' => 'btn btn-lg btn-primary')); ?>
+		<?php echo $this->Form->end(array('label' => "Create This Organization", 'class' => 'btn btn-lg btn-primary')); ?>
 	</div>
 </div>

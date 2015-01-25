@@ -59,15 +59,16 @@
 
 		<h3>Problems?</h3>
 			<p>You can talk to an event coordinator to resolve most issues.</p>
+			<p>Visit <?php echo $this->Html->link("the event page", array('prefix' => 'volunteer', 'controller' => 'events', 'action' => 'view', $event['Event']['event_id'])); ?> to discuss the event with other attendees.</p>
 
 			<?php
 				if( !empty($event['Organization']['Permission']) )
 				{
 					echo '<table class="table table-striped">';
-					echo '<tr><th>Name</th><th>Phone</th></tr>';
+					echo '<tr><th>Name</th><th>Email</th></tr>';
 					foreach ($event['Organization']['Permission'] as $coordinator)
 					{
-						echo sprintf('<tr><td>%s</td><td>%s</td></tr>', $coordinator['User']['full_name'], 'phone?');
+						echo sprintf('<tr><td>%1$s</td><td><a href="mailto:%2$s">%2$s</a></td></tr>', $coordinator['User']['full_name'], $coordinator['User']['email']);
 					}
 					echo '</table>';
 				}
