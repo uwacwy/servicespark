@@ -68,8 +68,40 @@
 				<div class="progress-bar" role="progressbar" aria-valuenow="<?php echo $current; ?>" aria-valuemin="0" aria-valuemax="<?php echo max($current, $desired); ?>" style="width: <?php echo min($pct, 100); ?>%;">
 					<?php echo number_format( $pct, 0); ?>%
 				</div>
+			
 			</div>
-			<p>Currently <strong><?php echo number_format($current, 0); ?></strong> of <?php echo number_format($desired, 0); ?> volunteer goal.</p>
+			<p>Currently <strong><?php echo number_format($current, 0); ?></strong> of
+                                <?php echo number_format($desired, 0); ?> volunteer goal.</p>
+			<div>
+				<?php if( !empty($event['Rsvp']) ): ?>
+					<div class="table-responsive">
+					<table class="table table-striped">
+						<thead>
+							<tr>
+								<th>Full Name</th>
+								<th>Username</th>
+								<th>Email Address</th>
+							</tr>
+						</thead>
+						<tbody>
+						<?php foreach($event['Rsvp'] as $rsvp): ?>
+							<tr>
+								<td>
+								<?php echo h($rsvp['User']['full_name']); ?>
+								&nbsp;</td>
+								<td>
+								@<?php echo h($rsvp['User']['username']); ?>
+								</td>
+								<td>
+								<?php echo h($rsvp['User']['email']); ?>&nbsp;
+								</td>
+						<?php endforeach; ?>
+						</tbody>
+					</table>
+				<?php else : ?>
+					<p><em>There are not currently any event RSVP's</em></p>
+				<?php endif; ?>
+			</div>
 
 
 			

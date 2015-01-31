@@ -575,12 +575,12 @@ class EventsController extends AppController {
 		// }
 
 		$sql_date_fmt = 'Y-m-d H:i:s';
-		$contain = array('Event');
+		$contain = array('Organization', 'Rsvp' => array('User'), 'Skill', 'Address', 'Time');
 
 		// summary all time
 		//$users = $this->_GetUsersByOrganization($event_id);
 
-		$event = $this->Event->find('first', array('conditions' => array('Event.event_id' => $event_id) ) );
+		$event = $this->Event->find('first', array('conditions' => array('Event.event_id' => $event_id), 'contain' => $contain ) );
 
 		if( empty($event) )
 		{
