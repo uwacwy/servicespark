@@ -358,8 +358,9 @@ class EventsController extends AppController {
 					by choosing 9 characters from a base 16 hash, there are a total possible
 					 68,719,476,736 hashes.  this should be adequate.
 				*/
-				$this->request->data['Event']['start_token'] = substr($hash, 0, 9); // 9 starting characters
-				$this->request->data['Event']['stop_token'] = substr($hash, -9, 9); // 9 ending characters
+				$complexity = 4;
+				$this->request->data['Event']['start_token'] = substr($hash, 0, $complexity); // 9 starting characters
+				$this->request->data['Event']['stop_token'] = substr($hash, -$complexity, $complexity); // 9 ending characters
 
 				// create and save the event
 				$this->Event->create();
@@ -384,12 +385,11 @@ class EventsController extends AppController {
 					{
 						foreach($users as $user)
 						{
-							$Email = new CakeEmail();
+							$Email = new CakeEmail('mandrill');
 							$Email->viewVars( compact('user', 'event') );
 							$Email->template('NewEvent')
 								->emailFormat('text')
 								->to( $user['email'], $user['full_name'] )
-								->from( 'volunteer@unitedwayalbanycounty.org' )
 								->subject( __('[%s] %s for %s', Configure::read('Solution.name'), $event['Event']['title'], $user['full_name'] ) )
 								->send();
 						}						
@@ -513,9 +513,40 @@ class EventsController extends AppController {
 
 		$this->Paginator->settings['conditions'] = $conditions;
 		$this->Paginator->settings['limit'] = 15;
+		$this->Paginator->settings['order'] = array(
+			'Event.start_time' => 'asc'
+		);
 
 		$events = $this->Paginator->paginate();
 		$this->set('title_for_layout', __('Coordinator Events Dashboard') );
+		//$events = $this->Event->find('all', array('conditions' => $conditions) ) ;
+		$this->set( compact('events') );
+	}
+
+	public function coordinator_archive($id = null)
+	{
+		$user_organizations = $this->_GetUserOrganizationsByPermission('write');
+
+		// if( !$this->_CurrentUserCanWrite($user_organizations) )
+		// {
+		// 	$this->Session->setFlash('You do not have permission.', 'danger');
+		// 	return $this->redirect(array('supervisor' => true,
+		// 		'controller' => 'events', 'action' => 'index'));
+		// }
+
+		$conditions = array(
+			'Event.organization_id' => $user_organizations,
+			'Event.stop_time <= Now()'
+		);
+
+		$this->Paginator->settings['conditions'] = $conditions;
+		$this->Paginator->settings['limit'] = 15;
+		$this->Paginator->settings['order'] = array(
+			'Event.stop_time' => 'desc'
+		);
+
+		$events = $this->Paginator->paginate();
+		$this->set('title_for_layout', __('Event Archive') );
 		//$events = $this->Event->find('all', array('conditions' => $conditions) ) ;
 		$this->set( compact('events') );
 	}
