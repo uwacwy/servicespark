@@ -108,7 +108,7 @@ class RecoveriesController extends AppController
 		// hash nth token to get n+1th token
 		$hasher = new SimplePasswordHasher();
 		$n_plus_one = $hasher->hash($token);
-
+		
 		// find n+1th token in database
 		$attempts = $this->Recovery->find( 'first', array( 'conditions' => array('token' => $n_plus_one, 'expiration >= Now()') ) );
 
@@ -118,25 +118,15 @@ class RecoveriesController extends AppController
 			$this->redirect( array('controller' => 'recoveries', 'action' => 'user') );
 		}
 
-		debug($attempts);
-
-
 		// if there is sent data, check new passwords for equality
 		if( $this->request->is('post') && !is_null($attempts['User']['user_id']) )
 		{
-			// we were sent recovery information
-			debug('recovering');
-
 			if( $this->request->data['User']['password_l'] == $this->request->data['User']['password_r'] )
 			{
-				debug('passwords matched; recovering');
+				$this->Recovery->User->id = $attempts['User']['user_id'];
 
-				$save['User']['user_id'] = $attempts['User']['user_id'];
-				$save['User']['password'] = $this->request->data['User']['password_l'];
-
-				if( $this->Recovery->User->save($save) )
+				if( $this->Recovery->User->saveField('password', $this->request->data['User']['password_l']) )
 				{
-					debug('password changed');
 					$this->Session->setFlash('Your password has been successfully changed!  Please login.');
 					$this->Recovery->delete( $attempts['Recovery']['user_id'] ); // delete attempt from database
 					$this->redirect( array('controller' => 'users', 'action' => 'login') ); // redirect toward login screen
