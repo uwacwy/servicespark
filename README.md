@@ -4,6 +4,9 @@ ServiceSpark is a powerful tool to help volunteer coordinators and volunteers ke
 
 ServiceSpark is maintained by @bradkovach for the United Way of Albany County.  To inquire about a hosted installation of ServiceSpark, please contact servicespark@unitedwayalbanycounty.org
 
+## Quick Install
+Use the 5-minute installer from https://github.com/uwacwy/servicespark-installer
+
 ## Install
 1. Install CakePHP 2.x on your webserver. 
 2. Make sure CakePHP is able to connect to your database.  
