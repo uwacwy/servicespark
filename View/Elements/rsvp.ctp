@@ -5,6 +5,16 @@
 //	prints the RSVP button
 //
 
+// pick verbiage and study
+
+$going = array(
+	"RSVP",
+	"I'm going!",
+	"I'll be there!",
+	"I'll go!",
+	"Going"
+);
+
 if($user_attending) : ?>
 	<p>
 		<?php echo $this->Html->link(__("Cancel RSVP"),
@@ -23,9 +33,9 @@ if($user_attending) : ?>
 <?php else: ?>
 	<p>
 		<?php
-		echo $this->Html->link(__("RSVP"),
+		echo $this->Html->link(__( $going[array_rand($going)] ),
 			array('volunteer' => true, 'controller' => 'events', 'action' => 'rsvp', $event['Event']['event_id']),
-			array('class' => 'btn btn-md btn-success')
+			array('class' => 'btn btn-md btn-success rsvp-button')
 		);
 		?>
 		<?php
