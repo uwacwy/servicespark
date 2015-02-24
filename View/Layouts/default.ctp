@@ -131,6 +131,7 @@ global $solution_name;
 
 
 	  	<?php if( AuthComponent::user('user_id') != null): ?>
+			<li><?php echo $this->Html->link(__("Time Clock"), array('volunteer' => true, 'controller' => 'times', 'action' => 'index') ); ?></li>
 			<li class="dropdown">
 				<?php echo sprintf($dropdown_sprint,
 					$this->Html->url( array('controller' => 'events', 'action' => 'index', 'volunteer' => true) ),
@@ -266,8 +267,15 @@ global $solution_name;
 					<?php
 						echo sprintf($item_sprint,
 							$this->Html->url( array('controller' => 'events', 'action' => 'index', 'coordinator' => true) ),
-							'<span class="glyphicon glyphicon-info-sign"></span> ',
-							__('Coordinator Dashboard')
+							'<span class="glyphicon glyphicon-play"></span> ',
+							__('Ongoing and Upcoming Events')
+						);
+					?>
+					<?php
+						echo sprintf($item_sprint,
+							$this->Html->url( array('controller' => 'events', 'action' => 'archive', 'coordinator' => true) ),
+							'<span class="glyphicon glyphicon-backward"></span> ',
+							__('Event Archive')
 						);
 					?>
 					<?php

@@ -282,7 +282,7 @@ class UsersController extends AppController {
 			if ( $this->User->save($entry) )
 			{
 				$user = $this->User->find('first', array('conditions' => array('User.user_id' => $this->User->id) ) );
-				$Email = new CakeEmail();
+				$Email = new CakeEmail('mandrill');
 				$Email->viewVars( compact('entry') );
 				$Email->template('NewUser')
 						->emailFormat('text')

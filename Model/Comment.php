@@ -133,14 +133,14 @@ class Comment extends AppModel
 				Router::url('/users/profile', true)
 			);
 
-			CakeEmail::deliver(
-				$recipient['User']['email'],
-				$subject,
-				sprintf($message, $recipient['User']['full_name']),
-				array(
-					'from' => 'servicespark@unitedwayalbanycounty.org'
-				)
-			);
+			$email = new CakeEmail('mandrill');
+
+			$email
+				->emailFormat('text')
+				->to( $recipient['User']['email'], $recipient['User']['full_name'])
+				->from( 'servicespark@unitedwayalbanycounty.org', Configure::read('Solution.name') )
+				->subject( $subject )
+				->send( sprintf($message, $recipient['User']['full_name']) );
 		}
 
 
