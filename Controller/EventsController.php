@@ -879,18 +879,133 @@ class EventsController extends AppController {
 
 	public function volunteer_cancel_rsvp($event_id)
 	{
+		
+        App::uses('CakeTime', 'Utility');
+		
 		$user_id = $this->Auth->user('user_id');
-
+		
 		$conditions = array('Rsvp.user_id' => $user_id, 'Rsvp.event_id' => $event_id);
+	
+			$rsvp = $this->Event->Rsvp->find('first', compact('conditions') );
+			
+		if( !$rsvp )
+			return $this->redirect( array('go' => true, 'controller' => 'events', 'action' => 'view', $event_id) );
+		
+		$conditions = array(
+			'Event.event_id' => $event_id
+		);
+		$contain = array();
+		
+		$event = $this->Event->find('first', compact('conditions', 'contain') );
 
-		$rsvp = $this->Event->Rsvp->find('first', compact('conditions') );
+		
+		if(
+			CakeTime::isToday($event['Event']['start_time'])
+			&& CakeTime::isFuture($event['Event']['start_time'])
+		)
+		{
+			$user_conditions = array(
+				'User.user_id' => $this->Auth->user('user_id')
+			);
+			$user_contain = array();
+			$user = $this->Event->Organization->Permission->User->find('first', array(
+				'conditions' => $user_conditions,
+				'contain' => $user_contain
+			));
+			// set event
+			
+			$this->set(compact('event', 'user') );
+			if( $this->request->is('post') )
+			{
+				// cancel the RSVP
+				$this->Event->Rsvp->delete($rsvp['Rsvp']['rsvp_id']);
+				
+				// remove reputation
+				$user['User']['reputation'] += Configure::read('Solution.reputation.cancel_rsvp');
+				
+				$this->Event->Rsvp->User->id = $user['User']['user_id'];
+				if($this->Event->Rsvp->User->saveField('reputation', $user['User']['reputation']) )
+				{
+					$saves['User'] = true;
+				}
+				
+				
+				// notify coordinators
+				$coordinator_conditions = array(
+					'Permission.write' => true,
+					'Permission.organization_id' => $event['Event']['organization_id'],
+					
+				);
+				$coordinator_contain = array('User');
+				$coordinators = $this->Event->Organization->Permission->find('all', array(
+					'conditions' => $coordinator_conditions,
+					'contain' => $coordinator_contain
+				));
+				
+				$template = <<<TEMPLATE
+Hello, *|full_name|*
 
-		//debug($rsvp);
+*|user_full_name|* (@*|user_username|*) is no longer coming to *|event_title|*.
 
-		if( isset($rsvp['Rsvp']['rsvp_id']) )
-			$this->Event->Rsvp->delete($rsvp['Rsvp']['rsvp_id']);
+At the moment, *|event_title|* has *|event_rsvp_count|*/*|event_rsvp_desired|* of the RSVP goal met.
 
-		$this->redirect( array('go' => true, 'controller' => 'events', 'action' => 'view', $event_id) );
+You are receiving this email because you are coordinating this event.
+--
+Thank you for using *|solution_name|*
+Manage email preferences at *|user_profile_link|*
+TEMPLATE;
+				$global_merge_vars = array(
+					'user_full_name' => $user['User']['full_name'],
+					'user_username' => $user['User']['username'],
+					'event_link' => Router::url(
+						array('go' => true, 'controller' => 'events', 'action' => 'view', $event_id),
+						true)
+				);
+				
+				foreach($event['Event'] as $key => $value)
+				{
+					$global_merge_vars['event_'.$key] = $value;
+				}
+				
+				$recipient_merge_vars = array();
+				
+				$to = array();
+				
+				foreach($coordinators as $coordinator)
+				{
+					$recipient_merge_vars[ $coordinator['User']['email'] ] = array(
+						'full_name' => $coordinator['User']['full_name'],
+					);
+					$to[ $coordinator['User']['email'] ] =  $coordinator['User']['full_name'];
+				}
+				
+				debug($to);
+				
+				$this->_sendEmail(
+					$template,
+					"*|user_full_name|* is no longer attending *|event_title|*",
+					$to, 
+					$global_merge_vars, 
+					$recipient_merge_vars
+				);
+				
+				$this->Session->setFlash(__("You are no longer attending %s.", $event['Event']['title']), 'danger');
+				return $this->redirect( array('go' => true, 'controller' => 'events', 'action' => 'view', $event_id) );
+				
+				// email coordinators
+			}
+		}
+		else
+		{
+			
+	
+			//debug($rsvp);
+	
+			if( isset($rsvp['Rsvp']['rsvp_id']) )
+				$this->Event->Rsvp->delete($rsvp['Rsvp']['rsvp_id']);
+	
+			$this->redirect( array('go' => true, 'controller' => 'events', 'action' => 'view', $event_id) );
+		}
 
 	}
 

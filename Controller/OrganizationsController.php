@@ -170,6 +170,8 @@ class OrganizationsController extends AppController {
 
 		// Get the organization to edit.
 		$organization = $this->Organization->findByOrganizationId($id);
+		
+		$this->set('organization_id', $id);
 	
 		//Check user permissions.
 		if($this->_CurrentUserCanWrite($organization['Organization']['organization_id'])) 

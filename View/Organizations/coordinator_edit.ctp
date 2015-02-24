@@ -129,7 +129,7 @@
 											'coordinator' => true,
 											'controller' => 'organizations',
 											'action' => 'delete',
-											$organization['Organization']['organization_id']
+											$organization_id
 										), 
 										array(
 											'class' => 'btn btn-link'

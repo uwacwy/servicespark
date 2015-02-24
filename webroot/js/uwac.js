@@ -20,6 +20,26 @@ $(document).ready(function(){
 		$(this).height(0).height( $(this).get(0).scrollHeight + 20);
 	});
 	
+	$('.append-username').each(function(idx){
+		console.log('username found');
+		var $appender = $(this);
+		
+		$appender.on('click', function(e){
+			e.preventDefault();
+			
+			$('.reply-body').each(function(j){
+				var $cmtBlock = $(this);
+				var newComment = $cmtBlock.val() + " @" + $appender.text();
+				$cmtBlock.val( newComment.trim() + " " );
+				$cmtBlock.focus();
+			});
+			
+			return false;
+		});
+	});
+		
+
+	
 	$('.rsvp-button').on('click', function(e)
 	{
 		if( typeof(ga) == "function")

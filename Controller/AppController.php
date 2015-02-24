@@ -132,6 +132,64 @@ class AppController extends Controller {
 
 		return $redirect;
 	}
+	
+	protected function _sendEmail($template, $subject, $recipients, $global_merge_vars, $recipient_merge_vars)
+	{
+		$global_merge_vars_default = array(
+			'solution_name' => Configure::read('Solution.name'),
+			'user_profile_link' => Router::url(
+				array('volunteer' => false, 'controller'=> 'users', 'action' => 'profile'), true)
+		);
+		$global_merge_vars = array_merge($global_merge_vars_default, $global_merge_vars);
+		
+		$email = new CakeEmail( 'mandrill_api_test' );
+		$email
+			->to( $recipients )
+			->subject("[*|solution_name|*] ". $subject)
+			->addHeaders( $this->_CreateMandrillMergeVars($global_merge_vars, $recipient_merge_vars) )
+			->send($template);
+	}
+	
+	
+	
+	private function _CreateMandrillMergeVars($global_merge_vars, $recipient_merge_vars, $rcpt_key = "rcpt")
+	{
+		$result = array(
+			'global_merge_vars' => array(),
+			'merge_vars' => array()
+		);
+
+		foreach($global_merge_vars as $name => $content)
+		{
+			$result['global_merge_vars'][] = array(
+				'name' => $name,
+				'content' => $content
+			);
+		}
+
+		//$this->out( print_r($recipient_merge_vars, false));
+
+		foreach($recipient_merge_vars as $email => $merge_vars)
+		{
+			$mandrill_vars = array();
+			foreach($merge_vars as $name => $content)
+			{
+				$mandrill_vars[] = array(
+					'name' => $name,
+					'content' => $content
+				);
+			}
+
+			$result['merge_vars'][] = array(
+				$rcpt_key => $email,
+				'vars' => $mandrill_vars
+			);
+
+		}
+
+		return $result;
+
+	}
 
 	/**
 	 * GetUserOrganizationsByPermission
