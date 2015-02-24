@@ -19,6 +19,30 @@ $(document).ready(function(){
 	$('body').on('change cut paste drop keydown', '.reply-body', function(e){
 		$(this).height(0).height( $(this).get(0).scrollHeight + 20);
 	});
+	
+	$('.rsvp-button').on('click', function(e)
+	{
+		if( typeof(ga) == "function")
+		{
+			e.preventDefault();
+			
+			$button = $(this);
+			
+			ga('send', {
+					'hitType': 'event',          // Required.
+					'eventCategory': 'RSVP',   // Required.
+					'eventAction': $button.text(),      // Required
+					'eventValue': $button.attr('href'),
+					'hitCallback': function () {
+						document.location = $button.attr('href');
+					}
+			});
+			
+			return false;
+		}
+		
+		return true;
+	});
 
 	var $body = $('body');
 	function split( val )
