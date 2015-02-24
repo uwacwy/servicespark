@@ -30,6 +30,7 @@ global $solution_name;
 	</title>
 	<?php		
 		echo $this->Html->css('autocomplete');
+		echo $this->Html->css('servicespark');
 		
 
 		if( Configure::read('debug') > 0 )

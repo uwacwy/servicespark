@@ -1,0 +1,8 @@
+.reputation {
+  color: #000; }
+  .reputation.good {
+    color: #0c0; }
+  .reputation.bad {
+    color: #c00; }
+
+/*# sourceMappingURL=servicespark.css.map */

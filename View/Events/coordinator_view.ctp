@@ -88,9 +88,31 @@
 							<tr>
 								<td>
 								<?php echo h($rsvp['User']['full_name']); ?>
+								<?php
+									$user_class = "label-default";
+									$reputation_sign = "";
+									if( $rsvp['User']['reputation'] > 0 )
+									{
+										$reputation_sign = "+";
+										$user_class = "label-success";
+									}
+									else if( $rsvp['User']['reputation'] < 0 )
+									{
+										$user_class = "label-danger";
+									}
+										
+									echo sprintf('<span class="label reputation %s" title="%s">%s%s</span>',
+										$user_class,
+										__("This is the user's reputation.  It represents how reputable they are."),
+										$reputation_sign,
+										number_format($rsvp['User']['reputation'])
+									);
+								?>
 								&nbsp;</td>
 								<td>
-								@<?php echo h($rsvp['User']['username']); ?>
+								@<?php echo sprintf('<a href="#" class="append-username" title="Click to add the username to the comment field">%s</a>',
+									$rsvp['User']['username']); ?>
+								
 								</td>
 								<td>
 								<?php echo h($rsvp['User']['email']); ?>&nbsp;
