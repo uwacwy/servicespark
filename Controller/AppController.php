@@ -142,7 +142,7 @@ class AppController extends Controller {
 		);
 		$global_merge_vars = array_merge($global_merge_vars_default, $global_merge_vars);
 		
-		$email = new CakeEmail( 'mandrill_api_test' );
+		$email = new CakeEmail( 'mandrill_api' );
 		$email
 			->to( $recipients )
 			->subject("[*|solution_name|*] ". $subject)

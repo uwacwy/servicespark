@@ -545,6 +545,12 @@ class UsersController extends AppController {
 		$summary_ytd = $this->User->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
 		$this->set( compact('summary_ytd') );
 
+		$user = $this->User->find('first', array(
+			'conditions' => array('User.user_id' => $this->Auth->user('user_id') ),
+			'contain' => array()
+		));
+		$this->set( compact('user') );
+
 		$title_for_layout = sprintf( "%s &ndash; %s", __('My Service Activity'), $sub_title);
 		$this->set( compact('title_for_layout') );
 

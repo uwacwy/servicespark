@@ -92,7 +92,29 @@ class TimesController extends AppController
 
 				if( $this->Time->save($entry) )
 				{
-					$this->Session->setFlash( __('You have been clocked in'), 'success');
+					$this->Time->User->id = $this->Auth->user('user_id');
+					$reputation = (int) $this->Time->User->field('reputation');
+					$messages = array(
+						__("You have been clocked in to %s.", $event['Event']['title'])
+					);
+
+					$reputation += Configure::read('Solution.reputation.clock_in');
+					$messages[] = __("You earned %s reputation points for clocking in to this event.", Configure::read('Solution.reputation.clock_in'));
+
+					$conditions = array(
+						"Rsvp.user_id" => $this->Auth->user('user_id'),
+						"Rsvp.event_id" => $event['Event']['event_id']
+					);
+
+					if( $this->Time->Event->Rsvp->find('count', compact('conditions')) > 0)
+					{
+						$reputation += Configure::read('Solution.reputation.rsvp_bonus');
+						$messages[] = __("You earned %s bonus reputation points for having an RSVP to this event.", Configure::read('Solution.reputation.rsvp_bonus'));
+					}
+
+					$this->Time->User->saveField('reputation', $reputation );
+
+					$this->Session->setFlash( implode(" ", $messages), 'success');
 					return $this->redirect( array('go' => true, 'controller' => 'events', 'action' => 'view', $event['Event']['event_id'] ) );
 				}
 			}

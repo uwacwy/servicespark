@@ -39,7 +39,10 @@ class Time extends AppModel
 	public $belongsTo = array(
 		'Event' => array(
 			'className' => 'Event',
-			'foreignKey' => 'event_id'
+			'foreignKey' => 'event_id',
+			'counterCache' => array(
+				'missed_punches' => array('Time.stop_time' => null)
+			)
 		),
 		'User' => array(
 			'className' => 'User',

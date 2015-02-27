@@ -15,7 +15,30 @@ $summary['custom'] = null;
 
 <div class="row">
 	<div class="col-md-3">
-		<h3><?php echo h( __('My Service Activity') ); ?></h3>
+		<h3><?php echo h($user['User']['full_name']); ?> 
+			<?php
+				$user_class = "label-default";
+				$reputation_sign = "";
+				if( $user['User']['reputation'] > 0 )
+				{
+					$reputation_sign = "+";
+					$user_class = "label-success";
+				}
+				else if( $user['User']['reputation'] < 0 )
+				{
+					$user_class = "label-danger";
+				}
+					
+				echo sprintf('<span class="label reputation %s" title="%s">%s%s</span>',
+					$user_class,
+					__("This is your reputation.  It goes up when you volunteer."),
+					$reputation_sign,
+					number_format($user['User']['reputation'])
+				);
+			?> <br>
+			<small>@<?php echo h($user['User']['username']); ?></small>
+			
+		</h3>
 		<div class="list-group">
 
 			<?php
