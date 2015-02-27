@@ -308,7 +308,7 @@ global $solution_name;
 				<?php
 					$right_menu = array(
 						'users' => array(
-								'label' => sprintf('Hello, %s', AuthComponent::user('full_name') ),
+								'label' => sprintf('%s\'s Account', AuthComponent::user('first_name') ),
 								'actions' => array(
 									'profile' => __('Edit My Profile'),
 									'activity' => 'View Activity',
