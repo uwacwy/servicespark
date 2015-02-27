@@ -25,24 +25,81 @@
 			<thead>
 			<tr>
 				<th>
-					<h3>Ongoing and Upcoming</h3>
+					<h3><?php echo __("Ongoing and Upcoming Events"); ?></h3>
 					<p>
-						<strong>Sort: </strong>
 						<?php
-							echo $this->Paginator->sort('Event.title', __("Event Title") );
-							echo ', ';
-							echo $this->Paginator->sort('Event.comment_count', __("Comments") );
-							echo ', ';
-							echo $this->Paginator->sort('Event.rsvp_percent', __("RSVP Completion") );
-							echo ', ';
-							echo $this->Paginator->sort('Event.start_time', __("Start Time") );
-							echo ', ';
-							echo $this->Paginator->sort("Event.stop_time", __("Stop Time") );
-							echo ', ';
-							echo $this->Paginator->sort("Organization.name", __("Organization") );
+							$sorts = array(
+								'Event.title' => array(
+									'label' => __("Event Title"),
+									'desc' => __('Z to A'),
+									'asc' => __('A to Z')
+								),
+								'Event.rsvp_percent' => array(
+									'label' => __("RSVP Completion"),
+									'desc' => __("highest to lowest"),
+									'asc' => __("lowest to highest")
+								),
+								'Event.start_time' => array(
+									'label' => __("Event Start Time"),
+									'desc' => __("latest to earliest"),
+									'asc' => __("earliest to latest")
+								),
+								"Event.stop_time" => array(
+									'label' => __("Event Stop Time"),
+									'desc' => __("latest to earliest"),
+									'asc' => __("earliest to latest")
+								),
+								"Organization.name" => array(
+									'label' => __("Organization"),
+									'desc' => __('Z to A'),
+									'asc' => __('A to Z')
+								),
+								"Event.missed_punches" => array(
+									'label' => __("Missed Punch Count"),
+									'desc' => __("most to least"),
+									'asc' => __("least to most")
+								),
+								'Event.comment_count' => array(
+									'label' => __("Comment Count"),
+									'asc' => __("least to most"),
+									'desc' => __("most to least")
+								)
+							);
 						?>
+						<div class="btn-group">
+							<button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+								<?php
+									$sort_word = ($this->Paginator->sortDir() == "asc")? __("ascending") : __("descending");
+									if( array_key_exists($this->Paginator->sortKey(), $sorts) )
+									{
+										echo __('<small>SORTED BY</small> <strong>%s</strong> <small class="%s quiet">%s</small>',
+											$sorts[ $this->Paginator->sortKey() ]['label'],
+											$this->Paginator->sortDir(),
+											strtoupper($sorts[ $this->Paginator->sortKey() ][ $this->Paginator->sortDir() ])
+										);
+									}
+									else
+										echo __("Sort");
+								?>
+								<?php  ?>
+								<span class="caret"></span>
+							</button>
+							<?php
+
+								echo '<ul class="dropdown-menu" role="menu">';
+								foreach($sorts as $key => $label)
+								{
+									echo "<li>";
+									echo $this->Paginator->sort($key, $label['label']);
+									echo "</li>";
+								}
+								echo '</ul>';
+							?>
+						</div>
 					</p>
 				</th>
+				<th class="cell-stat text-center hidden-xs hidden-sm">
+					<i class="glyphicon glyphicon-time" title="<?php echo __("Missed Punches"); ?>"></i></th>
 				<th class="cell-stat text-center hidden-xs hidden-sm">
 					<i class="glyphicon glyphicon-comment" title="<?php echo __("Comments"); ?>"></i></th>
 				<th class="cell-stat cell-progress text-center hidden-xs hidden-sm">
@@ -63,6 +120,9 @@
 						<small><?php echo h($event['Event']['description']); ?></small>
 					</h4>
 				</td>
+				<td class="text-center hidden-xs hidden-sm">
+					<?php echo number_format($event['Event']['missed_punches']); ?>
+				</td> 
 				<td class="text-center hidden-xs hidden-sm">
 					<?php echo number_format($event['Event']['comment_count']); ?>
 				</td>
