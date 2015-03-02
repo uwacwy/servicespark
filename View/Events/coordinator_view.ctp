@@ -169,7 +169,7 @@
 				<div class="col-md-6">
 					<div class="well text-center">
 						<?php echo sprintf(
-							'<img src="http://chart.apis.google.com/chart?cht=qr&chs=150x150&chl=%s&chld=H|0">',
+							'<img src="//chart.googleapis.com/chart?cht=qr&chs=150x150&chl=%s&chld=H|0">',
 							urlencode( $this->Html->Url(array('controller' => 'times', 'action' => 'in', 'volunteer' => true, $event['Event']['start_token']), true ) )
 						); ?>
 						<h3>In Token</h3>
@@ -179,7 +179,7 @@
 				<div class="col-md-6">
 					<div class="well text-center">
 						<?php echo sprintf(
-							'<img src="http://chart.apis.google.com/chart?cht=qr&chs=150x150&chl=%s&chld=H|0">',
+							'<img src="//chart.googleapis.com/chart?cht=qr&chs=150x150&chl=%s&chld=H|0">',
 							urlencode( $this->Html->Url(array('controller' => 'times', 'action' => 'out', 'volunteer' => true, $event['Event']['stop_token']), true ) )
 						); ?>
 						<h3>Out Token</h3>
