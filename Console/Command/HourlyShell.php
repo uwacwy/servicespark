@@ -340,7 +340,8 @@ MESSAGE;
 					$why_this_email_block .= implode(', ', $recipient['Skill']);
 					$next_steps_block = $this->template_volunteer_event_is_tomorrow_next_steps_not_attending;
 				}
-				else if( isset($recipient['context']['rsvp']) && $recipient['context']['rsvp'] == true )
+				
+				if( isset($recipient['context']['rsvp']) && $recipient['context']['rsvp'] == true )
 				{
 					$why_this_email_block = "You are receiving this message because you are attending this event.";
 					$next_steps_block = $this->template_volunteer_event_is_tomorrow_next_steps_attending;
