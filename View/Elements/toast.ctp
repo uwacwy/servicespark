@@ -1,0 +1,1 @@
+<div class="notification toast" aria-live="polite" role="alert"><?php echo h($message); ?></div>

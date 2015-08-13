@@ -1,0 +1,46 @@
+<?php
+
+debug($time_data);
+return;
+
+$this->PhpExcel->createWorksheet();
+$this->PhpExcel->setDefaultFont('Calibri', 12);
+
+// define table cells
+$table = array(
+    array('label' => __('Event Name'), 'width' => 'auto', 'filter' => true),
+    array('label' => __('Event Description'), 'width' => 'auto', 'filter' => true),
+    array('label' => __('Organization'), 'width' => 'auto', 'filter' => true),
+    array('label' => __('Event Start'), 'width' => 'auto', 'filter' => true),
+    array('label' => __('Event Stop'), 'width' => 'auto', 'filter' => true),
+    array('label' => __('Time In'), 'width' => 'auto', 'filter' => true),
+    array('label' => __('Time Out'), 'width' => 'auto', 'filter' => true),
+    array('label' => __('Total Duration'), 'width' => 'auto', 'filter' => true)
+);
+
+// heading
+$this->PhpExcel->addTableHeader($table, array('bold' => true));
+
+
+// data
+foreach ($time_data as $time) {
+
+    $i = $this->PhpExcel->_row;
+
+    $this->PhpExcel->addTableRow(array(
+    	$time['Event']['title'],
+    	$time['Event']['description'],
+    	$time['Event']['Organization']['name'],
+    	PHPExcel_Shared_Date::PHPToExcel(strtotime($time['Event']['start_time']), null, date_default_timezone_get() ),
+    	PHPExcel_Shared_Date::PHPToExcel(strtotime($time['Event']['stop_time']), null, date_default_timezone_get() ),
+    	PHPExcel_Shared_Date::PHPToExcel(strtotime($time['Time']['start_time']), null, date_default_timezone_get() ),
+    	PHPExcel_Shared_Date::PHPToExcel(strtotime($time['Time']['stop_time']), null, date_default_timezone_get() ),
+    	$time['Time']['duration']
+    ));
+    $this->PhpExcel->_xls->getActiveSheet()->getStyle("D$i:G$i")->getNumberFormat()->setFormatCode( 'm/d/yyyy h:mm AM/PM' );
+
+}
+
+$this->PhpExcel->addTableFooter();
+date_default_timezone_set('America/Denver');
+//$this->PhpExcel->output( __('%s-%s-activity-%s-%s.xlsx', Configure::read('Solution.name'), AuthComponent::user('username'), $period, date('d-M-Y') ) ); 

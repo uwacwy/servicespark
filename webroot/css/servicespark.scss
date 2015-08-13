@@ -1,0 +1,584 @@
+.spinning {
+  -webkit-animation: fa-spin 2s infinite linear;
+          animation: fa-spin 2s infinite linear;
+}
+
+
+@-webkit-keyframes fa-spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+            transform: rotate(359deg);
+  }
+}
+
+@keyframes fa-spin {
+  0% {
+    -webkit-transform: rotate(0deg);
+            transform: rotate(0deg);
+  }
+  100% {
+    -webkit-transform: rotate(359deg);
+            transform: rotate(359deg);
+  }
+}
+
+.actionable
+{
+	$spacing:  6px;
+	$lineColor: #ccc;
+	.input
+	{
+		margin: 0 0 14px 0;
+		
+		input, textarea, select
+		{
+			border: solid 1px #ddd;
+			border-radius: $spacing;
+			padding: $spacing;
+			box-shadow: inset 0 1px $spacing/2 0 #eee;
+		}
+		
+		&.text, &.number
+		{
+			input
+			{
+				width: 100%;
+			}
+		}
+		
+		&.select
+		{
+			select
+			{
+				width: 100%;
+			}
+		}
+		
+		&.textarea
+		{
+			textarea {
+				border-radius: 5px;
+				display: block;
+				width: 100%;
+			}
+		}
+		
+		&.datetime
+		{
+			color: $lineColor;
+		}
+		&.datetime select
+		{
+			display: inline-block;
+			border: 1px solid $lineColor;
+			color: #000;
+			padding: 5px;
+			margin-right: $spacing;
+			border-radius: $spacing / 2;
+		}
+		
+		select + select
+		{
+			margin-left: $spacing;
+			margin-right: 0;
+		}
+		
+	}
+}
+
+.reputation
+{
+	color: #000;
+	
+	&.good
+	{
+		color: #0c0;
+	}
+	&.bad
+	{
+		color: #c00;
+	}
+}
+
+.toast
+{
+	position: fixed;
+	bottom: 20px;
+	left: 20px;
+	border-radius: 15px;
+	padding: 20px;
+	color: #fff;
+	
+	.rgba &
+	{
+		background: rgba(0, 0, 0, .8);
+	}
+	.no-rgba &,
+	.no-js &
+	{
+		background: #000;
+	}
+}
+
+.cf:before,
+.cf:after {
+    content: " "; /* 1 */
+    display: table; /* 2 */
+}
+
+.cf:after {
+    clear: both;
+}
+
+/**
+ * For IE 6/7 only
+ * Include this rule to trigger hasLayout and contain floats.
+ */
+.cf {
+    *zoom: 1;
+}
+
+.absorb-margin
+{
+	margin-top: -20px;
+}
+
+.prepend-top
+{
+	margin-top: 1.5em;
+}
+
+.stripe-lg
+{
+	padding: 100px 0;
+	text-align: center;
+	
+	.huge
+	{
+		font-size: 400%;
+	}
+	
+}
+.stripe-sm
+{
+	padding: 35px 0;
+}
+
+.btn-hollow
+{
+	background-color: transparent;
+	color: #fff;
+	border-color: #fff;
+	border: solid 2px #fff;
+	text-decoration: none;
+	display: inline-block;
+	
+	transition: all 100ms ease-in;
+	
+	&:hover,
+	&.hover,
+	&:active,
+	&.active
+	{
+		text-decoration: none;
+		color: #fff;
+		background: transparentize(#fff, 0.8);
+	}
+}
+
+.gradient
+{
+	color: #fff;
+	
+	background-color: #007987;
+	background-image: -webkit-linear-gradient(-315deg, #007987, #235937);
+	background-image: linear-gradient(45deg,#007987, #235937);
+}
+
+.actionable
+{
+	@extend .cf;
+	margin-bottom: 20px;
+	background-color: #fff;
+	
+	.boxshadow &
+	{
+		box-shadow: 0 0 5px #ccc;
+	}
+	
+	.boxshadow & .actionable
+	{
+		box-shadow: 0 0 2px #ccc;
+	}
+	
+	.actionable
+	{
+		margin: 0 -20px;
+	}
+	
+
+	
+	.no-boxshadow &,
+	.no-js &
+	{
+		border: solid 1px #ddd;
+	}
+
+	.situation
+	{
+		padding: 10px;
+		border-bottom: 1px solid #eee;
+		>*:last-child
+		{
+			margin-bottom: 0;
+		}
+	}
+	.actions
+	{
+		padding: 10px;
+		ul
+		{ 
+			margin: 0;
+			padding: 0;
+			
+			li
+			{
+				list-style: none;
+				display: inline;
+				margin-right: 20px;
+				a
+				{
+					
+				}
+			}
+		}
+	}
+}
+
+.stat-bar
+{
+	padding-top: 10px;
+	padding-bottom: 10px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	@extend .cf;
+	.stat
+	{
+		display: inline-block;
+		.key, .value
+		{
+			display: block;
+		}
+		.key
+		{
+			color: #999;
+		}
+		.value
+		{
+			
+		}
+		
+		+ .stat
+		{
+			padding-left: 10px;
+			margin-left: 10px;
+			border-left: 1px solid #eee;
+		}
+	}
+}
+
+.when-off
+{
+	.off &
+	{
+		display: inline-block;
+	}
+	.on &
+	{
+		display: none;
+	}
+}
+
+.when-on
+{
+	.on &
+	{
+		display: inline-block;
+	}
+	.off &
+	{
+		display: none;
+	}
+}
+
+.notifications
+{
+	.boxshadow &
+	{
+		box-shadow: 0 0 5px #ccc;
+	}
+	
+	.no-boxshadow &,
+	.no-js &
+	{
+		border: solid 1px #ddd;
+	}
+	
+	margin-bottom: 10px;
+	margin-top: 10px;
+	
+	> .wrapper
+	{
+		border-bottom: 1px solid #ddd;
+		
+		a
+		{
+			display: block;
+			
+		}
+	}
+	> .unread a
+	{
+		border-left: #337ab7 0.2em solid;
+		padding: 1em 1em 1em 0.8em;
+		
+	}
+	> .read a
+	{
+		padding: 1em;
+	}
+}
+
+.inactive .when-active
+{
+  display: none;
+}
+.active .when-active
+{
+  display: inline;
+}
+
+.comments
+{
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.comment-reply-trigger
+{
+  margin-bottom: 7px;
+}
+
+.comment
+{
+  margin-bottom: 1em;
+}
+.comment .comment-reply
+{
+  margin-left: 43px;
+}
+.comment-reply
+{
+  margin-bottom: 1em;
+}
+.reply-body
+{
+  display: block;
+  width: 100%;
+  height: 3em;
+  margin-bottom: 1em;
+  resize: vertical;
+}
+.comment-body
+{
+  margin: 1em 0 1em;
+}
+.comment .comment-body,
+.comment .comment-meta
+{
+  display: block;
+}
+.comment-meta .user-gravatar
+{
+  float: left;
+  margin-right: 7px;
+}
+.comment .comment-author
+{
+  font-weight: bold;
+}
+.comment.child
+{
+  margin-left: 43px;
+}
+.comment .at-username
+{
+  font-weight: normal;
+}
+
+.forum.table > tbody
+ > tr > td {
+    vertical-align: middle;
+}
+.forum.table .cell-progress
+{
+  width: 6em;
+}
+
+.home
+{
+	.stat
+	{
+		margin: 20px 0;
+		.icon
+		{
+			font-size: 40px;
+			margin-right: 15px;
+			display: block;
+			float: left;
+			
+
+		}
+		.value
+		{
+			display: block;
+			font-size: 2em;
+			line-height: 1;
+		}
+		.key
+		{
+			display: block;
+			color: #aaa;
+		}
+	}
+}
+
+._table
+{
+	display: table;
+	width: 100%;
+	margin: 1.5em 0;
+	
+	
+	._colgroup
+	{
+		display: table-column-group;
+		._col
+		{
+			display: table-column;
+		}
+	}
+	
+	._thead
+	{
+		display: table-row-group;
+		
+		._th, ._td
+		{
+			background-color: transparent;
+			&:first-of-type
+			{
+				padding-left: 12px;
+			}
+		}
+		._th
+		{
+			font-weight: bold;
+			display: table-cell;
+			padding: 10px;
+			vertical-align: bottom;
+		}
+		
+	}
+	
+	._tbody
+	{
+		box-shadow: 0 0 1em 0 #ccc;
+		display: table-row-group;
+		
+		._td
+		{
+			background: #fff;
+		}
+	}
+	
+	._tr
+	{
+		display: table-row;
+		
+		._td
+		{
+			display: table-cell;
+			padding: 10px;
+			vertical-align: middle;
+			
+			&:first-of-type
+			{
+				border-left: solid 2px #fff;
+			}
+		}
+		
+		+ ._tr
+		{
+			._td
+			{
+				border-top: 1px solid #ccc;
+			}
+		}
+		
+		&._success
+		{
+			.table-cloth-cell, ._td
+			{
+				&:first-of-type
+				{
+					border-left: 2px solid #5cb85c;
+				}
+			}
+		}
+		
+		&._primary
+		{
+			.table-cloth-cell, ._td
+			{
+				&:first-of-type
+				{
+					border-left: 2px solid #286090;
+				}
+			}
+		}
+		
+
+		&._warning
+		{
+			._td
+			{
+				&:first-of-type
+				{
+					border-left: 2px solid #ec971f;
+				}
+			}
+		}
+		
+		&._danger
+		{
+			._td
+			{
+				&:first-of-type
+				{
+			border-left: 2px solid #d9534f;
+				}
+			}
+		}
+	}
+}
+
+#UserSkills
+{
+	margin-top: 1.5em;
+	min-height: 1em;
+}
