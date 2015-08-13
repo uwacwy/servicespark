@@ -32,6 +32,71 @@ App::uses('Model', 'Model');
 class AppModel extends Model
 {
 	public $actsAs = array('Containable');
+	
+	public function beforeSave($options = array() )
+	{
+		$model = $this->name;
+		$event = new CakeEvent("App.$model.beforeSave", $this, array(
+			'options' => $options,
+			'modelData' => $this->data
+		));
+		$this->getEventManager()->dispatch( $event );
+		
+		// TODO: replace the data with the filtered data
+		
+		return true;
+
+	}
+	
+	/*
+		afterSave
+		--
+		fires an event that can be hooked
+		can be overridden by individual controllers
+		Fires events like
+			App.Event.afterSave.created
+			App.Event.afterSave.modified
+	*/
+	public function afterSave($created, $options = array() )
+	{
+		$model = $this->name;
+		$verb = $created ? 'created' : 'modified';
+		
+		$event = new CakeEvent("App.$model.afterSave.$verb", $this, array(
+			'created' => $created,
+			'options' => $options,
+			'modelData' => $this->data,
+			$this->primaryKey => $this->id
+		));
+		
+		$this->getEventManager()->dispatch( $event );
+
+	}
+	
+	/*
+		beforeDelete
+		--
+		fires an event before deleting an item
+	*/
+	public function beforeDelete($cascade = true)
+	{
+		$model = $this->name;
+		$event = new CakeEvent("App.$model.beforeDelete", $this, array(
+			$this->primaryKey => $this->id	
+		));
+		
+		
+		$this->getEventManager()->dispatch( $event );
+		
+		$event = new CakeEvent("App.Entity.deleted", $this, array(
+			'model' => $model,
+			'id' => $this->id
+		));
+		
+		$this->getEventManager()->dispatch( $event );
+		
+		return true;
+	}
 
 	/*
 		date_compare

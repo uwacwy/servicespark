@@ -1,15 +1,4 @@
 <div class="row">
-	<div class="col-md-12">
-		<ol class="breadcrumb">
-			<li><?php echo h( __('Coordinator') ); ?></li>
-			<li><?php echo $this->Html->link( $event['Organization']['name'], array('controller' => 'organizations', 'action' => 'view', $event['Organization']['organization_id']) ); ?></li>
-			<li><?php echo $this->Html->link( $event['Event']['title'], array('controller' => 'events', 'action' => 'view', $event['Event']['event_id']) ); ?></li>
-			<li><?php echo sprintf( __('Adjusting Time Entries for %s'), $event['Event']['title'] ); ?></li>
-		</ol>
-	</div>
-</div>
-
-<div class="row">
 	<div class="col-md-3">
 		<?php echo $this->Element('coordinator_event_actions', array('event_id' => $event['Event']['event_id']) ); ?>
 		<?php echo $this->Element('coordinator_time_actions', array('event_id' => $event['Event']['event_id']) ); ?>
@@ -47,7 +36,7 @@
 				<tbody>
 					<?php foreach($times as $time) : ?>
 						<tr>
-							<td><?php echo h( sprintf( __('%1$s, %2$s'), $time['User']['last_name'], $time['User']['first_name']) ); ?></td>
+							<td><?php echo h( sprintf( __('%1$s, %2$s'), $time['Time']['User']['last_name'], $time['Time']['User']['first_name']) ); ?></td>
 							<td>
 								<?php echo h( date('F j, Y g:i a', strtotime($time['Time']['start_time']) ) ); ?>
 							</td>

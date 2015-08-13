@@ -21,7 +21,7 @@ $cakeDescription = __d('cake_dev', 'CakePHP: the rapid development php framework
 global $solution_name;
 ?>
 <!DOCTYPE html>
-<html>
+<html class="no-js">
 <head>
 	<?php echo $this->Html->charset(); ?>
 	<meta name="viewport" content="width=device-width, user-scalable=no">
@@ -37,25 +37,35 @@ global $solution_name;
 		{
 			echo $this->Html->script('//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.js');
 			echo $this->Html->script('//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.js');
-			echo $this->Html->script('//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.js');
-			echo $this->Html->css('//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.css');
+			echo $this->Html->script('//netdna.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.js');
+			echo $this->Html->script('//cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.js');
+			echo $this->Html->css('//netdna.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.css');
+			echo $this->Html->script('//cdnjs.cloudflare.com/ajax/libs/numeral.js/1.4.5/numeral.min.js');
 		}
 		else
 		{
 			echo $this->Html->script('//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js');
 			echo $this->Html->script('//ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js');
-			echo $this->Html->script('//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js');
-			echo $this->Html->css('//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css');
+			echo $this->Html->script('//netdna.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js');
+			echo $this->Html->script('//cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js');
+			echo $this->Html->css('//netdna.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css');
+			echo $this->Html->script('//cdnjs.cloudflare.com/ajax/libs/numeral.js/1.4.5/numeral.min.js');
 		}
 		echo $this->Html->script('mustaches');
 		echo $this->Html->script('mustache');
 		echo $this->Html->script('uwac');
+		echo $this->Html->script('modernizr.custom.min');
 
 		echo $this->fetch('meta');
 		echo $this->fetch('css');
 		echo $this->fetch('script');
 
 	?>
+	<script>
+		var environment = <?php echo json_encode(array(
+			'site_root' => Router::url('/', true)
+		)); ?>;
+	</script>
 </head>
 <body>
 
@@ -248,6 +258,22 @@ global $solution_name;
 					);
 				?>
 				<ul class="dropdown-menu">
+					<li class="dropdown-header"><?php echo h( __('My Volunteers') ); ?></li>
+					<?php
+						echo sprintf($item_sprint,
+							$this->Html->url( array('controller' => 'times', 'action' => 'approve', 'coordinator' => true) ),
+							'<span class="glyphicon glyphicon-check"></span> ',
+							__("Approve Submitted Time")
+						);
+					?>
+					<?php
+						echo sprintf($item_sprint,
+							$this->Html->url( array('coordinator' => true, 'controller' => 'times', 'action' => 'dashboard') ),
+							'<span class="glyphicon glyphicon-dashboard"></span> ',
+							__("Time Dashboard")
+						);
+					?>
+					<li class="divider"></li>
 					<li class="dropdown-header"><?php echo h( __('Organizations') ); ?></li>
 					<?php
 						echo sprintf($item_sprint,
@@ -263,18 +289,19 @@ global $solution_name;
 							__('Leave Coordinating Organizations')
 						);
 					?>
+					
 					<li class="divider"></li>
 					<li class="dropdown-header"><?php echo h( __('Events') ); ?></li>
 					<?php
 						echo sprintf($item_sprint,
-							$this->Html->url( array('controller' => 'events', 'action' => 'index', 'coordinator' => true) ),
+							$this->Html->url( array('controller' => 'events', 'action' => 'dashboard', 'coordinator' => true, 'current') ),
 							'<span class="glyphicon glyphicon-play"></span> ',
 							__('Ongoing and Upcoming Events')
 						);
 					?>
 					<?php
 						echo sprintf($item_sprint,
-							$this->Html->url( array('controller' => 'events', 'action' => 'archive', 'coordinator' => true) ),
+							$this->Html->url( array('controller' => 'events', 'action' => 'dashboard', 'coordinator' => true, 'archive') ),
 							'<span class="glyphicon glyphicon-backward"></span> ',
 							__('Event Archive')
 						);
@@ -305,13 +332,42 @@ global $solution_name;
 
 		<?php if(AuthComponent::user('user_id') ) : ?>
 			<ul class="nav navbar-nav navbar-right">
+			    <?php $notifications = ClassRegistry::init('User')->getUnreadNotification(AuthComponent::user('user_id')); ?>
+			    <li class="dropdown">
+			        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+			            <?php echo __('Notifications') ?>
+			            <?php if (!empty($notifications)): ?>
+			                <span class="badge badge-success">
+			                    <?php echo count($notifications); ?>
+			                </span>
+			            <?php endif ?>
+			        </a>
+			        <ul class="dropdown-menu">
+			        <?php if( !empty($notifications) ) : ?>
+			            <?php foreach ($notifications as $notification): ?>
+			                <li><?php echo $this->Notification->display($notification); ?></li>
+			            <?php endforeach ?>
+			         <?php else: ?>
+			         	<li><?php echo $this->Html->link(
+			         		__("You have no notifications at this time"),
+			         		array('controller' => 'users', 'action' => 'notifications')
+			         		); ?></li>
+			         <?php endif; ?>
+			            <li class="divider"></li>
+			            <li class="text-center"><?= $this->Html->link(__('Display all'),
+			            	array('controller' => 'users', 'action' => 'notifications', 'volunteer' => false)); ?></li>
+			        </ul>
+			    </li>
+			</ul>
+			<ul class="nav navbar-nav navbar-right">
 				<?php
 					$right_menu = array(
 						'users' => array(
 								'label' => sprintf('%s\'s Account', AuthComponent::user('first_name') ),
 								'actions' => array(
 									'profile' => __('Edit My Profile'),
-									'activity' => 'View Activity',
+									'activity' => __('View Volunteer Activity'),
+									'organizations' => __('Manage My Organizations'),
 									'logout' => __('Logout')
 
 								)
@@ -356,26 +412,22 @@ global $solution_name;
   </div><!-- /.container-fluid -->
 </nav>
 
+	<?php if( isset($render_container) && $render_container == false) : ?>
+			<?php echo $this->fetch('content'); ?>
+	<?php else: ?>
 	<div class="container">
 		<div id="content">
-			<?php
-				echo $this->Session->flash( );
-			?>
+			<?php echo $this->Session->flash( ); ?>
 			<?php echo $this->fetch('content'); ?>
 		</div>
 	</div>
+	<?php endif; ?>
+	
 	<hr>
 	<div class="container">
 		<div class="row">
 			<div class="col-md-12">
 				<p><?php echo h(Configure::read('Solution.name') ); ?> &copy; <?php echo date('Y'); ?> United Way of Albany County</p>
-				<p>Proudly powered by CakePHP, Bootstrap, jQuery, MediaTemple, PHP, Apache and MySQL.</p>
-				<!--
-					<?php echo h( Configure::read('Solution.name') ); ?> was built by Brad Kovach, Jamie Wiggins, and Thomas Wolf for a University of Wyoming Computer Science Senior Design project
-					for the 2013-2014 academic year.  <?php echo h( Configure::read('Solution.name') ); ?> is deliberately built on open-source technologies to pave the way for
-					wide-spread use in non-profit environments.  To inquire about licensing <?php echo h( Configure::read('Solution.name') ); ?> for your community, 
-					please contact volunteer@unitedwayalbanycounty.org
-				-->
 			</div>
 		</div>
 		<?php  echo $this->element('sql_dump'); ?>

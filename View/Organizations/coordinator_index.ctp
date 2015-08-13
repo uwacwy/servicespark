@@ -1,39 +1,49 @@
 <div class="row">
 	<div class="col-md-12">
-		<?php echo $this->Form->create('Organization', $form_defaults); ?>
 		<h1><small>Coordinator</small><br>Organizations </h1>
 		<p>You can coordinate events for these organizations.</p>
-		<?php if ( count($pag_organizations) > 0) : ?>
-		<div class="table-responsive">
-			<table class="table table-striped"> 
-				<thead>  
-	          		<tr>  
-	            		<th><?php echo $this->Paginator->sort('Organization.name', 'Organization'); ?></th>
-	            		<th>Actions</th>
-	          		</tr>  
-	        	</thead>
-	        	<tbody>
-	        		<?php foreach ($pag_organizations as $organization): ?>
-						<tr>
-							<td><?php echo h($organization['Organization']['name']); ?>&nbsp;</td>
-							<td>
-								<?php echo $this->Html->link(__('View'),
-									array(
-										'supervisor' => true,
-										'controller' => 'organizations',
-										'action' => 'view',
-										$organization['Organization']['organization_id']
-									),
-									array('class' => 'btn btn-xs btn-success')
-								); ?>
-								<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $organization['Organization']['organization_id']), array('class' => 'btn btn-xs btn-primary')); ?>
-								<?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $organization['Organization']['organization_id']), array('class' => 'btn btn-xs btn-danger'), __('Are you sure you want to delete # %s?', $organization['Organization']['organization_id'])); ?>
-							</td>
-						</tr>
-					<?php endforeach; ?>
-				</tbody>
-			</table>
-		</div>
+		<?php if ( !empty($pag_organizations) ) : ?>
+		
+		<?php foreach( $pag_organizations as $organization ) : ?>
+			<div class="actionable">
+				<div class="situation">
+					<h4><?php echo h( $organization['Organization']['name'] ); ?></h4>
+					<?php if( !empty( trim($organization['Organization']['description']) ) )
+						echo $this->Html->tag('p', $organization['Organization']['description']); ?>
+					
+					<div class="stat-bar">
+					
+						<div class="stat">
+							<span class="key"><?php echo __("Upcoming Events"); ?></span>
+							<span class="value"><?php echo number_format( count($organization['Event']) ); ?></span>
+						</div>
+						
+						<div class="stat">
+							<span class="key"><?php echo __("Total Members"); ?></span>
+							<span class="value"><?php echo number_format( count($organization['Permission']) ); ?></span>
+						</div>
+						
+					</div>
+					
+				</div>
+				<div class="actions">
+					<ul>
+						<li><?php echo $this->Html->link(
+								__('Dashboard'),
+								array('coordinator' => true, 'controller' => 'organizations', 'action' => 'dashboard', $organization['Organization']['organization_id']),
+								array('class' => ' text-success')
+							); ?></li>
+						<li><?php echo $this->Html->link(
+								__('Edit Addresses and Members'), 
+								array('action' => 'edit', $organization['Organization']['organization_id']), 
+								array('class' => '')
+							); ?></li>
+
+					</ul>
+				</div>
+			</div>
+		<?php endforeach; ?>
+
 	<?php else: ?>
 		<p><em>You are not a coordinator for any organizations.</em></p>
 	<?php endif; ?>

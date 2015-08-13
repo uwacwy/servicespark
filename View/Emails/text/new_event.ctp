@@ -1,4 +1,4 @@
-Hello, <?php echo $user['full_name']; ?> 
+Hello, *|full_name|* 
 
 A new service opportunity has been created that you might be interested in!
 
@@ -36,5 +36,3 @@ If you have any questions about this event, please contact an event coordinator:
 		}
 	}
 ?>
-
-Thank you for using <?php echo Configure::read('Solution.name'); ?>

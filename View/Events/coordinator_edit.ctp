@@ -1,17 +1,5 @@
 <div class="row">
 	<div class="col-md-12">
-		<ol class="breadcrumb">
-			<li><strong><?php echo __('Coordinator'); ?></strong></li>
-			<li><?php echo $this->Html->link( Configure::read('Solution.name'), '/'); ?></li>
-			<li><?php echo $this->Html->link( $this->request->data['Organization']['name'], array('coordinator' => true, 'controller' => 'organizations', 'action' => 'view', $this->request->data['Organization']['organization_id']) ); ?></li>
-			<li><?php echo $this->Html->link( $this->request->data['Event']['title'], array('coordinator' => true, 'controller' => 'events', 'action' => 'view', $this->request->data['Event']['event_id']) ); ?></li>
-			<li><?php echo h( __('Edit') ); ?></li>
-		</ol>
-	</div>
-</div>
-
-<div class="row">
-	<div class="col-md-12">
 		<?php echo $this->Form->create('Event', $form_defaults); ?>
 		<h2>Edit Event</h2>
 		<div class="row">

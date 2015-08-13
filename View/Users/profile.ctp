@@ -114,9 +114,24 @@
 		<div class="row">
 			<div class="col-md-12">
 				<ul class="list-style-none">
-					<li><?php echo $this->Form->input('User.email_mentions', array('label' => __("Email me when I'm mentioned in a comment."), 'class' => 'checkbox' ) ); ?></li>
-					<li><?php echo $this->Form->input('User.email_participation', array('label' => __("Email me when there is a reply to a conversation I'm involved in."), 'class' => 'checkbox') ); ?></li>
-					<li><?php echo $this->Form->input('User.email_attending', array('label' => __("Email me when a comment is posted on an event I am attending. (Events I RSVP to)."), 'class' => 'checkbox') ); ?></li>
+					<li><?php echo $this->Form->input('User.email_skills',
+						array('label' => __("Email me when a skill on my profile is needed for an event."), 
+						'class' => 'checkbox')); ?></li>
+					<li><?php echo $this->Form->input('User.email_going',
+						array('label' => __("Email me updates about events I am going to."),
+						'class' => 'checkbox')); ?></li>
+					<li><?php echo $this->Form->input('User.email_attended',
+						array('label' => __("Email me information about events I attended."),
+						'class' => 'checkbox')); ?></li>
+					<li><?php echo $this->Form->input('User.email_mentions',
+						array('label' => __("Email me when I am mentioned in a discussion"),
+						'class' => 'checkbox')); ?></li>
+					<li><?php echo $this->Form->input('User.email_discussing',
+						array('label' => __("Email me when there are new comments on a thread I've commented in."),
+						'class' => 'checkbox')); ?></li>
+					<li><?php echo $this->Form->input('User.email_coordinating',
+						array('label' => __("Email me information about events I am coordinating."),
+						'class' => 'checkbox')); ?></li>
 				</ul>
 			</div>
 		</div>

@@ -1,1 +1,1 @@
-<div class="alert alert-warning"><?php echo h($message); ?></div>
+<div class="alert alert-warning" aria-live="polite" role="alert"><?php echo h($message); ?></div>

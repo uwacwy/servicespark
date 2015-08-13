@@ -101,7 +101,7 @@ class Event extends AppModel
 	);
 
 	public $hasMany = array(
-		'Time' => array(
+		'EventTime' => array(
 			'dependent' => true, // when an event is deleted, related time will be dleted
 		),
 		'Rsvp' => array(

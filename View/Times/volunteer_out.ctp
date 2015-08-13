@@ -1,41 +1,43 @@
-<?php
-
-/*
-	in.ctp
-	--
-	confirms a clockin
-*/
-
-?>
-<div class="row">
+<h2>
+	<small><?php echo __("Clocking out of event"); ?>&hellip;</small><br>
+	<?php echo h($event['Event']['title']); ?>
+</h2>
+<?php if( count($event['EventTime']) == 1 ): ?>
+	<p>
+		<?php echo __("You are clocking out of this <strong>%s</strong> which is scheduled for %s.",
+			$event['Event']['title'],
+			$this->Duration->format($event['Event']['start_time'], $event['Event']['stop_time'])
+		); ?>
+	</p>
+	<?php
+			echo $this->Form->postButton(
+				__("Clock Out"),
+				array(
+					'volunteer' => true, 
+					'controller' => 'times', 
+					'action' => 'out', 
+					$event['Event']['stop_token'], 
+					$event['EventTime'][0]['Time']['time_id']
+				),
+				array('class' => 'btn btn-primary')
+			); ?>
+<?php elseif( count($event['EventTime']) > 1): ?>
 	
-	<div class="col-md-3">
-		<?php echo $this->element('volunteer_time_actions'); ?>
-	</div>
-	<div class="col-md-9">
-		<?php echo $this->Form->Create('Time'); ?>
-
-			<div>
-				<h1>
-					<small>Clocking out</small><br>
-					<?php echo h($event['Event']['title']); ?> <small><?php echo h($event['Organization']['name']); ?>
-				</h1>
-				<?php
-					$event_start = strtotime( $event['Event']['start_time'] );
-					$event_stop = strtotime( $event['Event']['stop_time'] );
-					$now = time();
-
-					printf('<p>There are currently %u others volunteering at this event.', count($event['Time']) );
-
-					if( $now < $event_start || $now > $event_stop )
-					{
-						echo '<p>You are attempting to clock out of an event that is not currently scheduled as in progress.  Are you sure?</p>';
-					}
-
-					echo $this->Form->input('confirm', array('type' => 'hidden', 'value' => true) );
-				?>
-			</div>
-
-		<?php echo $this->Form->End( array('label' => __('Clock Out'), 'class' => 'btn btn-success btn-lg' ) ); ?>
-</div>
-</div>
+	<p>
+		<?php echo __("Many open time punches were found.  Please select which time punch you are clocking out of."); ?>  
+		<?php echo __("It is likely that you will need to contact an event coordinator to adjust your time punches."); ?>
+	</p>
+	<ul>
+	<?php foreach( $event['EventTime'] as $punch ): ?>
+		<?php if( empty($punch['Time']) ) continue; ?>
+		<li>
+			<?php
+			echo $this->Form->postButton(
+				$this->Time->format($punch['Time']['start_time'], "%A, %B %e, %Y %l:%M %p"),
+				array('volunteer' => true, 'controller' => 'times', 'action' => 'out', $event['Event']['stop_token'], $punch['Time']['time_id']),
+				array('class' => 'btn btn-link')
+			); ?>
+		</li>
+	<?php endforeach; ?>
+	</ul>
+<?php endif; ?>

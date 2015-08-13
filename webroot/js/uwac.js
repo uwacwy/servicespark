@@ -1,14 +1,67 @@
 /*
 	UWAC Javascript
 */
+var $body = $('body'),
+	$document= $(document);
+	
+(function($) {
+    $.fn.countTo = function(options) {
+        // merge the default plugin settings with the custom options
+        options = $.extend({}, $.fn.countTo.defaults, options || {});
+
+        // how many times to update the value, and how much to increment the value on each update
+        var loops = Math.ceil(options.speed / options.refreshInterval),
+            increment = (options.to - options.from) / loops;
+
+        return $(this).each(function() {
+            var _this = this,
+                loopCount = 0,
+                value = options.from,
+                interval = setInterval(updateTimer, options.refreshInterval),
+                formatter = options.format || value.toLocaleString;
+
+            function updateTimer() {
+                value += increment;
+                loopCount++;
+                $(_this).html(formatter(value, options.decimals));
+
+                if (typeof(options.onUpdate) == 'function') {
+                    options.onUpdate.call(_this, value);
+                }
+
+                if (loopCount >= loops) {
+                    clearInterval(interval);
+                    value = options.to;
+
+                    if (typeof(options.onComplete) == 'function') {
+                        options.onComplete.call(_this, value);
+                    }
+                }
+            }
+        });
+    };
+
+    $.fn.countTo.defaults = {
+        from: 0,  // the number the element should start at
+        to: 100,  // the number the element should end at
+        speed: 1000,  // how long it should take to count between the target numbers
+        refreshInterval: 100,  // how often the element should be updated
+        decimals: 0,  // the number of decimal places to show
+        onUpdate: null,  // callback method for every time the element is updated,
+        onComplete: null,  // callback method for when the element finishes updating
+        format: Number.toLocaleString
+    };
+})(jQuery);
 
 
 
-$(document).ready(function(){
+$document.ready(function(){
 
 	$('.cake-sql-log').addClass('table table-striped');
 
 	$('.comment .comment-reply').hide();
+	
+	$('[data-toggle="tooltip"]').tooltip();
 
 	$('.comments').on('click', '.comment-reply-trigger', function(e){
 		e.preventDefault();
@@ -19,6 +72,25 @@ $(document).ready(function(){
 	$('body').on('change cut paste drop keydown', '.reply-body', function(e){
 		$(this).height(0).height( $(this).get(0).scrollHeight + 20);
 	});
+	
+	$('.animate-count').each(function(index, value){
+		$item = $(this);
+		
+		$item.countTo({
+			from: $item.data('count-from'),
+			to: $item.data('count-to'),
+			speed: $item.data('count-speed'),
+			refreshInterval: 50,
+			format: function(value)
+			{
+				return numeral(value).format('0,0');
+			}
+		});
+	});
+	
+	window.setTimeout(function() {
+		$('.toast').fadeOut('fast');
+	}, 2500);
 	
 	$('.append-username').each(function(idx){
 		console.log('username found');
@@ -34,6 +106,134 @@ $(document).ready(function(){
 				$cmtBlock.focus();
 			});
 			
+			return false;
+		});
+	});
+	
+	$('.cloth').on('Container.child_removing', function(e)
+	{
+		var
+			$container = $(this),
+			$children = $container.children();
+		
+		if($children.length === 1)
+		{
+			// attempt to load more
+			// $.ajax({
+			// 	type: "GET",
+			// 	url: $container.attr('data-api'),
+			// 	dataType: 'JSON',
+			// 	success: function(r)
+			// 	{
+			// 		console.log( "Removed" );
+			// 		console.log(r);
+			// 	}
+			// });
+			
+			//if nothing from load,
+			$('<em />').text( $container.attr('data-api-empty') ).appendTo($container);
+			
+		}
+	});
+	
+	$('.notification').each(function(){
+		var $this = $(this);
+		
+		$this.on('click', function(e){
+			
+			$.ajax({
+				type: "POST",
+				url: $this.attr('data-api'),
+				dataType: 'JSON'
+			});
+			
+			return true; // the link should still follow
+		});
+	});
+	
+	$('.api-trigger-time-reject').each(function(){
+		var $this = $(this),
+			action = $this.attr('data-api'),
+			prompt = $this.attr('data-prompt'),
+			on_success = $this.attr('data-on-success'),
+			target = $this.attr('data-target');
+			
+		$this.on('click', function(e){
+			e.preventDefault();
+			
+			bootbox.prompt( prompt, function(reason){
+				$.ajax({
+					type: "POST",
+					url: action,
+					dataType: 'JSON',
+					data: {
+						'data[TimeComment][body]' : reason
+					},
+					success: function(r)
+					{
+						if( on_success === 'collapse' )
+						{
+							$(target).slideUp().trigger('Container.child_removing').remove();
+						}
+						
+						if( on_success === 'toggle_parent_class' )
+						{
+							$this.parent().toggleClass( $this.attr('data-toggle-class') );
+						}
+						
+						$('<div />')
+							.addClass('toast')
+							.text(r.response.message)
+							.appendTo($body)
+							.delay(2500)
+							.fadeOut('fast', function(){
+								$(this).remove()
+							});
+					}
+				});
+			});
+			return false;
+		});
+	});
+	
+	
+	$('.api-trigger').each(function(){
+		var $this = $(this),
+			action = $this.attr('data-api'),
+			on_success = $this.attr('data-on-success'),
+			target = $this.attr('data-target');
+			
+		$this.on('click', function(e){
+			e.preventDefault();
+			$.ajax({
+				type: "POST",
+				url: action,
+				dataType: 'JSON',
+				success: function(r)
+				{
+					
+					if( on_success === 'collapse' )
+					{
+						$(target).slideUp().trigger('Container.child_removing').remove();
+					}
+					
+					if( on_success === 'toggle_parent_class' )
+					{
+						$this.parent().toggleClass( $this.attr('data-toggle-class') );
+					}
+					
+					console.log(r);
+					
+					$('<div />')
+						.addClass('toast')
+						.text(r.response.message)
+						.appendTo($body)
+						.delay(2500)
+						.fadeOut('fast', function(){
+							$(this).remove()
+						});
+				}
+			});
 			return false;
 		});
 	});
@@ -115,7 +315,7 @@ $(document).ready(function(){
 
 			$.ajax(
 				{
-					url: "/users/check/",
+					url: environment.site_root + "/users/check/",
 					dataType: 'json',
 					type: 'get',
 					data: {
@@ -208,7 +408,7 @@ $(document).ready(function(){
 			{
 				$.ajax(
 					{
-						url: "/skills/search.json",
+						url: environment.site_root + "/skills/search.json",
 						dataType: 'json',
 						data: {
 							q: extractLast(request.term)

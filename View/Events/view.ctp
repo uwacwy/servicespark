@@ -1,15 +1,4 @@
 <div class="row">
-	<div class="col-md-12">
-		<ol class="breadcrumb">
-			<li><strong><?php echo __('Guest'); ?></strong></li>
-			<li><?php echo $this->Html->link( Configure::read('Solution.name'), '/'); ?></li>
-			<li><?php echo $this->Html->link( $event['Organization']['name'], array('controller' => 'organizations', 'action' => 'view', $event['Organization']['organization_id']) ); ?></li>
-			<li><?php echo h( __( $event['Event']['title']) ); ?></li>
-		</ol>
-	</div>
-</div>
-
-<div class="row">
 	<div class="col-md-3">
 		<h3>Viewing Event</h3>
 		<?php echo $this->Html->link(__('Back to Events'), array('action' => 'index'), array('class' => 'btn btn-primary btn-md btn-block')); ?>

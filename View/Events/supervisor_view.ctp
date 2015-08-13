@@ -1,17 +1,5 @@
 <div class="events view">
 
-	<div class="row">
-		<div class="col-md-12">
-			<ol class="breadcrumb">
-				<li><strong><?php echo __('Supervisor'); ?></strong></li>
-				<li><?php echo $this->Html->link( Configure::read('Solution.name'), '/'); ?></li>
-				<li><?php echo $this->Html->link( $event['Organization']['name'], array('supervisor' => true, 'controller' => 'organizations', 'action' => 'view', $event['Organization']['organization_id']) ); ?></li>
-				<li><?php echo h( __( $event['Event']['title']) ); ?></li>
-			</ol>
-		</div>
-	</div>
-
-
 
 	<?php 
 		$startTime = new DateTime($event['Event']['start_time']);

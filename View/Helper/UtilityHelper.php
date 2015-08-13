@@ -32,5 +32,27 @@ class UtilityHelper extends AppHelper
 			$text // button text
 		);
 	}
+	
+	public function __p($sentences, $glue = " ")
+	{
+		foreach($sentences as $sentence)
+		{
+			
+			
+			if( is_array($sentence) )
+			{
+				$result[] = call_user_func(
+					'__',
+					$sentence[0],
+					array_slice($sentence, 1)
+				);
+			}
+			else
+			{
+				$result[] = __($sentence);
+			}
+		}
+		return implode($result, $glue);
+	}
 
 }
