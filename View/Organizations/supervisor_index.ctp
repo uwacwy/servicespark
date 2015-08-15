@@ -17,11 +17,11 @@
 						<tr>
 							<td><?php echo h($organization['Organization']['name']); ?>&nbsp;</td>
 							<td>
-								<?php echo $this->Html->link(__('View'),
+								<?php echo $this->Html->link(__('Dashboard'),
 									array(
 										'supervisor' => true,
 										'controller' => 'organizations',
-										'action' => 'view',
+										'action' => 'dashboard',
 										$organization['Organization']['organization_id']
 									),
 									array('class' => 'btn btn-xs btn-success')

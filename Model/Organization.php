@@ -14,6 +14,8 @@ class Organization extends AppModel
 	public $primaryKey = 'organization_id';
 
 	public $displayField = 'name';
+	
+
 
 	/*
 		required
@@ -34,6 +36,9 @@ class Organization extends AppModel
 	Associations
 */
 	public $hasMany = array(
+		'OrganizationTime' => array(
+			'dependent' => true
+		),
 		'Permission' => array(
 			'dependent' => true // when the Organization is deleted, Permissions are also deleted
 		),

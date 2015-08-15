@@ -1,16 +1,4 @@
 <div class="row">
-	<div class="col-md-12">
-		<ol class="breadcrumb">
-			<li><a href="<?php echo $this->Html->url('/'); ?>"><span class="glyphicon glyphicon-home"></span><span class="sr-only"><?php echo Configure::read('Solution.name'); ?></span></a></li>
-			<li><strong><?php echo h( __('Supervisor') ); ?></strong></li>
-			<li><?php echo $this->Html->link( $time['Event']['Organization']['name'], array('supervisor' => true, 'controller' => 'organizations', 'action' => 'view', $time['Event']['Organization']['organization_id']) ); ?></li>
-			<li><?php echo $this->Html->link( $time['Event']['title'], array('supervisor' => true, 'controller' => 'events', 'action' => 'view', $time['Event']['event_id']) ); ?></li>
-			<li><?php echo h( sprintf( __('Viewing Time Entry %u for %s'), $time['Time']['time_id'], $time['User']['full_name'] ) ); ?></li>
-		</ol> 
-	</div>
-</div>
-
-<div class="row">
 	<div class="col-md-3">
 		<?php echo $this->Element('supervisor_time_actions', array('time' => $time)); ?>
 	</div>

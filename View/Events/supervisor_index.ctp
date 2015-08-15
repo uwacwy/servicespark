@@ -1,15 +1,5 @@
 <div class="row">
 	<div class="col-md-12">
-		<ol class="breadcrumb">
-			<li><a href="<?php echo $this->Html->url('/'); ?>"><span class="glyphicon glyphicon-home"></span><span class="sr-only"><?php echo Configure::read('Solution.name'); ?></span></a></li>
-			<li><strong><?php echo h( __('Supervisor') ); ?></strong></li>
-			<li><?php echo h( __('Events you supervise') ); ?></li>
-		</ol> 
-	</div>
-</div>
-
-<div class="row">
-	<div class="col-md-12">
 		<h2>
 			<small><?php echo h( __('Supervise') ); ?></small><br>
 			<?php echo __('Events'); ?>

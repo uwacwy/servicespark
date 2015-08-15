@@ -1,0 +1,10 @@
+{
+    "require": {
+        "slywalker/boost_cake": "*"
+    },
+    "extra" : {
+    	"installer-paths" : {
+    		"Plugin/BoostCake" : ["slywalker/boost_cake"]
+    	}
+    }
+}

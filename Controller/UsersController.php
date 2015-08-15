@@ -24,8 +24,9 @@ class UsersController extends AppController {
 	{
 		parent::beforeFilter();
 		// Allow users to register and logout.
-		$this->Auth->allow('register', 'login', 'logout', 'check');
+		$this->Auth->allow('register', 'login', 'logout', 'check', 'avatar');
 	}
+	
 
 	public function go_login()
 	{
@@ -177,6 +178,22 @@ class UsersController extends AppController {
 
 	// 	$this->set( compact('user') );
 	// }
+	
+	public function notifications()
+	{
+		$conditions = array(
+			'Notification.user_id' => $this->Auth->user('user_id')
+		);
+		
+		$this->Paginator->settings['conditions'] = $conditions;
+		$this->Paginator->settings['order'] = array(
+			'Notification.created' => 'desc'
+		);
+		
+		$notifications = $this->Paginator->paginate('Notification');
+		
+		$this->set( compact('notifications') );
+	}
 
 	public function check()
 	{
@@ -204,6 +221,31 @@ class UsersController extends AppController {
 
 		echo json_encode( compact('valid') );
 
+	}
+	
+	public function api_clear($notification_id = null)
+	{
+		if( $notification_id == null )
+		{
+			$this->User->Notification->markAllAsRead( $this->Auth->user('user_id') );
+		}
+		else
+		{
+			$this->User->Notification->markAsRead($notification_id, $this->Auth->user('user_id') );
+		}
+		
+		$this->response->body( json_encode( array('notification_id' => $notification_id, 'read' => true)) );
+		$this->response->type('json');
+		
+		return $this->response;
+	}
+	
+	public function clear()
+	{
+		$this->User->Notification->markAllAsRead( $this->Auth->user('user_id') );
+		
+		$this->Session->setFlash( __('All notifications have been marked as read'), 'success');
+		return $this->redirect( array('controller' => 'users', 'action' => 'notifications') );
 	}
 
 
@@ -281,19 +323,8 @@ class UsersController extends AppController {
 
 			if ( $this->User->save($entry) )
 			{
-				$user = $this->User->find('first', array('conditions' => array('User.user_id' => $this->User->id) ) );
-				$Email = new CakeEmail('mandrill');
-				$Email->viewVars( compact('entry') );
-				$Email->template('NewUser')
-						->emailFormat('text')
-						->to( $user['User']['email'], __('%s %s', $user['User']['first_name'], $user['User']['last_name']) )
-						->from( 'volunteer@unitedwayalbanycounty.org' )
-						->subject( __('[%1$s] Welcome to %1$s, %2$s!', Configure::read('Solution.name'), $user['User']['first_name']) )
-						->send();
-
 				$this->Session->setFlash( __('This account has been created.  Login with your username and password.'), 'success' );
 				return $this->redirect( array('controller' => 'users', 'action' => 'login') );
-
 			}
 			else
 			{
@@ -315,6 +346,15 @@ class UsersController extends AppController {
 	public function supervisor_profile() { return $this->go_profile(); }
 	public function volunteer_profile() { return $this->go_profile(); }
 	public function admin_profile() { return $this->go_profile(); }
+	
+	public function avatar($username, $size = 40)
+	{
+		$user = $this->User->findByUsername($username);
+		
+		return $this->redirect(
+			__('https://www.gravatar.com/avatar/%s?s=%d', md5($user['User']['email']), $size)
+		);
+	}
 
 
 	/**
@@ -418,7 +458,7 @@ class UsersController extends AppController {
 	 * @throws 
 	 * @return void
 	 */
-	public function activity($period = null)
+	public function activity($period = null, $render = "default")
 	{
 		$sql_date_fmt = 'Y-m-d H:i:s';
 		$contain = array('Event');
@@ -429,6 +469,7 @@ class UsersController extends AppController {
 		$order = array(
 			'Event.stop_time DESC'
 		);
+		$conditions['Time.status !='] = "deleted";
 		$conditions['Time.user_id'] = $this->Auth->user('user_id');
 
 		switch($period)
@@ -469,19 +510,48 @@ class UsersController extends AppController {
 				break;
 		}
 
-		$this->Paginator->settings['limit'] = 10;
+		$this->Paginator->settings['limit'] = ($render == 'default')? 10 : 
+			$this->User->Time->find('count', compact('conditions'));
 		$this->Paginator->settings['conditions'] = $conditions;
-		$this->Paginator->settings['contain'] = 'Event';
+		$this->Paginator->settings['contain'] = array(
+			'OrganizationTime' => array('Organization'),
+			'EventTime' => array('Event' => array('Organization'))
+		);
 
 		$time_data = $this->Paginator->paginate('Time');
 
-		$fields = array(
-			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) )/60 as PeriodTotal'
+		$period_total = $this->User->getDataSource()->fetchAll("
+			    SELECT
+				SUM(TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time)/60) as period_total
+				FROM `times` Time
+				WHERE Time.user_id = :user_id
+				AND Time.start_time >= :start_date
+				AND Time.stop_time <= :stop_date",
+			array(
+				'user_id' => $this->Auth->user('user_id'),
+				'start_date' => isset($conditions['Time.start_time >='])? $conditions['Time.start_time >='] : '',
+				'stop_date' => isset($conditions['Time.stop_time <='])? $conditions['Time.stop_time <='] : "NOW()"
+			)
 		);
-		$period_total = $this->User->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
 		$this->set( compact('period', 'time_data', 'period_total') );
-	
 
+		$user = $this->User->find('first', array(
+			'conditions' => array('User.user_id' => $this->Auth->user('user_id') ),
+			'contain' => array()
+		));
+		$this->set( compact('user') );
+
+		$title_for_layout = sprintf( "%s &ndash; %s", __('My Service Activity'), $sub_title);
+		$this->set( compact('title_for_layout') );
+		
+		if($render == "xlsx")
+			$this->render('/Users/activity.xlsx');
+
+
+	}
+	
+	public function organizations()
+	{
 		// connected organizations
 		$contain = array('Permission.permission_id');
 		$publish_conditions = array(
@@ -500,61 +570,6 @@ class UsersController extends AppController {
 		);
 		$coordinating = $this->User->Permission->Organization->find('all', array('conditions' => $coordinate_conditions, 'contain' => array() ) );
 		$this->set( compact('publishing', 'supervising', 'coordinating') );
-
-
-		// summary all time
-		$conditions = array(
-			'Time.user_id' => $this->Auth->user('user_id')
-		);
-		$fields = array(
-			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as UserAllTime'
-		);
-		$summary_all_time = $this->User->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
-		$this->set( compact('summary_all_time') );
-
-		// summary month
-		$conditions = array(
-			'Time.user_id' => $this->Auth->user('user_id'),
-			'Time.start_time >=' => date($sql_date_fmt, strtotime('1 month ago') )
-		);
-		$fields = array(
-			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as UserPastMonth'
-		);
-		$summary_past_month = $this->User->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
-		$this->set( compact('summary_past_month') );
-
-		// summary year
-		$conditions = array(
-			'Time.user_id' => $this->Auth->user('user_id'),
-			'Time.start_time >=' => date($sql_date_fmt, strtotime('1 year ago') )
-		);
-		$fields = array(
-			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as UserPastYear'
-		);
-		$summary_past_year = $this->User->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
-		$this->set( compact('summary_past_year') );
-
-		// year-to-date
-		$conditions = array(
-			'Time.user_id' => $this->Auth->user('user_id'),
-			'Time.start_time >=' => date($sql_date_fmt, mktime(0,0,0,1,1, date('Y') ) )
-		);
-		$fields = array(
-			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as UserYTD'
-		);
-		$summary_ytd = $this->User->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
-		$this->set( compact('summary_ytd') );
-
-		$user = $this->User->find('first', array(
-			'conditions' => array('User.user_id' => $this->Auth->user('user_id') ),
-			'contain' => array()
-		));
-		$this->set( compact('user') );
-
-		$title_for_layout = sprintf( "%s &ndash; %s", __('My Service Activity'), $sub_title);
-		$this->set( compact('title_for_layout') );
-
-
 	}
 
 	/*
@@ -563,7 +578,9 @@ class UsersController extends AppController {
 	public function report($period = null)
 	{
 		$sql_date_fmt = 'Y-m-d H:i:s';
-		$contain = array('Event' => array('Organization') );
+		$contain = array(
+			'EventTime' => array(
+				'Event' => array('Organization') ) );
 
 		$this->layout = null;
 
@@ -571,7 +588,7 @@ class UsersController extends AppController {
 			$period = "month";
 
 		$order = array(
-			'Event.stop_time DESC'
+			'Time.stop_time DESC'
 		);
 		$conditions['Time.user_id'] = $this->Auth->user('user_id');
 
@@ -606,6 +623,8 @@ class UsersController extends AppController {
 		$time_data = $this->User->Time->find('all', array('conditions' => $conditions, 'contain' => $contain, 'order' => $order) );
 
 		$this->set( compact('time_data', 'period') );
+		
+		$this->render('/Users/activity.xlsx');
 
 
 	}

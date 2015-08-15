@@ -15,7 +15,12 @@ class User extends AppModel
 
 	public $displayField = 'username';
 
-	public $actsAs = array('Containable');
+	public $actsAs = array(
+		'Containable',
+		'Notification.Notifiable' => array(
+			'subjects' => array('User', 'Event', 'Skill', 'Organization', 'Time', 'Rsvp')
+		)
+	);
 
 	public $virtualFields = array(
 		'full_name' => 'CONCAT(User.first_name, " ", User.last_name)',
@@ -60,6 +65,9 @@ class User extends AppModel
 	);
 
 	public $hasMany = array(
+		'TimeComment' => array(
+			'dependent' => true
+		),
 		'Permission' => array(
 			'dependent' => true // when the User is deleted, all Permission entries are deleted
 		),

@@ -2,13 +2,12 @@
 $date_fmt = "F j, Y";
 $time_fmt = "g:i a";
 $datetime_fmt = $date_fmt . " " . $time_fmt;
-$periods = array('month' => __("Past Month"), 'year' => __("Past Year"), 'ytd' => __("Year-To-Date"), 'all' => __('All Activity'), 'custom' => __("Custom Range") );
-
-$summary['month'] = $summary_past_month[0][0]['UserPastMonth']/60;
-$summary['ytd'] = $summary_ytd[0][0]['UserYTD']/60;
-$summary['year'] = $summary_past_year[0][0]['UserPastYear']/60;
-$summary['all'] = $summary_all_time[0][0]['UserAllTime']/60;
-$summary['custom'] = null;
+$periods = array(
+	'month' => __("Past Month"), 
+	'year' => __("Past Year"), 
+	'ytd' => __("Year-To-Date"), 
+	'all' => __('All Activity'), 
+	'custom' => __("Custom Range") );
 
 
 ?>
@@ -48,19 +47,43 @@ $summary['custom'] = null;
 
 				foreach ( $periods as $pd => $label)
 				{
-					$sprint = '<a href="%1$s" class="%2$s"><span class="badge">%3$s hr</span>%4$s</a>';
-					if( $pd == 'custom' )
-					{
-						$sprint = '<a href="%1$s" class="%2$s">%4$s</a>';
-					}
+					
+					$sprint = '<a href="%1$s" class="%2$s">%3$s</a>';
+					
 					echo sprintf($sprint,
 						$this->Html->url( array('controller' => 'users', 'action' => 'activity', $pd) ),
 						( ($pd == $period) ? 'list-group-item active' : 'list-group-item' ),
-						number_format($summary[$pd], 0),
 						$label
 					);
 				}
 			?>
+		</div>
+		<p><?php echo $this->Utility->btn_link_icon(
+			__("Deleted Time Entries"),
+			array(
+				'volunteer' => false,
+				'controller' => 'times',
+				'action' => 'trash'
+			),
+			'btn btn-danger btn-sm btn-block',
+			'glyphicon-trash'); ?> 
+			<?php echo $this->Utility->btn_link_icon(
+					__('Download as Microsoft Excel'),
+					array('controller' => 'users','action' => 'activity',$period,'xlsx', '?' => $_SERVER['QUERY_STRING']),
+					'btn btn-success btn-sm btn-block',
+					'glyphicon-download-alt'
+				); ?></p>
+		
+		<p><i class="glyphicon glyphicon-hand-right"></i>&nbsp;<?php echo __("Drag to your bookmarks bar for easy access in the future."); ?>
+		<div>
+			<?php
+				echo $this->Utility->btn_link_icon(
+					__('%s: %s', Configure::read('Solution.name'), $periods[$period]),
+					array('controller' => 'users','action' => 'activity',$period,'?' => $_SERVER['QUERY_STRING']),
+					'btn btn-info btn-sm btn-block',
+					'glyphicon-bookmark'
+				);
+			?> 
 		</div>
 
 	</div>
@@ -69,25 +92,8 @@ $summary['custom'] = null;
 		<div class="row">
 			<div class="col-md-12">
 				
-				<h2>Detailed Activity</h2>
-				<p>
-					<?php
-						echo $this->Utility->btn_link_icon(
-							__('%s: %s', Configure::read('Solution.name'), $periods[$period]),
-							array('controller' => 'users','action' => 'activity',$period,'?' => $_SERVER['QUERY_STRING']),
-							'btn btn-info btn-sm',
-							'glyphicon-bookmark'
-						);
-						echo ' ';
-						echo $this->Utility->btn_link_icon(
-							__('Download as Microsoft Excel'),
-							array('controller' => 'users','action' => 'report',$period,'?' => $_SERVER['QUERY_STRING']),
-							'btn btn-success btn-sm',
-							'glyphicon-download-alt'
-						);
-					?> 
-				</p>
-
+				<h2><?php echo __('Detailed Activity'); ?></h2>
+				
 					<?php
 					if ($period == 'custom') :
 
@@ -113,10 +119,10 @@ $summary['custom'] = null;
 						<table class="table table-striped">
 							<thead>
 								<tr>
-									<th><?php echo $this->Paginator->sort('Event.title', 'Event'); ?> (more sorts: <?php echo $this->Paginator->sort('Event.start_time', __('start') ); ?>, <?php echo $this->Paginator->sort('Event.stop_time', __('stop') ); ?>) </th>
+									<th><?php echo __("Description"); ?></th>
 									<th><?php echo $this->Paginator->sort('Time.start_time', 'In'); ?></th>
 									<th><?php echo $this->Paginator->sort('Time.stop_time', 'Out'); ?></th>
-									<th>Total</th>
+									<th><?php echo $this->Paginator->sort('Time.duration', 'Total'); ?></th>
 								</tr>
 							</thead>
 							<tbody>
@@ -126,10 +132,37 @@ $summary['custom'] = null;
 							?>
 								<tr>
 									<td>
-										<strong><?php echo $this->Html->link( $time_entry['Event']['title'], array('volunteer' => true, 'controller' => 'events', 'action' => 'view', $time_entry['Event']['event_id']) );?>&nbsp;</strong>
-										<br><?php echo h($time_entry['Event']['description']); ?>&nbsp;
-										<br>
-											<?php echo $this->Duration->format($time_entry['Event']['start_time'], $time_entry['Event']['stop_time']); ?>
+										
+										<?php if( !empty($time_entry['EventTime']) ): ?>
+											<strong><?php echo $this->Html->link( 
+											$time_entry['EventTime'][0]['Event']['title'], 
+											array('volunteer' => false, 'controller' => 'times', 'action' => 'view', $time_entry['Time']['time_id']) );?>&nbsp;</strong>
+											<br><?php echo h($time_entry['EventTime'][0]['Event']['description']); ?>&nbsp;
+											<br>
+												<?php echo $this->Duration->format(
+													$time_entry['EventTime'][0]['Event']['start_time'], 
+													$time_entry['EventTime'][0]['Event']['stop_time']); ?>
+										
+										<?php elseif( !empty($time_entry['OrganizationTime']) ): ?>
+											<?php $memo = __("<em>No memo provided</em>");
+											if( !empty($time_entry['OrganizationTime'][0]['memo']) )
+												$memo = h($time_entry['OrganizationTime'][0]['memo']); ?>
+											<strong>
+												<?php echo $this->Html->link(
+													$time_entry['OrganizationTime'][0]['Organization']['name'],
+													array('volunteer' => false, 'controller' => 'times', 'action' => 'view', $time_entry['Time']['time_id'])
+												); ?>
+											</strong>
+											<div><?php echo $memo; ?></div>
+											<?php if( $time_entry['Time']['status'] == "approved" ): ?>
+												<em><?php echo __("this time entry has been approved"); ?></em>
+											<?php elseif( $time_entry['Time']['status'] == "pending" ): ?>
+												<em><?php echo __("this time entry has not been reviewed yet"); ?></em>
+											<?php else: ?>
+												<em><?php echo __("this time entry has been rejected"); ?></em>
+											<?php endif; ?>
+										<?php endif; ?>
+										
 									</td>
 									<td>
 										<?php echo $this->Utility->no_wrap( h( date($datetime_fmt, strtotime($time_entry['Time']['start_time']) ) ) ); ?>&nbsp;
@@ -148,9 +181,17 @@ $summary['custom'] = null;
 									</td>
 									<td>
 										<?php
+										
+											$duration_sprint = __("%s&nbsp;hr");
+											
+											if( !empty($time_entry['OrganizationTime']) && $time_entry['Time']['status'] != "approved" )
+												$duration_sprint = __("<em>%s&nbsp;hr</em>");
+									
 											if( $time_entry['Time']['stop_time'] != null )
 											{
-												echo number_format( $time_entry['Time']['duration'], 2) . "&nbsp;hr";
+												echo sprintf($duration_sprint,
+													number_format( $time_entry['Time']['duration'], 2)
+												);
 											}
 											else
 											{
@@ -160,14 +201,17 @@ $summary['custom'] = null;
 									</td>
 								</tr>
 							<?php
-								$duration_total += $time_entry['Time']['duration'];
+								if( !empty($time_entry['EventTime']) )
+									$duration_total += $time_entry['Time']['duration'];
+								elseif( !empty($time_entry['OrganizationTime']) && $time_entry['Time']['status'] == "approved" )
+									$duration_total += $time_entry['Time']['duration'];
 								endforeach;
 							?>
 							</tbody>
 							<tfoot>
 								<tr>
 									<th colspan="3">
-										Page Total
+										<?php echo __("Page Total"); ?>
 									</th>
 									<th>
 										<?php echo number_format($duration_total, 2); ?>&nbsp;hr&nbsp;
@@ -178,7 +222,7 @@ $summary['custom'] = null;
 										<?php echo h($periods[$period]); ?> Total
 									</th>
 									<th>
-										<?php echo number_format($period_total[0][0]['PeriodTotal'], 2); ?> hr
+										<?php echo number_format($period_total[0][0]['period_total'], 2); ?> hr
 									</th>
 							</tfoot>
 						</table>
@@ -190,123 +234,15 @@ $summary['custom'] = null;
 								echo $this->Paginator->next(__('next'), array('tag' => 'li','currentClass' => 'disabled'), null, array('tag' => 'li','class' => 'disabled','disabledTag' => 'a'));
 							?>
 						</ul>
-						<p><em>Missed punches?</em>  You will need to talk to an event coordinator to fix these.  Visit the event page to find your event coordinator.</p>
+						<p><em><?php echo __('Missed punches?'); ?></em>
+							<?php echo $this->Utility->__p(array(
+								'You will need to talk to an event coordinator to fix these.',
+								'Visit the event page to find your event coordinator.')); ?></p>
 
 				<?php else : ?>
-					<p class="append-top"><em>You have no volunteer activity in the specified time period.</em></p>
+					<p class="append-top"><em><?php echo __('You have no volunteer activity in the specified time period.'); ?></em></p>
 				<?php endif; ?>
 			</div>
 		</div>
-	</div>
-</div>
-<hr>
-<div class="row">
-	<div class="col-md-12">
-		<h2>My Organizations</h2>
-		<p class="text-muted">You are connected to these organizations.  You may leave any organization in any capacity at any time if you please.</p>
-	</div>
-	<div class="col-md-4">
-		<h3>Publishing to...</h3>
-		<?php if( !empty($publishing) ) : ?>
-		<p>Your volunteering activity may be viewed coordinators and supervisors of these organizations.</p>
-		<table class="table">
-			<thead>
-				<tr>
-					<th>Organization</th>
-					<th>Action</th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php foreach($publishing as $org) : ?>
-				<tr>
-					<td><?php echo h($org['Organization']['name']); ?></td>
-					<td><?php 
-						echo $this->Html->link(
-							__('Leave'),
-							array('volunteer' => true, 'controller' => 'organizations', 'action' => 'leave', $org['Organization']['organization_id']),
-							array('class' => 'btn btn-danger btn-xs'),
-							__('Are you sure you want to leave this organization?')
-						);
-					?></td>
-				</tr>
-				<?php endforeach; ?>
-			</tbody>
-		</table>
-		<?php else : ?>
-		<p><em>You are not publishing activity to any organizations</em></p>
-		<?php endif; ?>
-	</div>
-	<div class="col-md-4">
-		<h3>Supervising</h3>
-		<?php if( !empty($supervising) ) : ?>
-		<p>You can view event and time date for the following organizations.</p>
-		<table class="table">
-			<thead>
-				<tr>
-					<th>Organization</th>
-					<th>Action</th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php foreach($supervising as $org) : ?>
-				<tr>
-					<td><?php echo h($org['Organization']['name']); ?></td>
-					<td><?php
-							echo $this->Html->link(
-								__('Supervise'),
-								array('supervisor' => true, 'controller' => 'organizations', 'action' => 'view', $org['Organization']['organization_id']),
-								array('class' => 'btn btn-primary btn-xs')
-							);
-							echo " ";
-							echo $this->Html->link(
-								__('Leave'),
-								array('supervisor' => true, 'controller' => 'organizations', 'action' => 'leave',  $org['Organization']['organization_id']),
-								array('class' => 'btn btn-danger btn-xs'),
-								__('Are you sure you want to stop publishing your activity to this organization?')
-							); 
-					?></td>
-				</tr>
-				<?php endforeach; ?>
-			</tbody>
-		</table>
-		<?php else : ?>
-		<p><em>You are not supervising any organizations</em></p>
-		<?php endif; ?>
-	</div>
-	<div class="col-md-4">
-		<h3>Coordinating</h3>
-		<?php if( !empty($coordinating) ) : ?>
-		<p>You can create, manage, and supervise events for these organizations..</p>
-		<table class="table">
-			<thead>
-				<tr>
-					<th>Organization</th>
-					<th>Action</th>
-				</tr>
-			</thead>
-			<tbody>
-				<?php foreach($coordinating as $org) : ?>
-				<tr>
-					<td><?php echo h($org['Organization']['name']); ?></td>
-					<td><?php 
-						echo $this->Html->link(
-							__('Coordinate'),
-							array('go' => true, 'controller' => 'organizations', 'action' => 'view', $org['Organization']['organization_id']),
-							array('class' => 'btn btn-primary btn-xs')
-						);
-						echo " ";echo $this->Html->link(
-							__('Leave'),
-							array('coordinator' => true, 'controller' => 'organizations', 'action' => 'leave', $org['Organization']['organization_id']),
-							array('class' => 'btn btn-danger btn-xs'),
-							__('Are you sure you want to leave this organization?')
-						);
-					?></td>
-				</tr>
-				<?php endforeach; ?>
-			</tbody>
-		</table>
-		<?php else : ?>
-		<p><em>You are not coordinating any organizations</em></p>
-		<?php endif; ?>
 	</div>
 </div>

@@ -1,45 +1,53 @@
 <div class="row">
 	<div class="col-md-12">
-		<ol class="breadcrumb">
-			<li><?php echo $this->Html->link( Configure::read('Solution.name'), '/'); ?></li>
-			<li><?php echo h( __('Creating a new event') ); ?></li>
-		</ol>
-	</div>
-</div>
-
-<div class="row">
-	<div class="col-md-12">
-		<?php echo $this->Form->create('Event', $form_defaults); ?>
-		<h2>Create Event</h2>
+		<?php echo $this->Form->create('Event'); ?>
+		<h2><?php echo __("Create Event"); ?></h2>
+		<p class="text-muted"><?php echo $this->Utility->__p(array(
+			"Events are a convenient way to draw and coordinate volunteers for community service at a specific time and place.",
+			array("%s volunteers can RSVP and comment on events.", Configure::read('Solution.name') ),
+			"Events are a powerful way to communicate with volunteers, and make it easy to track time for large groups of volunteers."
+		)); ?></p>
 		<div class="row">
 			<div class="col-md-12">
-				<div class="well">
-					<?php
-						echo $this->Form->input('title', array('class' => 'form-control') );
-						echo $this->Form->input('description', array('type' => 'textarea', 'class' => 'form-control') );
-					?>
-					<div class="form-inline">
+				<div class="actionable">
+					<div class="situation">
 						<?php
-							echo $this->Form->input('start_time',
-								array('label' => "Start Date", 'type' => 'datetime', 'separator' => " ", 'div' => array('class' => 'append-bottom form-group') ) );
-							echo $this->Form->input('stop_time',
-								array('label' => 'Stop Date', 'type' => 'datetime', 'separator' => " ", 'div' => array('class' => 'append-bottom form-group') ) );
+							echo $this->Form->input('Event.title' );
+							echo $this->Form->input('Event.description', array('type' => 'textarea') );
 						?>
+						<div class="row">
+							<div class="col-md-6"><?php
+								echo $this->Form->input('Event.start_time',
+									array('label' => "Event Start", 'type' => 'datetime' ) ); ?></div>
+							<div class="col-md-6"><?php
+								echo $this->Form->input('Event.stop_time',
+										array('label' => 'Event End', 'type' => 'datetime' ) );?></div>
+						</div>
+						
+						<div class="row">
+							<div class="col-md-6"><?php echo $this->Form->input('Event.organization_id' ); ?></div>
+							<div class="col-md-6"><?php echo $this->Form->input('Event.rsvp_desired',
+								array('label' => __('Desired Volunteers'))); ?>
+								</div>
+						</div>
+						
+						
 					</div>
-					<?php
-						echo $this->Form->input('rsvp_desired',
-							array('label' => __('Desired Volunteers')));
-						echo $this->Form->input('organization_id', array('class' => 'form-control') );
-					?>
 				</div>
 			</div>
 		</div>
 
-		<hr>
-
 		<div class="row">
 			<div class="col-md-12">
-				<h2>Skills <small>Skills will help your event be shown to volunteers that can help.</small></h2>
+				<h2>
+					<?php echo __("Event Skills/Tags"); ?>
+					<small><?php echo __("Tag your event with skills to help %s find amazing volunteers for your event.", Configure::read('Solution.name') ); ?></small></h2>
+					<p><?php echo $this->Utility->__p(array(
+						"Begin typing any skills or tags you would like to associate your event with.",
+						"If the skill/tag already exists, click it to add it to your event.",
+						"If the skill/tag doesn't exist, press return to add it anyway.",
+						"Stuck?  Try popular software, types of people skills (children, event coordination), or college degrees."
+					)); ?></p>
 				<?php echo $this->Form->input('skill', array('class' => 'autocomplete skills form-control', 'data-target' => '#UserSkills') ); ?>
 				<div id="UserSkills">
 					<?php
@@ -59,16 +67,17 @@
 							//debug($this->request->data['Skill']);
 						}
 					?>
-					<?php // TODO: this should fill full of skill elements if the page has a validation error ?>
 				</div>
 			</div>
 		</div>
-
+		
 		<hr>
 
 		<div class="row">
 			<div class="col-md-12">
-				<h2>Addresses <small>Addresses will help volunteers navigate to your events.</small></h2>
+				<h2>
+					<?php echo __("Addresses"); ?>
+					<small><?php echo __("Add an address to help volunteers find your events."); ?></small></h2>
 
 				<p><a href="#" class="add-address btn btn-success" data-target="#UserAddresses"><i class="glyphicon glyphicon-plus"></i> Add An Address</a></p>
 				<div id="UserAddresses" class="address-container">

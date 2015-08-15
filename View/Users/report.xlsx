@@ -1,5 +1,8 @@
 <?php
 
+debug($time_data);
+return;
+
 $this->PhpExcel->createWorksheet();
 $this->PhpExcel->setDefaultFont('Calibri', 12);
 
@@ -40,4 +43,4 @@ foreach ($time_data as $time) {
 
 $this->PhpExcel->addTableFooter();
 date_default_timezone_set('America/Denver');
-$this->PhpExcel->output( __('%s-%s-activity-%s-%s.xlsx', Configure::read('Solution.name'), AuthComponent::user('username'), $period, date('d-M-Y') ) ); 
+//$this->PhpExcel->output( __('%s-%s-activity-%s-%s.xlsx', Configure::read('Solution.name'), AuthComponent::user('username'), $period, date('d-M-Y') ) ); 

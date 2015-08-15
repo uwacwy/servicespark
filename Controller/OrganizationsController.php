@@ -10,6 +10,12 @@ App::uses('AppController', 'Controller');
  */
 class OrganizationsController extends AppController {
 
+
+	public function beforeFilter()
+	{
+
+		parent::beforeFilter();
+	}
 /**
  * Components
  *
@@ -114,9 +120,16 @@ class OrganizationsController extends AppController {
 		{
 			throw new NotFoundException(__('Invalid organization'));
 		}
-		$organizationOptions = array('conditions' => array('Organization.' . $this->Organization->primaryKey => $id));
-		$eventOptions = array('conditions' => array('Event.start_time >' => date('Y-m-d H:i:s'),
-													'Event.' . $this->Organization->primaryKey => $id) );
+		
+		$organizationOptions = array(
+			'conditions' => array('
+				Organization.organization_id' => $id));
+		$eventOptions = array(
+			'conditions' => array(
+				'Event.start_time >' => date('Y-m-d H:i:s'),
+				'Event.organization_id' => $id
+			)
+		);
 		$this->set('organization', $this->Organization->find('first', $organizationOptions));
 		$events = $this->Organization->Event->find('all', $eventOptions);
 		
@@ -138,20 +151,24 @@ class OrganizationsController extends AppController {
 		$this->Paginator->settings['conditions'] = array(
 			'Organization.organization_id' => $user_co_organizations
 		);
-		$this->Paginator->settings['contain'] = array();
+		$this->Paginator->settings['contain'] = array(
+			'Address',
+			'Event' => array(
+				'conditions' => array(
+					'Event.stop_time >= Now()'
+				)
+			),
+			'Permission'
+		);
 
 		$pag_organizations = $this->Paginator->paginate();
 
 		$this->set(compact('pag_organizations'));
 
-		$title_for_layout = sprintf( __('View your organizations'));
+		$title_for_layout = sprintf( __('Coordinating Organizations'));
 		$this->set( compact('title_for_layout') );
 	}
 
-	public function coordinator_view($organization_id = null)
-	{
-		return $this->redirect( array('supervisor' => true, 'controller' => 'organizations', 'action' => 'view', $organization_id) );
-	}
 
 
 /**
@@ -326,117 +343,191 @@ class OrganizationsController extends AppController {
 		$title_for_layout = sprintf( __('View your supervising organizations'));
 		$this->set( compact('title_for_layout') );
 	}
+	
+	/**
+	 * _getDateConditions
+	 * --
+	 * generates and returns a valid SQL date/time range
+	 * */
+	private function _getDateConditions($period = null, $model = "Time")
+	{
+		if( $period == null )
+			$period = 'mtd';
+		
+		if( !in_array($period, array('custom', 'ytd', 'mtd', 'last_month') )  )
+			$period = 'mtd';
+			
+		if( $period == 'custom' && empty($this->request->query['start_date']) )
+			$period = 'mtd';
+			
+		if( $period == 'custom' && empty($this->request->query['stop_date']) )
+			$period = 'mtd';
+			
+
+		/*
+			start_date <= Time.start_time < stop_date
+		*/
+		switch($period)
+		{
+			case 'ytd':
+				$start_date = mktime(0, 0, 0, 1, 1, date('Y') );
+				$stop_date = mktime(0, 0, 0, 1, 1, date('Y') + 1);
+				break;
+			case 'last_month': // between 1st of last month and 1st of this month
+				$one_month_ago = strtotime('-1 month');
+				$start_date = mktime(0,0,0, date('n', $one_month_ago), 1, date('Y', $one_month_ago) );
+				$stop_date = mktime(0, 0, 0, date('n'), 1, date('Y') );
+				break;
+			case 'mtd':
+				$one_month_future = strtotime('+1 month');
+				$start_date = mktime(0, 0, 0, date('n'), 1, date('Y') );
+				$stop_date = mktime(0, 0, 0, date('n', $one_month_future), 1, date('Y', $one_month_future) );
+				break;
+			case 'custom':
+				{
+					$query_start_date = $this->request->query['start_date'];
+					$query_stop_date = $this->request->query['stop_date'];
+					$start_date = mktime(0, 0, 0, 
+							$query_start_date['month'],
+							$query_start_date['day'],
+							$query_start_date['year']
+					);
+					$stop_date = mktime(0, 0, 0, 
+							$query_stop_date['month'],
+							$query_stop_date['day'],
+							$query_stop_date['year']
+					);
+					$stop_date = $stop_date + (60 * 60 * 24); // less than the next day
+					break;
+				}
+		}
+		
+		// date('Y-m-d H:i:s',
+		$date = new DateTime();
+		return array(
+			"$model.start_time >=" => $date->setTimestamp($start_date)->format("Y-m-d H:i:s"),
+			"$model.start_time <" => $date->setTimestamp($stop_date)->format("Y-m-d H:i:s")
+		);
+	}
 
 
 /**
- * supervisor_view
+ * supervisor_dashboard
  *
  * @throws ForbiddenException, NotFoundException
  * @param string $id
  * @return void
 */
-	public function supervisor_view($organization_id = null) 
+	public function supervisor_dashboard($organization_id = null, $period = null, $format = null) 
 	{
-		if( $this->_CurrentUserCanRead( $organization_id ) || $this->_CurrentUserCanWrite( $organization_id ) )
+		if( $this->_CurrentUserCanRead( $organization_id ) )
 		{
-			$this->set('organization_id', $organization_id);
-
-			$sql_date_fmt = 'Y-m-d H:i:s';
-
-			$users = $this->_GetUsersByOrganization($organization_id);
+			/*
+				This is very specifically the information that volunteers have chosen to share with users;
+				This should not include time associated with an organization's events
+			*/
 			
-			$event_ids = $this->Organization->Event->find(
-				'list', 
-				array(
-					'conditions' => array('Event.organization_id' => $organization_id),
-					'fields' => array('Event.event_id')
+			$time_conditions = $this->_getDateConditions($period);
+			$time_conditions['Time.status'] = "approved";
+			
+			$this->set( compact('period', 'time_conditions') );
+			
+			$conditions = array(
+				'Organization.organization_id' => $organization_id,
+			);
+			$contain = array(
+				'Permission' => array(
+					'conditions' => array(
+						'Permission.publish' => true
+					),
+					'fields' => array(),
+					'User' => array(
+						'fields' => array('*'),
+						'Time' => array(
+							'conditions' => $time_conditions,
+							'fields' => array(
+								'COUNT( Time.time_id ) as Count',
+								'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time)/60 ) as Duration'
+							)
+						)
+					)
 				)
 			);
-
-			$conditions = array(
-				'Time.user_id' => $users
-			);
 			$fields = array(
-				'User.*',
-				'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) )/60 as UserSumTime',
-				'COUNT( Time.time_id ) as UserNumberEvents'
+				'Organization.name'
 			);
-			$group = array(
-				'User.user_id'
-			);
-
-			$userHours = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
-			$this->set(compact('userHours', 'events'));
-
-	 		// summary all time
-			$users = $this->_GetUsersByOrganization($organization_id);
-
-	 		$conditions = array(
-	 			'Time.user_id' => $users
-	 		);
-	 		$fields = array(
-	 			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as OrganizationAllTime'
-	 		);
-			$summary_all_time = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
-	 		$this->set( compact('summary_all_time') );
-
-
-			// summary month
-	  		$conditions = array(
-	 			'Time.start_time >=' => date($sql_date_fmt, strtotime('1 month ago') ),
-				'Time.user_id' => $users
-	  		);
-	  		$fields = array(
-				'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as OrganizationPastMonth'
-			);
-			$summary_past_month = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
-			$this->set( compact('summary_past_month') );
-
-
-			// summary year
-			$conditions = array(
-				'Time.user_id' => $users,
-				'Time.start_time >=' => date($sql_date_fmt, strtotime('1 year ago') )
-				
-	  		);
-			$fields = array(
-				'Time.*',
-				'User.*',
-				'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as OrganizationPastYear',
-				'COUNT( Time.time_id ) as TimeEntryCount'
-			);
-			$group = array(
-				'Time.user_id'
-	  		);
-			$summary_past_year = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
-			$this->set( compact('summary_past_year') );
-
-
-			// year-to-date
-			$conditions = array(
-				'Time.user_id' => $users,
-				'Time.start_time >=' => date($sql_date_fmt, mktime(0,0,0,1,1, date('Y') ) )
-			);
-			$fields = array(
-				'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) ) as OrganizationYTD'
-			);
-			$summary_ytd = $this->Organization->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields) );
-			$this->set( compact('summary_ytd') );
-
-			$title_for_layout = sprintf( __('Supervise this organization'), Configure::read('Solution.name') );
-			$this->set( compact('title_for_layout') );
+			
+			$time = $this->Organization->find('first', compact('fields', 'conditions', 'contain'));
+			
+			$users = $time['Permission'];
+			$organization = $time['Organization'];
+			
+			$row_counts = Set::combine($users, '{n}.User.user_id', '{n}.User.Time.0.Time.0.Count');
+			$row_totals = Set::combine($users, '{n}.User.user_id', '{n}.User.Time.0.Time.0.Duration');
+			$duration_total = array_sum($row_totals);
+			$count_total = array_sum($row_counts);
+			
+			$this->set( compact('organization', 'users', 'row_counts', 'row_totals', 'duration_total', 'count_total') );
+			
+			
 		}
 		else
 		{
 			return $this->redirect(
 				array(
-					'volunteer' => false,
+					'go' => true,
 					'controller' => 'organizations',
 					'action' => 'index'
 				)
 			);
 		}
 	}
+	
+	public function coordinator_dashboard($organization_id = null, $period = null, $format = null)
+	{
+		if( $this->_CurrentUserCanWrite( $organization_id ) )
+		{
+			$event_conditions = $this->_getDateConditions($period, 'Event');
+			
+			$conditions['Organization.organization_id'] = $organization_id;
+			$contain = array();
+			$organization = $this->Organization->find('first', compact('conditions', 'contain') );
+			
+			$db = $this->Organization->getDataSource();
+			$results = $db->fetchAll(
+"SELECT Event.event_id, Event.title, Event.start_time, Event.stop_time, Event.start_token, Event.stop_token, SUM( TIMESTAMPDIFF(
+MINUTE , Time.start_time, Time.stop_time ) /60 ) AS Duration, COUNT( DISTINCT (
+Time.user_id
+) ) AS Volunteers, COUNT( Time.time_id ) AS Engagements
+FROM `events` Event
+LEFT JOIN events_times EventTime ON Event.event_id = EventTime.event_id
+LEFT JOIN times Time ON EventTime.time_id = Time.time_id
+WHERE Event.organization_id = :organization_id
+AND Event.start_time >= :start_date
+AND Event.start_time < :stop_date
+GROUP BY Event.event_id, Event.title, Event.start_time, Event.stop_time, Event.start_token, Event.stop_token",
+array(
+	'organization_id' => $organization_id,
+	'start_date' => $event_conditions['Event.start_time >='],
+	'stop_date' => $event_conditions['Event.start_time <']
+));
+			
+			
+			$this->set( compact('results', 'organization', 'event_conditions') );
+			
+		}
+		else
+		{
+			return $this->redirect(
+				array(
+					'go' => true,
+					'controller' => 'organizations',
+					'action' => 'index'
+				)
+			);
+		}
+	}
+
 
 
 /**
@@ -822,6 +913,67 @@ class OrganizationsController extends AppController {
 		$title_for_layout = sprintf( __('Leave this organization'));
 			$this->set( compact('title_for_layout') );
 	}
+	
+	private function _organization_join($organization_id)
+	{
+		$success = false;
+		$message = __("There was a problem joining this organization");
+		
+		if( !$this->Organization->exists($organization_id) )
+		 	return compact('success', 'message');
+		
+		$conditions = array(
+			'Permission.organization_id' => $organization_id,
+			'Permission.user_id' => $this->Auth->user('user_id')
+		);
+		$contain = array('Organization');
+		
+		$permission = $this->Organization->Permission->find('first', compact('conditions', 'compact') );
+		
+		/*
+			Check for existing permission row; update if exists
+		*/
+		if( !empty($permission) )
+		{
+			$save = $permission['Permission'];
+			$save['publish'] = true;
+			
+			if( $this->Organization->Permission->save($save) )
+			{
+				$success = true;
+				$message = __("You are now publishing your activity to %s.", $permission['Organization']['name'] );
+			}
+		}
+		else
+		{
+			$save = array(
+				'organization_id' => $organization_id,
+				'user_id' => $this->Auth->user('user_id'),
+				'publish' => true,
+				'read' => false,
+				'write' => false
+			);
+			if( $this->Organization->Permission->save($save) )
+			{
+				$this->Organization->id = $organization_id;
+				$success = true;
+				$message = __("You are now publishing your activity to %s", $this->Organization->field('name') );
+			}
+		}
+		
+		return array(
+			'success' => $success,
+			'message' => $message
+		);
+	}
+	
+	public function api_join($organization_id)
+	{
+		$this->response->type('json');
+		$this->response->body( json_encode( array('result' =>$this->_organization_join($organization_id) ) ) );
+		
+		return $this->response;
+	}
 
 
 /**
@@ -849,7 +1001,6 @@ class OrganizationsController extends AppController {
 					);
 					$this->Organization->Permission->create();
 					$this->Organization->Permission->save($entry);
-					debug($entry);
 				}
 			}
 
@@ -862,16 +1013,24 @@ class OrganizationsController extends AppController {
 			);
 		}
 
-		$conditions = array(
-			'NOT' => array(
-				'Organization.organization_id' => $this->_GetUserOrganizationsByPermission('all')
-			)
-		);
+		$conditions = array();
 
 		$this->Paginator->settings = array(
 			'conditions' => $conditions,
 			'limit' => 10,
-			'contain' => array()
+			'contain' => array(
+				'Event' => array(
+					'conditions' => array(
+						'Event.stop_time >= Now()'
+					)
+				),
+				'Permission' => array(
+					'conditions' => array(
+						'Permission.user_id' => $this->Auth->user('user_id'),
+						'Permission.publish' => true
+					)
+				)
+			)
 		);
 
 		$organizations = $this->Paginator->paginate();
@@ -941,6 +1100,23 @@ class OrganizationsController extends AppController {
 				array(
 					'volunteer' => false,
 					'controller' => $organizations,
+					'action' => 'index'
+				)
+			);
+		}
+	}
+	
+	public function volunteer_time($organization_id)
+	{
+		if( $this->Organization->exists($organization_id) )
+		{
+			debug("this is a valid organization");
+		}
+		else
+		{
+			return $this->redirect(
+				array(
+					'controller' => 'times',
 					'action' => 'index'
 				)
 			);

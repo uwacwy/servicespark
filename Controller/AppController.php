@@ -20,6 +20,7 @@
  */
 
 App::uses('Controller', 'Controller');
+App::uses('AppModel', 'Model');
 App::uses('SimplePasswordHasher', 'Controller/Component/Auth');
 
 /**
@@ -45,6 +46,7 @@ class AppController extends Controller {
 		'Utility',
 		'PhpExcel',
 		'Form' => array('className' => 'BoostCake.BoostCakeForm'),
+		'Notification' => array('className' => 'Notification.Notification')
 		//'Paginator' => array('className' => 'BoostCake.BoostCakePaginator'),
 	);
 
@@ -104,6 +106,15 @@ class AppController extends Controller {
 			)
 		);
 	}
+	
+	public function beforeRender()
+	{
+		if( isset($this->organization_id) )
+		{
+			$permission_context = $this->_GetUserPermissionsByOrganization($this->organization_id);
+			$this->set( compact('permission_context') );
+		}
+	}
 
 	/**
 	 * Redirector
@@ -133,64 +144,6 @@ class AppController extends Controller {
 		return $redirect;
 	}
 	
-	protected function _sendEmail($template, $subject, $recipients, $global_merge_vars, $recipient_merge_vars)
-	{
-		$global_merge_vars_default = array(
-			'solution_name' => Configure::read('Solution.name'),
-			'user_profile_link' => Router::url(
-				array('volunteer' => false, 'controller'=> 'users', 'action' => 'profile'), true)
-		);
-		$global_merge_vars = array_merge($global_merge_vars_default, $global_merge_vars);
-		
-		$email = new CakeEmail( 'mandrill_api' );
-		$email
-			->to( $recipients )
-			->subject("[*|solution_name|*] ". $subject)
-			->addHeaders( $this->_CreateMandrillMergeVars($global_merge_vars, $recipient_merge_vars) )
-			->send($template);
-	}
-	
-	
-	
-	private function _CreateMandrillMergeVars($global_merge_vars, $recipient_merge_vars, $rcpt_key = "rcpt")
-	{
-		$result = array(
-			'global_merge_vars' => array(),
-			'merge_vars' => array()
-		);
-
-		foreach($global_merge_vars as $name => $content)
-		{
-			$result['global_merge_vars'][] = array(
-				'name' => $name,
-				'content' => $content
-			);
-		}
-
-		//$this->out( print_r($recipient_merge_vars, false));
-
-		foreach($recipient_merge_vars as $email => $merge_vars)
-		{
-			$mandrill_vars = array();
-			foreach($merge_vars as $name => $content)
-			{
-				$mandrill_vars[] = array(
-					'name' => $name,
-					'content' => $content
-				);
-			}
-
-			$result['merge_vars'][] = array(
-				$rcpt_key => $email,
-				'vars' => $mandrill_vars
-			);
-
-		}
-
-		return $result;
-
-	}
-
 	/**
 	 * GetUserOrganizationsByPermission
 	 *
@@ -229,6 +182,39 @@ class AppController extends Controller {
 		$permissions = $permission->find('list', array('conditions' => $conditions, 'fields' => array('Permission.organization_id') ) );
 
 		return $permissions;
+	}
+	
+	public function _GetUserPermissionsByOrganization($organization_id, $user_id = null)
+	{
+		
+			
+		$user_id = $user_id == null ? AuthComponent::user('user_id') : $user_id;
+		$result = array(
+			'guest' => true,
+			'volunteer' => ($user_id != null) ? true : false,
+			'supervisor' => false,
+			'coordinator' => false
+		);
+			
+		App::uses('Permission', 'Model');
+		$Permission = new Permission();
+		
+		$permissions = $Permission->find('first', array(
+			'conditions' => array(
+				'Permission.user_id' => $user_id,
+				'Permission.organization_id' => $organization_id
+			),
+			'contain' => false
+		));
+		
+		if( !empty($permissions) )
+		{
+			$result['coordinator'] = $permissions['Permission']['write'];
+			$result['supervisor'] = $permissions['Permission']['read'];
+		}
+		
+		return $result;
+		
 	}
 
 
