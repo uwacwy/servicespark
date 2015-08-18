@@ -10,11 +10,11 @@ App::uses('AppController', 'Controller');
  */
 class OrganizationsController extends AppController {
 
-
 	public function beforeFilter()
 	{
-
 		parent::beforeFilter();
+	    // Allow guest users to open event index and event view
+	    $this->Auth->allow('go_view', 'go_add', 'go_index');
 	}
 /**
  * Components
@@ -949,15 +949,20 @@ array(
 			$save = array(
 				'organization_id' => $organization_id,
 				'user_id' => $this->Auth->user('user_id'),
-				'publish' => true,
-				'read' => false,
-				'write' => false
+				'publish' => 1,
+				'read' => 0,
+				'write' => 0
 			);
 			if( $this->Organization->Permission->save($save) )
 			{
 				$this->Organization->id = $organization_id;
 				$success = true;
 				$message = __("You are now publishing your activity to %s", $this->Organization->field('name') );
+			}
+			else
+			{
+				$message = __("Problem *saving* new permission entry");
+				CakeLog::write('debug', print_r($this->Organization->Permission->validationErrors, true));
 			}
 		}
 		

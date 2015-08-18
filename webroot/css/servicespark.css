@@ -304,4 +304,9 @@
   margin-top: 1.5em;
   min-height: 1em; }
 
+.badge.unread-notifications
+{
+  background-color: #d00;
+}
+
 /*# sourceMappingURL=servicespark.css.map */

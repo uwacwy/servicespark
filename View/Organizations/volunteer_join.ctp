@@ -29,8 +29,7 @@
 						'volunteer' => true,
 						'controller' => 'organizations',
 						'action' => 'leave',
-						$organization['Organization']['organization_id'],
-						'going'
+						$organization['Organization']['organization_id']
 					),
 					array(
 						'class' => 'api-trigger text-danger when-on',
@@ -38,8 +37,7 @@
 							'api' => true, 
 							'controller' => 'organizations', 
 							'action' => 'leave', 
-							$organization['Organization']['organization_id'],
-							'going'
+							$organization['Organization']['organization_id']
 						)),
 						'data-on-success' => 'toggle_parent_class',
 						'data-toggle-class' => 'on off'
@@ -54,8 +52,7 @@
 						'volunteer' => true,
 						'controller' => 'organizations',
 						'action' => 'join',
-						$organization['Organization']['organization_id'],
-						'going'
+						$organization['Organization']['organization_id']
 					),
 					array(
 						'class' => 'api-trigger text-primary when-off',
@@ -63,8 +60,7 @@
 							'api' => true, 
 							'controller' => 'organizations', 
 							'action' => 'join', 
-							$organization['Organization']['organization_id'],
-							'going'
+							$organization['Organization']['organization_id']
 						)),
 						'data-on-success' => 'toggle_parent_class',
 						'data-toggle-class' => 'on off'

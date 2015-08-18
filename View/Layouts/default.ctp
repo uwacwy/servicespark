@@ -153,10 +153,16 @@ global $solution_name;
 					<li class="dropdown-header"><?php echo h( __('Events') ); ?></li>
 					<?php
 						echo sprintf($item_sprint,
-	  					$this->Html->url( array('controller' => 'events', 'action' => 'index', 'volunteer' => true) ),
-	  					'<span class="glyphicon glyphicon-calendar"></span> ',
-	  					__('Ongoing and Upcoming Events')
-	  				);
+	  						$this->Html->url( array('controller' => 'events', 'action' => 'index', 'volunteer' => true) ),
+	  						'<span class="glyphicon glyphicon-calendar"></span> ',
+	  						__('Ongoing and Upcoming Events')
+	  					);
+
+		  				echo sprintf($item_sprint,
+		  					$this->Html->url( array('controller' => 'events', 'action' => 'recommended', 'volunteer' => true) ),
+		  					'<span class="glyphicon glyphicon-heart"></span> ',
+		  					__("Events Recommended For You")
+		  				);
 					?>
 					<?php
 						// echo sprintf($item_sprint,
@@ -337,7 +343,7 @@ global $solution_name;
 			        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
 			            <?php echo __('Notifications') ?>
 			            <?php if (!empty($notifications)): ?>
-			                <span class="badge badge-success">
+			                <span class="badge unread-notifications">
 			                    <?php echo count($notifications); ?>
 			                </span>
 			            <?php endif ?>
@@ -349,7 +355,7 @@ global $solution_name;
 			            <?php endforeach ?>
 			         <?php else: ?>
 			         	<li><?php echo $this->Html->link(
-			         		__("You have no notifications at this time"),
+			         		__("You have no unread notifications at this time"),
 			         		array('controller' => 'users', 'action' => 'notifications')
 			         		); ?></li>
 			         <?php endif; ?>

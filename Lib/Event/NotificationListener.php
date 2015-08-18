@@ -4,6 +4,7 @@ App::uses('CakeEmail', 'Network/Email');
 App::uses('Event', 'Model');
 App::uses('Comment', 'Model');
 App::uses('Time', 'Model');
+App::uses('Permission', 'Model');
 
 class NotificationListener implements CakeEventListener
 {

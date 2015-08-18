@@ -28,7 +28,7 @@
 
 <?php
 $form_defaults['type'] = 'get';
-$form_defaults['url'] = array('supervisor' => true, 'controller' => 'organizations', 'action' => 'view', $organization['organization_id'], 'custom');
+$form_defaults['url'] = array('supervisor' => true, 'controller' => 'organizations', 'action' => 'dashboard', $organization['organization_id'], 'custom');
 echo $this->Form->create('Organization', $form_defaults); ?>
 
 

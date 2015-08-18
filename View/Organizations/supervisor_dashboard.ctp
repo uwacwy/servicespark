@@ -22,7 +22,7 @@
 				array(
 					'coordinator' => true,
 					'controller' => 'organizations',
-					'action' => 'view',
+					'action' => 'dashboard',
 					$organization['organization_id']
 				)
 			)

@@ -16,7 +16,7 @@
 						array(
 							'supervisor' => true,
 							'controller' => 'organizations',
-							'action' => 'view',
+							'action' => 'dashboard',
 							$organization['Organization']['organization_id']
 						)
 					)
@@ -48,7 +48,7 @@
 							array(
 								'coordinator' => true,
 								'controller' => 'events',
-								'action' => 'view',
+								'action' => 'dashboard',
 								$result['Event']['event_id']
 							)
 						); ?><br>

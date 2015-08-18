@@ -8,7 +8,7 @@
 			<div class="actionable">
 				<div class="situation">
 					<h4><?php echo h( $organization['Organization']['name'] ); ?></h4>
-					<?php if( !empty( trim($organization['Organization']['description']) ) )
+					<?php if( !empty( $organization['Organization']['description']) )
 						echo $this->Html->tag('p', $organization['Organization']['description']); ?>
 					
 					<div class="stat-bar">

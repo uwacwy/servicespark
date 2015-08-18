@@ -751,7 +751,6 @@ class TimesController extends AppController
 			&& in_array($status, array('approve', 'reject'))
 		)
 		{
-			debug('passed tests');
 			$verb_status = array(
 				'approve' => 'approved',
 				'reject' => 'rejected'
