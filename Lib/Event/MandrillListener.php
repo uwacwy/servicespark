@@ -154,10 +154,17 @@ class MandrillListener implements CakeEventListener
 				$template = 'coordinator_time_modified';
 				$subject = 'Please approve *|time_duration|* hours for *|organization_name|*';
 				$to = Hash::extract($time, 'OrganizationTime.{n}.Organization.Permission.{n}.User.email');
-				$recipient_merge_vars = Hash::combine(
-					$time, 
-					'OrganizationTime.0.Organization.Permission.{n}.User.email',
-					'OrganizationTime.0.Organization.Permission.{n}.User');
+				
+				$coordinators = Hash::extract($time, 'OrganizationTime.{n}.Organization.Permission.{n}.User');
+				
+				foreach($coordinators as $key => $coordinator)
+				{
+					if( empty($coordinator) )
+						unset($coordinators[$key]);
+				}
+				
+				$recipient_merge_vars = Hash::combine( $coordinators, '{n}.email', '{n}');
+					
 			}
 			else
 			{
