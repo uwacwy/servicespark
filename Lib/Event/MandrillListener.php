@@ -156,8 +156,8 @@ class MandrillListener implements CakeEventListener
 				$to = Hash::extract($time, 'OrganizationTime.{n}.Organization.Permission.{n}.User.email');
 				$recipient_merge_vars = Hash::combine(
 					$time, 
-					'OrganizationTime.{n}.Organization.Permission.{n}.User.email',
-					'OrganizationTime.{n}.Organization.Permission.{n}.User');
+					'OrganizationTime.0.Organization.Permission.{n}.User.email',
+					'OrganizationTime.0.Organization.Permission.{n}.User');
 			}
 			else
 			{
