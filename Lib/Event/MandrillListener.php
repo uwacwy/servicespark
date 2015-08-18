@@ -21,8 +21,188 @@ class MandrillListener implements CakeEventListener
 			'App.Skill.afterSave.created' => 'skill_created',
 			'App.Comment.afterSave.created' => 'comment_created',
 			'App.User.afterSave.created' => 'user_created',
-			'App.Recovery.afterSave.created' => 'recovery_created'
+			'App.Recovery.afterSave.created' => 'recovery_created',
+			'App.OrganizationTime.afterSave.created' => 'organization_time_created',
+			'App.Time.afterSave.modified' => 'time_touched'
 		);
+	}
+	
+	/*
+		organization_time_created
+		--
+		Processes notifications to Coordinators about new OrganizationTime
+		and related Time
+	*/
+	public function organization_time_created($cake_event)
+	{
+		$this->OrganizationTime = $cake_event->subject();
+		
+		$organization_time = $this->OrganizationTime->find('first', array(
+			'conditions' => array('OrganizationTime.organization_time_id' => $cake_event->data['organization_time_id']),
+			'contain' => array(
+				'Organization' => array('Permission.write = 1' => array('User.email_coordinating = 1')),
+				'Time' => array('User')
+			)
+		));
+		
+		$organization_time['Time']['view_link'] =
+			Router::url( array(
+				'volunteer' => false,
+				'controller' => 'times', 
+				'action' => 'view', 
+				$organization_time['Time']['time_id']
+			), true);
+		
+		$global_merge_vars = array(
+			'solution_name' => Configure::read('Solution.name'),
+			'time' => $this->PrettyTime( $organization_time['Time'], array('User') ),
+			'user' => $this->PrettyUser( $organization_time['Time']['User'], array('password')),
+			'organization' => $organization_time['Organization']
+		);
+		
+		unset(
+			$global_merge_vars['organization']['Permission']
+		);
+		
+		$global_merge_vars = Hash::flatten($global_merge_vars, "_");
+		
+		$to = Hash::extract($organization_time, 'Organization.Permission.{n}.User.email');
+		$recipient_merge_vars = Hash::combine(
+			$organization_time, 
+			'Organization.Permission.{n}.User.email', 'Organization.Permission.{n}.User');
+		
+		$headers = $this->CreateMandrillHeaders($global_merge_vars, $recipient_merge_vars);
+		
+		$email = new CakeEmail( $this->configuration_name );
+		$email
+			->template('new_organization_time')
+			->emailFormat('text')
+			->to( $to )
+			->subject( "[*|solution_name|*] *|organization_name|*: *|time_duration|* hours submitted for approval" )
+			->addHeaders( $headers );
+			
+		if( $email->send() )
+		{
+			$this->log('- Sent new organization time notifications to coordinators');
+		}
+	}
+	
+	private function PrettyTime($time, $unsets = array() )
+	{
+		$time['start_time'] = date('F j, Y g:i a', strtotime($time['start_time']) );
+		$time['stop_time'] = date('F j, Y g:i a', strtotime($time['stop_time']) );
+		$time['duration'] = number_format($time['duration'], 2);
+		$time['view_link'] = Router::url( array(
+			'volunteer' => false,
+			'controller' => 'times', 
+			'action' => 'view', 
+			$time['time_id']
+		), true);
+		
+		foreach($unsets as $unset)
+			unset($time[$unset]);
+		
+		return $time;
+	}
+	
+	private function PrettyOrganization($organization, $unsets = array() )
+	{
+		foreach($unsets as $unset)
+			unset($organization[$unset]);
+		
+		return $organization;
+	}
+	
+	public function time_touched($cake_event)
+	{
+		$Model = $cake_event->subject();
+		
+		if( $Model->name == "Time" )
+		{
+			$Time = $Model;
+			$time_id = $Time->data['Time']['time_id'];
+		}
+		else
+		{
+			$Time = $Model->Time;
+			$time_id = $Model->data[ $Model->name ]['time_id'];
+		}
+		
+		$User = $Time->User;
+		
+		$time = $Time->find('first', array(
+			'conditions' => array(
+				'Time.time_id' =>  $time_id
+			),
+			'contain' => array(
+				'User',
+				'OrganizationTime' => array(
+					'Organization' => array(
+						'Permission.write = 1' => array(
+							'User.email_coordinating = 1'
+						)
+					)
+				)
+			)
+		));
+
+		// organization time created (pending)
+		if( !empty($time['OrganizationTime']) )
+		{
+			if( $time['Time']['status'] == 'pending' )
+			{
+				$template = 'coordinator_time_modified';
+				$subject = 'Please approve *|time_duration|* hours for *|organization_name|*';
+				$to = Hash::extract($time, 'OrganizationTime.{n}.Organization.Permission.{n}.User.email');
+				$recipient_merge_vars = Hash::combine(
+					$time, 
+					'OrganizationTime.{n}.Organization.Permission.{n}.User.email',
+					'OrganizationTime.{n}.Organization.Permission.{n}.User');
+			}
+			else
+			{
+				$template = 'volunteer_time_modified';
+				$subject = 'Your time at *|organization_name|* has been *|time_status|*';
+				// email the user
+				$to = array( $time['User']['email'] => $time['User']['email'] );
+				$recipient_merge_vars = array(
+					$time['User']['email'] => $time['User']
+				);
+			}
+			
+			$global_merge_vars = array(
+				'solution_name' => Configure::read('Solution.name'),
+				'organization' => $this->PrettyOrganization($time['OrganizationTime'][0]['Organization'], array('Permission')),
+				'time' => $this->PrettyTime($time['Time']),
+				'user' => $this->PrettyUser($time['User'], array('password', 'super_admin'))
+			);
+			
+			$global_merge_vars = Hash::flatten($global_merge_vars, '_');
+			
+			$headers = $this->CreateMandrillHeaders($global_merge_vars, $recipient_merge_vars);
+			
+			$email = new CakeEmail( $this->configuration_name );
+			$email
+				->template($template)
+				->emailFormat('text')
+				->to( $to )
+				->subject( "[*|solution_name|*] " . $subject )
+				->addHeaders( $headers );
+				
+			if( $email->send() )
+			{
+				$this->log('- Sent modified org time emails');
+			}
+		}
+	}
+	
+	private function PrettyUser($user, $unsets = array() )
+	{
+		
+		foreach($unsets as $unset)
+			unset($user[$unset]);
+		
+		return $user;
 	}
 	
 	public function user_created($cake_event)
@@ -209,6 +389,47 @@ class MandrillListener implements CakeEventListener
 		
 	}
 	
+	private function CreateMandrillHeaders($global_merge_vars, $recipient_merge_vars, $rcpt_key = "rcpt")
+	{
+		$result = array(
+			'global_merge_vars' => array(),
+			'merge_vars' => array()
+		);
+
+		foreach($global_merge_vars as $name => $content)
+		{
+			$result['global_merge_vars'][] = array(
+				'name' => $name,
+				'content' => $content
+			);
+		}
+
+		//$this->out( print_r($recipient_merge_vars, false));
+
+		foreach($recipient_merge_vars as $email => $merge_vars)
+		{
+			$mandrill_vars = array();
+			foreach($merge_vars as $name => $content)
+			{
+				$mandrill_vars[] = array(
+					'name' => $name,
+					'content' => $content
+				);
+			}
+
+			$result['merge_vars'][] = array(
+				$rcpt_key => $email,
+				'vars' => $mandrill_vars
+			);
+
+		}
+		
+		$result['preserve_recipients'] = false;
+
+		return $result;
+
+	}
+	
 	private function CreateMandrillMergeVars($recipient_merge_vars, $rcpt_key = "rcpt")
 	{
 		$result = array(
@@ -234,6 +455,8 @@ class MandrillListener implements CakeEventListener
 			);
 
 		}
+		
+		$result['preserve_recipients'] = false;
 
 		return $result;
 
@@ -407,6 +630,146 @@ class MandrillListener implements CakeEventListener
 			->send($template);
 	}
 	
+	private function GetRecipients($event_id, $restrict = array() )
+	{
+		if( !isset($this->Event) )
+			$this->Event = new Event();
+			
+		$default = array(
+			'attended' => false,
+			'going' => false,
+			'coordinating' => false,
+			'discussing' => false,
+			'skills' => false
+		);
+		
+		$loci = Hash::merge($default, $restrict);
+		
+		$contain = array();
+		
+		if( $loci['attended'] )
+			$contain['EventTime'] = array(
+				'Time' => array(
+					'User' => array(
+						'conditions' => array(
+							'User.email_attended' => true
+						)
+					)
+				)
+			);
+		
+		if( $loci['going'] )
+			$contain['Rsvp'] = array(
+				'conditions' => array(
+					'Rsvp.status' => 'going'
+				),
+				'User' => array(
+					'conditions' => array(
+						'User.email_going' => true
+					)
+				)
+			);
+			
+		if( $loci['coordinating'] )
+			$contain['Organization'] = array(
+				'Permission' => array(
+					'conditions' => array(
+						'Permission.write' => true
+					),
+					'User' => array(
+						'conditions' => array(
+							'User.email_coordinating' => true
+						)
+					)
+				)
+			);
+			
+		if( $loci['discussing'] )
+			$contain['Comment'] = array(
+				'User' => array(
+					'conditions' => array(
+						'User.email_discussing' => true
+					)
+				)
+			);
+			
+		if( $loci['skills'] )
+			$contain['Skill'] = array(
+				'User' => array(
+					'conditions' => array(
+						'User.email_skills' => true
+					)
+				)
+			);
+		
+		$conditions = array(
+			'Event.event_id' => $event_id
+		);
+		$result = $this->Event->find('first', compact('conditions', 'contain'));
+		
+		
+		/*
+			This is a rudimentary extraction of users.  This includes duplicates.
+		*/
+		$recipients = array(
+			'skills' => Hash::combine($result, 'Skill.{n}.skill', 'Skill.{n}.User'),
+			'attended' => Hash::extract($result, 'EventTime.{n}.Time'),
+			'going' => Hash::extract($result, 'Rsvp.{n}.User'),
+			'discussing' => Hash::extract($result, 'Comment.{n}.User'),
+			'coordinating' => Hash::extract($result, 'Organization.Permission.{n}.User')
+		);
+		
+		/*
+			The array needs to be flipped, so the primary dimension is User
+			The secondary dimension is the locus of control
+		*/
+		$flipped_result = array();
+		
+		$reason_key = 'Locus';
+		
+		foreach( $recipients['skills'] as $skill => $users )
+		{
+			foreach($users as $user)
+			{
+				$user_id = $user['user_id'];
+				
+				$flipped_result[ $user_id ]['User'] = $user;
+				$flipped_result[ $user_id ]['Skill'][] = $skill;
+				$flipped_result[ $user_id ][$reason_key]['skills'] = true;
+			}
+		}
+		
+		foreach( $recipients['attended'] as $time )
+		{
+			if( !empty($time) )
+			{
+				$user_id = $time['User']['user_id'];
+				$flipped_result[ $user_id ]['User'] = $time['User'];
+				unset($time['User']);
+				
+				$flipped_result[ $user_id ]['Time'][] = $time;
+				$flipped_result[ $user_id ][$reason_key]['attended'] = true;
+			}
+		}
+		
+		foreach( array('going', 'discussing', 'coordinating') as $locus )
+		{
+			if( is_array($recipients[$locus]) )
+			foreach( $recipients[$locus] as $user )
+			{
+				if( !empty($user) )
+				{
+					$flipped_result[ $user['user_id'] ]['User'] = $user;
+					$flipped_result[ $user['user_id'] ][$reason_key][$locus] = true;
+				}
+
+			}
+		}
+		
+		return $flipped_result;
+		
+	}
+	
 	private function deprecated_CreateMandrillMergeVars($global_merge_vars, $recipient_merge_vars, $rcpt_key = "rcpt")
 	{
 		$result = array(
@@ -444,5 +807,14 @@ class MandrillListener implements CakeEventListener
 
 		return $result;
 
+	}
+	
+	private function log($that, $severity = "debug")
+	{
+		if( is_array($that) )
+			$that = print_r($that, true);
+		
+		
+		CakeLog::write( $severity, $that );
 	}
 }
