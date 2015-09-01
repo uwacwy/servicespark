@@ -1,6 +1,7 @@
 <?php
 App::uses('AppModel', 'Model');
-/**
+App::uses('CakeTime', 'Utility');
+/*
  * Event Model
  *
  * @property Skill $Skill
@@ -83,9 +84,10 @@ class Event extends AppModel
 		$event = $this->find('first', $event_id);
 		
 		// Event should be at $event['Event']
-		
-		$start_time_utc = CakeTime::convert( (new DateTime($event['Event']['start_time']))->getTimestamp(), 'UTC');
-		$stop_time_utc = CakeTime::convert((new DateTime($event['Event']['stop_time']))->getTimestamp(), 'UTC');
+		$start_time_dt = new DateTime($event['Event']['start_time']);
+		$stop_time_dt = new DateTime($event['Event']['stop_time']);
+		$start_time_utc = CakeTime::convert( $start_time_dt->getTimestamp(), 'UTC');
+		$stop_time_utc = CakeTime::convert( $stop_time_dt->getTimestamp(), 'UTC');
 		$now = CakeTime::convert( time(), 'UTC');
 		$event_url = Router::url(array(
 			'go' => true,
