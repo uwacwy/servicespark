@@ -87,6 +87,17 @@ class MandrillListener implements CakeEventListener
 		}
 	}
 	
+	private function PrettyEvent($event, $unsets = array() )
+	{
+		$event['start_time'] = date('F j, Y g:i a', strtotime($event['start_time']) );
+		$event['stop_time'] = date('F j, Y g:i a', strtotime($event['stop_time']) );
+		
+		foreach($unsets as $unset)
+			unset($event[$unset]);
+			
+		return $event;
+	}
+	
 	private function PrettyTime($time, $unsets = array() )
 	{
 		$time['start_time'] = date('F j, Y g:i a', strtotime($time['start_time']) );
@@ -251,7 +262,13 @@ class MandrillListener implements CakeEventListener
 			'conditions' => $event_conditions
 		) );
 		
-		$recipients = $this->_GetRecipients($event_id, false, false, true, false, false, null);
+		$ics = $model_event->get_ics($event_id);
+		
+		//$recipients = $this->_GetRecipients($event_id, false, false, true, false, false, null);
+		
+		$recipients = $this->GetRecipients($event_id, array(
+			'skills' => true
+		));
 		
 		if( empty($recipients) )
 		{
@@ -259,25 +276,31 @@ class MandrillListener implements CakeEventListener
 			return;
 		}
 		
-		$recipient_merge_vars = array();
-		foreach($recipients as $user_id => $recipient)
-		{				
-			$recipient_merge_vars[ $recipient['email'] ] = array(
-				'full_name' => $recipient['full_name']
-			);
-			$to[] = $recipient['email'];
-		}
+		$global_merge_vars = array(
+			'solution_name' => Configure::read('Solution.name'),
+			'event' => $this->PrettyEvent($app_event['Event']),
+			'event_rsvp_going_url' => Router::url( array('volunteer' => true, 'controller' => 'events', 'action' => 'rsvp', $app_event['Event']['event_id']), true ),
+			'event_url' => Router::url( array('volunteer' => true, 'controller' => 'events', 'action' => 'view', $app_event['Event']['event_id']), true ),
+			'organization' => $this->PrettyOrganization($app_event['Organization'], array('Permission')),
+		);
+		$global_merge_vars = Hash::flatten($global_merge_vars, "_");
+		$recipient_merge_vars = Hash::combine($recipients, '{n}.User.email', '{n}.User');
+		$to = Hash::extract($recipients, '{n}.User.email');
 		
-		$headers = $this->CreateMandrillMergeVars( $recipient_merge_vars );
-		$headers['preserve_recipients'] = false;
+		$headers = $this->CreateMandrillHeaders($global_merge_vars, $recipient_merge_vars );
+		
+		$headers['attachments'] = array(
+			array(
+				'type' => 'text/calendar',
+				'name' => 'event.ics',
+				'content' => base64_encode($ics)
+			)
+		);
 		
 		$email = new CakeEmail( $this->configuration_name );
 		$email
 			->template('new_event')
 			->emailFormat('text')
-			->viewVars(array(
-				'event' => $app_event
-			))
 			->to( $to )
 			->subject( $this->_ApplyMergeVars(
 				"[*|solution_name|*] New event for *|full_name|*: *|event_title|*",
@@ -314,6 +337,7 @@ class MandrillListener implements CakeEventListener
 		CakeLog::write('info', "Sending new comment email notifications.");
 
 		$Comment = new Comment();
+		$User = $Comment->User;
 		$comment_id = $cake_event->data['comment_id'];
 		$comment_conditions = array(
 			'Comment.comment_id' => $comment_id
@@ -331,7 +355,7 @@ class MandrillListener implements CakeEventListener
 		$recipients = $this->_GetRecipients($comment['Comment']['event_id'], true, false, true, true, true, $mentioned_users[1]);
 		$recipients = $this->_RestrictRecipients($recipients);
 		
-		unset($recipients[AuthComponent::user('user_id')]);
+		unset($recipients[ $comment['Comment']['user_id'] ]);
 		
 		if( empty($recipients) )
 		{
@@ -340,10 +364,14 @@ class MandrillListener implements CakeEventListener
 		}
 		
 		$recipient_merge_vars = array();
+		$guids = array();
+		
 		foreach($recipients as $user_id => $recipient)
 		{	
 			$subject = "[*|solution_name|*] New Comment on \"*|event_title|*\"";
 			$reasons = array();
+			
+			$guid = $this->guid();
 				
 			if( isset($recipient['context']['attended']) && $recipient['context']['attended'] )
 				$reasons[] = __("- You attended this event.");
@@ -366,12 +394,24 @@ class MandrillListener implements CakeEventListener
 			$recipient_merge_vars[ $recipient['email'] ] = array(
 				'full_name' => $recipient['full_name'],
 				'reasons_block' => implode("\n", $reasons),
+				'reply_email' => __("%s@reply.servicespark.org", $guid),
 				'subject' => $this->_ApplyMergeVars($subject, array(
 					'solution_name' => Configure::read('Solution.name'),
 					'event_title' => $comment['Event']['title']
 				))
 			);
+			$guids[] = array(
+				'user_id' => $user_id,
+				'guid' => $guid,
+				'event_type' => 'comment_reply',
+				'event_data' => json_encode(array(
+					'Comment.comment_id' => $comment_id
+				)),
+				'expires' => $User->getDataSource()->expression('DATE_ADD(now(), INTERVAL 1 DAY)')
+			);
 			$to[] = $recipient['email'];
+			
+			
 		}
 		
 		$headers = $this->CreateMandrillMergeVars( $recipient_merge_vars );
@@ -387,11 +427,15 @@ class MandrillListener implements CakeEventListener
 			->to( $to )
 			->subject( "*|subject|*" )
 			->addHeaders( $headers );
+		
+		$this->log($guids);
+		$User->Email->saveAll($guids);
 
 		if( $email->send() )
 			CakeLog::write('info', "Finished sending new comment email notifications");
 		else
 			CakeLog::write('info', "Send Failed");
+			
 		
 		
 	}
@@ -436,6 +480,8 @@ class MandrillListener implements CakeEventListener
 		return $result;
 
 	}
+	
+	
 	
 	private function CreateMandrillMergeVars($recipient_merge_vars, $rcpt_key = "rcpt")
 	{
@@ -647,7 +693,8 @@ class MandrillListener implements CakeEventListener
 			'going' => false,
 			'coordinating' => false,
 			'discussing' => false,
-			'skills' => false
+			'skills' => false,
+			'mentioned' => false
 		);
 		
 		$loci = Hash::merge($default, $restrict);
@@ -692,11 +739,9 @@ class MandrillListener implements CakeEventListener
 			);
 			
 		if( $loci['discussing'] )
-			$contain['Comment'] = array(
-				'User' => array(
-					'conditions' => array(
-						'User.email_discussing' => true
-					)
+			$contain['Comment']['User'] =  array(
+				'conditions' => array(
+					'User.email_discussing' => true
 				)
 			);
 			
@@ -705,6 +750,15 @@ class MandrillListener implements CakeEventListener
 				'User' => array(
 					'conditions' => array(
 						'User.email_skills' => true
+					)
+				)
+			);
+			
+		if( $loci['mentioned'] )
+			$contain['Comment']['Mention'] = array(
+				'User' => array(
+					'conditions' => array(
+						'User.email_mentions' => true
 					)
 				)
 			);
@@ -723,7 +777,8 @@ class MandrillListener implements CakeEventListener
 			'attended' => Hash::extract($result, 'EventTime.{n}.Time'),
 			'going' => Hash::extract($result, 'Rsvp.{n}.User'),
 			'discussing' => Hash::extract($result, 'Comment.{n}.User'),
-			'coordinating' => Hash::extract($result, 'Organization.Permission.{n}.User')
+			'coordinating' => Hash::extract($result, 'Organization.Permission.{n}.User'),
+			'mentioned' => Hash::extract($result, 'Comment.{n}.Mention.User')
 		);
 		
 		/*
@@ -738,11 +793,14 @@ class MandrillListener implements CakeEventListener
 		{
 			foreach($users as $user)
 			{
-				$user_id = $user['user_id'];
-				
-				$flipped_result[ $user_id ]['User'] = $user;
-				$flipped_result[ $user_id ]['Skill'][] = $skill;
-				$flipped_result[ $user_id ][$reason_key]['skills'] = true;
+				if( !empty($user) )
+				{
+					$user_id = $user['user_id'];
+					
+					$flipped_result[ $user_id ]['User'] = $user;
+					$flipped_result[ $user_id ]['Skill'][] = $skill;
+					$flipped_result[ $user_id ][$reason_key]['skills'] = true;
+				}
 			}
 		}
 		
@@ -759,7 +817,7 @@ class MandrillListener implements CakeEventListener
 			}
 		}
 		
-		foreach( array('going', 'discussing', 'coordinating') as $locus )
+		foreach( array('going', 'discussing', 'coordinating', 'mentioned') as $locus )
 		{
 			if( is_array($recipients[$locus]) )
 			foreach( $recipients[$locus] as $user )
@@ -814,6 +872,16 @@ class MandrillListener implements CakeEventListener
 
 		return $result;
 
+	}
+	
+	function guid()
+	{
+	    if (function_exists('com_create_guid') === true)
+	    {
+	        return trim(com_create_guid(), '{}');
+	    }
+	
+	    return sprintf('%04X%04X-%04X-%04X-%04X-%04X%04X%04X', mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(16384, 20479), mt_rand(32768, 49151), mt_rand(0, 65535), mt_rand(0, 65535), mt_rand(0, 65535));
 	}
 	
 	private function log($that, $severity = "debug")
