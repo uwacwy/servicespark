@@ -14,8 +14,8 @@ You may view the comment at
 	'#' => 'comment-'.$comment['Comment']['comment_id']
 ), true); ?> >
 
+To reply, send an email to...
+*|reply_email|*
+
 You are receiving this email because...
 *|reasons_block|*
-
-Manage your notification preferences from your profile
-< <?php echo Router::url( array('controller' => 'users', 'action' => 'profile'), true); ?> >
