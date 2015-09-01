@@ -56,6 +56,75 @@ class Event extends AppModel
 			)
 		)
 	);
+	
+	function dateToCal($timestamp)
+	{
+		return date('Ymd\THis\Z', $timestamp);
+	}
+	
+	function escapeString($string)
+	{
+		return preg_replace('/([\,;])/','\\\$1', $string);
+	}
+	
+	/*
+		get_ics
+		--
+		returns a valid ics string, with time zones managed
+		@param event_id identifies the 
+	*/
+	public function get_ics($event_id)
+	{
+		$conditions = array(
+			'Event.event_id' => $event_id
+		);
+		$contain = array('Address', 'Organization');
+		
+		$event = $this->find('first', $event_id);
+		
+		// Event should be at $event['Event']
+		
+		$start_time_utc = CakeTime::convert( (new DateTime($event['Event']['start_time']))->getTimestamp(), 'UTC');
+		$stop_time_utc = CakeTime::convert((new DateTime($event['Event']['stop_time']))->getTimestamp(), 'UTC');
+		$now = CakeTime::convert( time(), 'UTC');
+		$event_url = Router::url(array(
+			'go' => true,
+			'controller' => 'events',
+			'action' => 'view',
+			$event['Event']['event_id']
+		), true);
+		
+		$address_one_liners = array( __("no addresses specified") );
+		if( !empty($event['Address']) )
+		{
+			$address_one_liners = Hash::extract($event, 'Address.{n}.one_line');
+		}
+		
+		$description = sprintf("%s\\n\\n%s", $event['Event']['description'], $event_url);
+		
+		$lines = array(
+			'BEGIN:VCALENDAR',
+			'VERSION:2.0',
+			'PRODID:-//uwacwy/servicespark//EN',
+			'CALSCALE:GREGORIAN',
+			'BEGIN:VEVENT',
+			sprintf('DTEND:%s', $this->dateToCal($stop_time_utc)),
+			sprintf('UID:%s', hash('sha256', $event_url) ), // this can be used to automate cancellations
+			sprintf('DTSTAMP:%s', $this->dateToCal($now) ),
+			sprintf('LOCATION:%s', $this->escapeString( implode(' or ', $address_one_liners) ) ),
+			sprintf('DESCRIPTION:%s', $this->escapeString($description) ), // event description
+			sprintf('ORGANIZER;CN=%s\;MAILTO:%s', 
+				$this->escapeString($event['Organization']['name']), 
+				$this->escapeString(sprintf("organization-%s@reply.servicespark.org", $event['Organization']['organization_id']) ) ),
+			sprintf('URL;VALUE=URI:%s', $this->escapeString( $event_url ) ),
+			sprintf('SUMMARY:%s', $this->escapeString($event['Event']['title'])), // event title
+			sprintf('DTSTART:%s', $this->dateToCal($start_time_utc)),
+			'END:VEVENT',
+			'END:VCALENDAR'
+		);
+		
+		return implode("\n", $lines); // join the lines
+	}
 
 
 		/*
