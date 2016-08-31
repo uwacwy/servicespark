@@ -21,7 +21,17 @@
 					<td><?php 
 						echo $this->Html->link(
 							__('Leave'),
-							array('volunteer' => true, 'controller' => 'organizations', 'action' => 'leave', $org['Organization']['organization_id']),
+							array(
+								'volunteer' => true, 
+								'controller' => 'organizations', 
+								'action' => 'membership',
+								'publish',
+								'off',
+								$org['Organization']['organization_id'],
+								'?' => array(
+									'redirect_to' => $this->here
+								)
+							),
 							array('class' => 'btn btn-danger btn-xs'),
 							__('Are you sure you want to leave this organization?')
 						);
@@ -52,7 +62,7 @@
 					<td><?php
 							echo $this->Html->link(
 								__('Supervise'),
-								array('supervisor' => true, 'controller' => 'organizations', 'action' => 'view', $org['Organization']['organization_id']),
+								array('supervisor' => true, 'controller' => 'organizations', 'action' => 'dashboard', $org['Organization']['organization_id']),
 								array('class' => 'btn btn-primary btn-xs')
 							);
 							echo " ";
@@ -89,7 +99,7 @@
 					<td><?php 
 						echo $this->Html->link(
 							__('Coordinate'),
-							array('go' => true, 'controller' => 'organizations', 'action' => 'view', $org['Organization']['organization_id']),
+							array('coordinator' => true, 'controller' => 'organizations', 'action' => 'dashboard', $org['Organization']['organization_id']),
 							array('class' => 'btn btn-primary btn-xs')
 						);
 						echo " ";echo $this->Html->link(

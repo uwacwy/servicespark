@@ -16,6 +16,10 @@ General Model Behavior and Setup
 	public $primaryKey = 'address_id';
 
 	public $displayField = 'address1';
+	
+	public $virtualFields = array(
+		'one_line' => 'CONCAT(Address.address1, ", " , Address.city, ", ", Address.state)',
+	);
 
 	/*
 		address1, city, state, zip, type required.

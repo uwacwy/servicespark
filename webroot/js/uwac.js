@@ -53,9 +53,63 @@ var $body = $('body'),
     };
 })(jQuery);
 
+var SkillPicker = function($skill_picker)
+{
+	this.validSortBy = ['created', 'modified', 'skill', 'event_count', 'user_count'];
+	
+	this.setView = function(newSortBy)
+	{
+		if( this.validSortBy.indexOf(newSortBy) === -1 )
+			newSortBy = 'event_count';
+			
+		this.sortBy = newSortBy;
+	}
+};
+
+var getSkills = function(opts, onSuccess, onError)
+{
+	var $this = this;
+	$this.done = false;
+	
+	opts = $.extend({
+		'order_by' : "user_count",
+		'count' : 15,
+		'exclude_user_skills' : false
+	}, opts);
+	
+	var result = "hello";
+	
+	$.ajax({
+		'type' : 'GET',
+		'url' : environment.site_root + 'api/skills/popular',
+		'data' : opts,
+		'success' : onSuccess,
+		'error' : onError
+	});
+	
+};
 
 
-$document.ready(function(){
+
+$document.ready(function()
+{
+	var $notifications = $('.ss-notifications').trigger('refresh');
+	
+	if( environment.pubnub )
+	{
+		var pn = PUBNUB.init({
+			subscribe_key: environment.pubnub.subscribe_key
+		});
+		
+		pn.subscribe({
+			channel: environment.pubnub.channel,
+			message: function(m){
+				$.playSound(environment.site_root + "js/sound/blop");
+				$notifications.trigger('refresh');
+			}
+		});
+
+	}
 
 	$('.cake-sql-log').addClass('table table-striped');
 
@@ -65,7 +119,7 @@ $document.ready(function(){
 
 	$('.comments').on('click', '.comment-reply-trigger', function(e){
 		e.preventDefault();
-		$(this).toggleClass('active inactive').parent().find(".comment-reply").slideToggle();
+		$(this).toggleClass('on off').parent().find(".comment-reply").slideToggle();
 		console.log('displaying comment form');
 		return false;
 	});
@@ -73,7 +127,109 @@ $document.ready(function(){
 		$(this).height(0).height( $(this).get(0).scrollHeight + 20);
 	});
 	
-	$('.animate-count').each(function(index, value){
+	$('.trianglify').each(function(idx, item){
+		var $item = $(item);
+		var seed = $item.data('seed') || null;
+		var pattern = Trianglify({
+			height: $item.outerHeight(),
+			width: $item.outerWidth(),
+			cell_size: 40,
+			seed: seed
+		});
+		$item.css('background-image', 'url('+ pattern.png() + ')' );
+	})
+	
+	if( window.location.hash )
+	{
+		var re = /^#!([\w-]*)\/([\w-]*)$/i; // valid-selector-here/valid-subselector-here
+		var info = window.location.hash.match(re);
+		
+		if( info.length == 3 )
+		{
+			$('a[data-toggle="tab"]').one('shown.bs.tab', function (e)
+			{
+				$('html, body').animate({
+					scrollTop: $("#" + info[2]).offset().top
+				}, 1000);
+			});
+		
+			$('a[href=#'+info[1]+']').tab('show');
+		}
+	}
+	
+	
+	
+	$('body').on('click', '.skill-picker .category-toggle', function(e)
+	{
+		e.preventDefault();
+		var $toggle = $(this),
+			order_by = $toggle.data('order-by'),
+			skills = {};
+			
+		getSkills(
+			{
+				'order_by' : order_by
+			},
+			function(data)
+			{
+				$available_skills = $toggle.closest('.skill-picker').find('.available-skills ul');
+				$available_skills.empty();
+				$.each(data, function(skill_id, skill){
+					
+					$('<a />')
+						.attr('href', '#')
+						.addClass('skill-add')
+						.text(skill)
+						.attr('id', 'skill-'+skill_id)
+						.attr('data-skill-id', skill_id)
+						.appendTo($available_skills)
+						.wrap('<li />');
+				})
+			},
+			function(data)
+			{
+				console.log("error!");
+			}
+		);
+	})
+	.on('click', '.event.skill-picker .skill-add', function(e){
+		var $this = $(this);
+		var $chosenSkills = $('.chosen-skills ul');
+		e.preventDefault();
+		console.log('skill adder clicked');
+		var $input = $("<input />")
+			.attr('type', 'hidden')
+			.attr('name', 'data[EventSkill][' + $chosenSkills.find('li').length + "][skill_id]")
+			.attr('value', $this.data('skill-id') );
+			
+		$("<li />")
+			.append( $input )
+			.append( $this.toggleClass('skill-add skill-remove').detach() )
+			.appendTo($chosenSkills);
+	})
+	.on('click', 'a.notification', function(e){
+			
+		$.ajax({
+			type: "POST",
+			url: $(this).attr('data-api'),
+			dataType: 'json'
+		});
+		
+		return true; // the link should still follow
+	});
+	
+	$('.skill-picker').each(function(index, picker)
+	{
+		var $skill_picker = $(picker);
+		
+		$skill_picker.attr('id', 'skill-picker-' + index);
+		
+		
+		
+	});
+	
+	$('.animate-count').each(function(index, value)
+	{
 		$item = $(this);
 		
 		$item.countTo({
@@ -136,20 +292,6 @@ $document.ready(function(){
 		}
 	});
 	
-	$('.notification').each(function(){
-		var $this = $(this);
-		
-		$this.on('click', function(e){
-			
-			$.ajax({
-				type: "POST",
-				url: $this.attr('data-api'),
-				dataType: 'JSON'
-			});
-			
-			return true; // the link should still follow
-		});
-	});
 	
 	$('.api-trigger-time-reject').each(function(){
 		var $this = $(this),

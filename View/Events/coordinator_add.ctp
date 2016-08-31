@@ -13,8 +13,21 @@
 					<div class="situation">
 						<?php
 							echo $this->Form->input('Event.title' );
-							echo $this->Form->input('Event.description', array('type' => 'textarea') );
+							
 						?>
+						
+						<ul class="nav nav-tabs" role="tablist">
+						    <li role="presentation" class="active"><a href="#event-add-description-compose" aria-controls="home" role="tab" data-toggle="tab"><?php echo __("Edit"); ?></a></li>
+						    <li role="presentation"><a href="#event-add-description-preview" aria-controls="profile" role="tab" data-toggle="tab"><?php echo __("Preview"); ?></a></li>
+  						</ul>
+  						
+  						<div class="tab-content">
+							<div role="tabpanel" class="tab-pane active" id="event-add-description-compose">
+								<?php echo $this->Form->input('Event.description', array('type' => 'textarea') ); ?>
+							</div>
+							<div role="tabpanel" class="tab-pane" id="event-add-description-preview"><div class="markdown"></div></div>
+						</div>
+						
 						<div class="row">
 							<div class="col-md-6"><?php
 								echo $this->Form->input('Event.start_time',
@@ -39,35 +52,9 @@
 
 		<div class="row">
 			<div class="col-md-12">
-				<h2>
-					<?php echo __("Event Skills/Tags"); ?>
-					<small><?php echo __("Tag your event with skills to help %s find amazing volunteers for your event.", Configure::read('Solution.name') ); ?></small></h2>
-					<p><?php echo $this->Utility->__p(array(
-						"Begin typing any skills or tags you would like to associate your event with.",
-						"If the skill/tag already exists, click it to add it to your event.",
-						"If the skill/tag doesn't exist, press return to add it anyway.",
-						"Stuck?  Try popular software, types of people skills (children, event coordination), or college degrees."
-					)); ?></p>
-				<?php echo $this->Form->input('skill', array('class' => 'autocomplete skills form-control', 'data-target' => '#UserSkills') ); ?>
-				<div id="UserSkills">
-					<?php
-
-						$skill_sprint = '<span class="autocomplete-wrapper"><a class="autocomplete-cancel" href="#">&times</a>%s<input type="hidden" name="data[Skill][Skill][]" value="%u"></span>';
-
-						if( isset($this->request->data['Skill']) )
-						{
-							foreach($this->request->data['Skill'] as $skill)
-							{
-								echo sprintf(
-									$skill_sprint,
-									$skill['skill'],
-									$skill['skill_id']
-								);
-							}
-							//debug($this->request->data['Skill']);
-						}
-					?>
-				</div>
+				
+				<?php echo $this->Element('skill_picker'); ?>
+				
 			</div>
 		</div>
 		

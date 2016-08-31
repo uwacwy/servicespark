@@ -22,6 +22,7 @@
 App::uses('Controller', 'Controller');
 App::uses('AppModel', 'Model');
 App::uses('SimplePasswordHasher', 'Controller/Component/Auth');
+App::uses('Security', 'Utility');
 
 /**
  * Application Controller
@@ -46,7 +47,8 @@ class AppController extends Controller {
 		'Utility',
 		'PhpExcel',
 		'Form' => array('className' => 'BoostCake.BoostCakeForm'),
-		'Notification' => array('className' => 'Notification.Notification')
+		'Notification' => array('className' => 'Notification.Notification'),
+		'Session'
 		//'Paginator' => array('className' => 'BoostCake.BoostCakePaginator'),
 	);
 
@@ -63,6 +65,21 @@ class AppController extends Controller {
 			)
 		)
 	);
+	
+	
+	/**
+	 * @deprecated moved to ServiceSparkUtility::HashFor(); will create log entry
+	 * 
+	 */
+	public function hash_for($milliseconds, $algo = 'sha256')
+	{
+		ServiceSparkUtility::log( __(
+			"Deprecated function AppController->hash_for called from %s. Change to ServiceSparkUtility::HashFor(...)",
+			debug_backtrace()[1]['function'])
+		);
+		
+		return ServiceSparkUtility::HashFor($milliseconds, $algo);
+	}
 
 	public function beforeFilter()
 	{
@@ -94,6 +111,15 @@ class AppController extends Controller {
 			if( count($this->_GetUserOrganizationsByPermission('read')) > 0 )
 				$this->Session->write('can_supervise', true );
 			$this->Session->write('can_supervise_exp', strtotime('+30 seconds') );
+		}
+		
+		if( $this->request->prefix == "admin"  && !$this->_CurrentUserIsSuperAdmin() )
+		{
+			ServiceSparkUtility::log( __("DANGER! %s (user id %s) attempted to access administrative view",
+				$this->request->clientIp(),
+				ServiceSparkUtility::ValueOrDefault( $this->Auth->user('user_id'), 'anonymous user')
+			) );
+			throw new ForbiddenException("You do not have permission to view this page.  Your attempt has been logged.");
 		}
 
 		$this->set('form_defaults', array(

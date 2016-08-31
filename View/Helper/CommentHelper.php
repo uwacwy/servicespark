@@ -35,13 +35,14 @@ class CommentHelper extends AppHelper
 					$rtn .= sprintf('<div class="comment-author user-%1$s">%2$s <span class="at-username">(@%1$s)</span></div>', 
 						$comment['User']['username'], 
 						$comment['User']['full_name']
-						);
+					);
 					$rtn .= sprintf('<div class="comment-date">%s%s</div>',
 						$this->Time->timeAgoInWords($comment['Comment']['created']),
 						$delete_link
-						);
+					);
 				$rtn .= sprintf('</div>');
-				$rtn .= sprintf('<div class="comment-body">%s</div>', nl2br($comment['Comment']['body']) );
+				$formatted_body = $this->formatMentions( nl2br($comment['Comment']['body']), $comment['Mention']);
+				$rtn .= sprintf('<div class="comment-body">%s</div>', $formatted_body );
 				$rtn .= $this->commentForm($event_id, $comment['Comment']['comment_id'], __('reply to %s...', $comment['User']['first_name']));
 				if( !empty($comment['children']) )
 				{
@@ -55,13 +56,41 @@ class CommentHelper extends AppHelper
 
 		return $rtn;
 	}
+	
+	public function formatMentions($body, $mentions)
+	{
+		$rtn = $body;
+		if( !empty($mentions) )
+		{
+			foreach($mentions as $mention)
+			{
+				$rtn = preg_replace(
+					'/@('.$mention['User']['username'].')(\b)/i', // pattern
+					
+					
+					'@'.$this->Html->link(
+						'$1',
+						array(
+							'volunteer' => false,
+							'controller' => 'users',
+							'action' => 'view',
+							$mention['User']['username']
+						)
+					).'$2', // replacement
+					$rtn // subject
+				);
+			}
+		}
+		
+		return $rtn;	
+	}
 
 	public function commentForm($event_id, $parent_id = null, $placeholder = "Leave a Comment...")
 	{
 		$rtn = "";
 		if( !is_null($parent_id) )
 		{
-			$rtn .= sprintf('<div class="comment-reply-trigger inactive"><a href="#"><span class="when-active">cancel</span> reply</a></div>');
+			$rtn .= sprintf('<div class="comment-reply-trigger off"><a href="#"><span class="when-on">cancel</span> reply</a></div>');
 		}
 		$rtn .= sprintf('<div class="comment-reply">');
 			$rtn .= $this->Form->Create('Comment', array('url' => array('volunteer' => true, 'controller' => 'events', 'action' => 'comment', $event_id)) );

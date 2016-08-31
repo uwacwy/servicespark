@@ -41,6 +41,9 @@ global $solution_name;
 			echo $this->Html->script('//cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.js');
 			echo $this->Html->css('//netdna.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.css');
 			echo $this->Html->script('//cdnjs.cloudflare.com/ajax/libs/numeral.js/1.4.5/numeral.min.js');
+			echo $this->Html->script('//cdnjs.cloudflare.com/ajax/libs/trianglify/0.3.1/trianglify.min.js');
+			echo $this->Html->script('//cdn.pubnub.com/pubnub-dev.js');
+			echo $this->Html->script('//cdn.intercoolerjs.org/intercooler-0.9.3.min.js');
 		}
 		else
 		{
@@ -50,11 +53,15 @@ global $solution_name;
 			echo $this->Html->script('//cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js');
 			echo $this->Html->css('//netdna.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css');
 			echo $this->Html->script('//cdnjs.cloudflare.com/ajax/libs/numeral.js/1.4.5/numeral.min.js');
+			echo $this->Html->script('//cdnjs.cloudflare.com/ajax/libs/trianglify/0.3.1/trianglify.min.js');
+			echo $this->Html->script('//cdn.pubnub.com/pubnub-dev.js');
+			echo $this->Html->script('//cdn.intercoolerjs.org/intercooler-0.9.3.min.js');
 		}
 		echo $this->Html->script('mustaches');
 		echo $this->Html->script('mustache');
 		echo $this->Html->script('uwac');
 		echo $this->Html->script('modernizr.custom.min');
+		echo $this->Html->script('jquery.sound.js');
 
 		echo $this->fetch('meta');
 		echo $this->fetch('css');
@@ -62,9 +69,17 @@ global $solution_name;
 
 	?>
 	<script>
-		var environment = <?php echo json_encode(array(
-			'site_root' => Router::url('/', true)
-		)); ?>;
+		var environment = <?php
+			$env_vars = array(
+				'site_root' => Router::url('/', true)
+			);
+			if( $this->Session->check('push_channel') )
+				$env_vars['pubnub'] = array(
+					'channel' => $this->Session->read('push_channel'),
+					'subscribe_key' => Configure::read('pubnub.keys.subscribe')
+				);
+				
+		echo json_encode($env_vars); ?>;
 	</script>
 </head>
 <body>
@@ -337,33 +352,12 @@ global $solution_name;
 
 
 		<?php if(AuthComponent::user('user_id') ) : ?>
-			<ul class="nav navbar-nav navbar-right">
-			    <?php $notifications = ClassRegistry::init('User')->getUnreadNotification(AuthComponent::user('user_id')); ?>
-			    <li class="dropdown">
-			        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-			            <?php echo __('Notifications') ?>
-			            <?php if (!empty($notifications)): ?>
-			                <span class="badge unread-notifications">
-			                    <?php echo count($notifications); ?>
-			                </span>
-			            <?php endif ?>
-			        </a>
-			        <ul class="dropdown-menu">
-			        <?php if( !empty($notifications) ) : ?>
-			            <?php foreach ($notifications as $notification): ?>
-			                <li><?php echo $this->Notification->display($notification); ?></li>
-			            <?php endforeach ?>
-			         <?php else: ?>
-			         	<li><?php echo $this->Html->link(
-			         		__("You have no unread notifications at this time"),
-			         		array('controller' => 'users', 'action' => 'notifications')
-			         		); ?></li>
-			         <?php endif; ?>
-			            <li class="divider"></li>
-			            <li class="text-center"><?= $this->Html->link(__('Display all'),
-			            	array('controller' => 'users', 'action' => 'notifications', 'volunteer' => false)); ?></li>
-			        </ul>
-			    </li>
+			<ul class="nav navbar-nav navbar-right ss-notifications" ic-src="<?php echo $this->Html->url( array(
+				'api' => true,
+				'controller' => 'users',
+				'action' => 'notification'
+			) ); ?>" ic-trigger-on="refresh">
+			    
 			</ul>
 			<ul class="nav navbar-nav navbar-right">
 				<?php

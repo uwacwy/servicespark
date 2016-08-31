@@ -118,26 +118,9 @@ $permission_context['owner'] = ($time['Time']['user_id'] == AuthComponent::user(
 				<?php elseif( !empty($event) ) : ?>
 
 					
-					<div class="actionable">
-						<div class="situation">
-						<h4>
-							<?php echo h($time['EventTime'][0]['Event']['title']); ?>
-							<small>
-								<?php echo $this->Duration->format($time['EventTime'][0]['Event']['start_time'],$time['EventTime'][0]['Event']['stop_time']); ?>
-							</small>
-						</h4>
-
-					<blockquote><?php echo h($time['EventTime'][0]['Event']['description']); ?></blockquote>
-						</div>
-						<div class="actions">
-							<ul>
-								<li><?php echo $this->Html->link(
-						__("View %s", $time['EventTime'][0]['Event']['title']),
-						array('controller' => 'events', 'action' => 'view', $time['EventTime'][0]['Event']['event_id'])
-					); ?></li>
-							</ul>
-						</div>
-					</div>
+					<?php echo $this->Element('event_card', array('event' => array(
+						'Event' => $event,
+						'Organization' => $organization) )); ?>
 					
 				<?php endif; ?>
 				

@@ -5,7 +5,7 @@
 			$event['Event']['title'], 
 			array('volunteer' => false, 'controller' => 'events', 'action' => 'view', $event['Event']['event_id'])
 		); ?></h4>
-		<p><?php echo h($event['Event']['description']); ?></p>
+		<div class="markdown"><?php echo $this->Utility->blurb( $event['Event']['description'], 280 ); ?></div>
 		
 		<div class="stat-bar">
 		

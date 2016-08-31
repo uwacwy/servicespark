@@ -68,7 +68,7 @@ class RecoveriesController extends AppController
 						$hash = $hasher->hash($hash);
 					}
 
-					$Email = new CakeEmail();
+					$Email = ServiceSparkUtility::GetEmailProvider('production');
 
 					/* send variables to the email generator */
 					$token = $hash;

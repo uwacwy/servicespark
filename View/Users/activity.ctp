@@ -12,6 +12,17 @@ $periods = array(
 
 ?>
 
+<?php if( $user['User']['account_age'] < (3 * 24 * 60) ) : ?>
+	<div class="row">
+		<div class="col-md-12">
+			<h3><?php echo __("Welcome to %s", Configure::read('Solution.name') ); ?></h3>
+			<p>
+				<?php echo __("Set up your profile to get the most out %s.", Configure::read("Solution.name") ); ?>
+			</p>
+		</div>
+	</div>
+<?php endif; ?>
+
 <div class="row">
 	<div class="col-md-3">
 		<h3><?php echo h($user['User']['full_name']); ?> 
@@ -245,4 +256,8 @@ $periods = array(
 			</div>
 		</div>
 	</div>
+</div>
+
+<div>
+<?php debug($user); ?>
 </div>

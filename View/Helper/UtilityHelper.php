@@ -1,6 +1,9 @@
 <?php
 
+require APP . 'Vendor/autoload.php';
 App::uses('AppHelper', 'View/Helper');
+
+use \Michelf\Markdown;
 
 class UtilityHelper extends AppHelper
 {
@@ -16,10 +19,37 @@ class UtilityHelper extends AppHelper
 	{
 		
 	}
+	
+	public function IsAre($number)
+	{
+		if( $number == 1 )
+			return "is";
+		
+		return "are";
+	}
 
 	public function no_wrap($string)
 	{
 		return str_replace(' ', '&nbsp;', trim($string) );
+	}
+	
+	public function markdown($string)
+	{
+		return Markdown::defaultTransform($string);
+	}
+	
+	public function blurb($string, $chars = 140, $after_truncate = "&hellip;")
+	{
+		$length = strlen($string);
+		
+		$shortened = substr($string, 0, min($length, $chars) );
+		
+		$formatted = h( trim( strip_tags( html_entity_decode( $this->markdown($shortened) ) ) ) );
+		
+		if( $length > $chars )
+			return $formatted . $after_truncate;
+		else
+			return $formatted;
 	}
 
 	public function btn_link_icon($text, $location_array, $link_class, $icon)

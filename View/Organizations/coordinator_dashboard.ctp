@@ -48,7 +48,7 @@
 							array(
 								'coordinator' => true,
 								'controller' => 'events',
-								'action' => 'dashboard',
+								'action' => 'view',
 								$result['Event']['event_id']
 							)
 						); ?><br>

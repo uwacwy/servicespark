@@ -1,10 +1,16 @@
 {
+    "name": "servicespark",
     "require": {
-        "slywalker/boost_cake": "*"
+        "willdurand/email-reply-parser": "^2.4",
+        "slywalker/boost_cake": "*",
+        "michelf/php-markdown": "*",
+        "fzaninotto/faker": "^1.5",
+        "pubnub/pubnub": "3.7.*"
     },
-    "extra" : {
-    	"installer-paths" : {
-    		"Plugin/BoostCake" : ["slywalker/boost_cake"]
-    	}
+    "require-dev": {
+        "phpdocumentor/phpdocumentor": "2.*"
+    },
+    "config": {
+        "vendor-dir": "Vendor/"
     }
 }

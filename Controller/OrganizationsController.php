@@ -581,72 +581,90 @@ array(
 			);
 		}
 	}
-
+	
+	public function admin_bless()
+	{
+		throw new NotImplementedException(__("This page is currently unavailable.") );
+	}
+	
+	public function api_membership($field, $status, $organization_id)
+	{
+		throw new NotImplementedException(__("This API endpoint is not currently available.") );
+	}
 
 /**
- * leave
- *
- * @throws ForbiddenException
- * @param string $id
- * @return void
-*/
-	public function leave($organization_id = null) 
+ * /volunteer/organization/membership/$locus(follow|publish)/$change(on|off|toggle)/$organization_id
+ */
+	public function volunteer_membership($field, $status, $organization_id)
 	{
-		if($this->Auth->user('user_id') ) 
+		if( !in_array($field, array('follow', 'publish') ) )
+			throw new BadRequestException('Invalid locus requested');
+		
+		if( !in_array($status, array('on', 'off', 'toggle') ) )
+			throw new BadRequestException('Invalid status requested');
+			
+		if( !$this->Organization->exists($organization_id) )
+			throw new NotFoundException("Cannot find organization to change membership on.");
+		
+		$redirect_to = ServiceSparkUtility::ValueOrDefault($this->referer(), array('volunteer' => false, 'controller' => 'organizations', 'action' => 'index') );
+		
+		$organization = $this->Organization->findByOrganizationId($organization_id, array('contain' => array() ) );
+		$current = $this->Organization->Permission->findByUserIdAndOrganizationId($this->Auth->user('user_id'), $organization_id, array('contain' => array()));
+		
+		if( !empty($current) )
 		{
-			if ($organization_id != null) 
+			if($status == 'toggle')
+				$value = !$current['Permission'][$field];
+			else
+				$value = $status == "on" ? 1 : 0;
+			
+			$this->Organization->Permission->id = $current['Permission']['permission_id'];
+			if( $this->Organization->Permission->saveField($field, $value) )
+				$this->Session->setFlash(__("You are %s %s %s.",
+					$status == "on" ? "now" : "no longer",
+					$field == "follow" ? "following" : "publishing volunteer activity to",
+					$organization['Organization']['name']
+				), 'success');
+			else
 			{
-				$conditions = array(
-					'Permission.user_id' => $this->Auth->user('user_id'),
-					'Permission.organization_id' => $organization_id
-				);
-				
-				if($this->Organization->Permission->deleteAll($conditions)) 
-				{
-					$this->Session->setFlash(__('You have successfully left this organization.'), 'success');
-					$this->redirect(
-						array(
-							'volunteer' => false,
-							'controller' => 'users',
-							'action' => 'activity'
-						)
-					 );
-				}
-				else 
-				{
-					$this->Session->setFlash(__('Something went wrong. You cannot leave this organization.'), 'danger');
-				}
+				ServiceSparkUtility::log(__("Error updating permission: user %s field %s value %s organization %s; validation errors follow",
+					$this->Auth->user('user_id'),
+					$field,
+					$value,
+					$organization
+				));
+				ServiceSparkUtility::log($this->Organization->Permission->validationErrors );
+				$this->Session->setFlash( __("Could not update existing permission entry."), 'danger');
 			}
-
-			$conditions = array(
-				'Organization.organization_id' => $this->_GetUserOrganizationsByPermission('all')
-			);
-
-			$this->Paginator->settings = array(
-				'conditions' => $conditions,
-				'limit' => 10,
-				'contain' => array()
-			);
-
-			$data = $this->Paginator->paginate();
-			$this->set(compact('data'));
-
-			$title_for_layout = sprintf( __('Leave this organization'));
-			$this->set( compact('title_for_layout') );
 		}
 		else
 		{
-			return $this->redirect(
-				array(
-					'volunteer' => false,
-					'controller' => $organizations,
-					'action' => 'index'
-				)
+			// creating empty rows is stupid;
+			if( $status != 'on' )
+				return $this->redirect( $redirect_to );
+				
+			$new = array(
+				'user_id' => $this->Auth->user('user_id'),
+				'organization_id' => $organization_id,
+				'read' => 0,
+				'write' => 0,
+				'follow' => 0,
+				'publish' => 0
 			);
+			
+			$new[$field] = true;
+			
+			if( $this->Organization->Permission->save($new) )
+				$this->Session->setFlash(__("You are now %s %s.",
+					$field == "follow" ? "following" : "publishing volunteer activity to",
+					$organization['Organization']['name']
+				));
+			else
+				$this->Session->setFlash( __("Could not save new permission entry."), 'danger');
 		}
+		
+		return $this->redirect($redirect_to);
 	}
-
-
 /**
  * volunteer_leave
  *

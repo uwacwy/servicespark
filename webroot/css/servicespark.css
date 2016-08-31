@@ -44,6 +44,15 @@
     margin-left: 6px;
     margin-right: 0; }
 
+ul.inline {
+  list-style: none;
+  margin: 0 0 1.5em;
+  padding: 0; }
+  ul.inline li {
+    display: inline; }
+  ul.inline li + li {
+    margin-left: 5px; }
+
 .reputation {
   color: #000; }
   .reputation.good {
@@ -260,7 +269,7 @@
 ._table {
   display: table;
   width: 100%;
-  margin: 1.5em 0; }
+  margin: 0 0 1.5em 0; }
   ._table ._colgroup {
     display: table-column-group; }
     ._table ._colgroup ._col {

@@ -2,6 +2,7 @@
 App::uses('AppController', 'Controller');
 App::uses('CakeEmail', 'Network/Email');
 App::uses('MandrillListener', 'Lib/Event');
+App::uses('CakeTime', 'Utility');
 
 /**
  * Events Controller
@@ -29,25 +30,7 @@ class EventsController extends AppController {
 
 	public function go_view($event_id)
 	{
-		$event = $this->Event->findByEventId($event_id, array('contain' => array() ) );
-
-		if( $this->_CurrentUserCanWrite( $event['Event']['organization_id']) )
-		{
-			return $this->redirect( array('coordinator' => true, 'action' => 'view', $event_id) );
-		}
-		elseif( $this->_CurrentUserCanRead( $event['Event']['organization_id']) )
-		{
-			return $this->redirect( array('supervisor' => true, 'action' => 'view', $event_id) );
-		}
-		elseif( $this->Auth->user('user_id') != null )
-		{
-			return $this->redirect( array('volunteer' => true, 'action' => 'view', $event_id) );
-		}
-		else
-		{
-			return $this->redirect( array('volunteer' => false, 'action' => 'view', $event_id) );
-
-		}
+		return $this->redirect( array('volunteer' => false, 'controller' => 'events', 'action' => 'view', $event_id ));
 	}
 
 	public function go_add()
@@ -56,9 +39,11 @@ class EventsController extends AppController {
 	}
 
 	/**
-			COORDINATOR
-			URL: localhost/coordinator/events/...
-	*/
+	 * Deletes an event and fires CakeEvents to allow for event cancellation notification
+	 * 
+	 * @param int $event_id the event id for the event to be cancelled.
+	 * @return CakeResponse redirecting the coordinator to their dashboard.
+	 */
 	public function coordinator_delete($event_id = null)
 	{
 		if( ! $this->Event->exists($event_id) )
@@ -105,28 +90,15 @@ class EventsController extends AppController {
 		{
 			if ($this->request->is('post')) 
 			{
-				if(! $this->Event->validTimes()) {
-					return false;
-				}
 
 				/*
 					process relations
 				*/
-				if( isset($this->request->data['Skill']) )
-					$skill_ids = $this->_ProcessSkills($this->request->data['Skill'], $this->Event->Skill);
-					
-				if( isset($this->request->data['Address']) )
-					$address_ids = $this->_ProcessAddresses($this->request->data['Address'], $this->Event->Address);
 				
-				unset( $this->request->data['Address'], $this->request->data['Skill'] );
-
-				if( !empty($address_ids) )
-					$this->request->data['Address'] = $address_ids;
-				if( !empty($skill_ids) )
-					$this->request->data['Skill'] = $skill_ids;
+					
 
 				/*
-					process the event hashes
+					create event tokens
 				*/
 				$hash = sha1( json_encode($this->request->data['Event']) ); // serializes the event and hashes it
 
@@ -139,7 +111,6 @@ class EventsController extends AppController {
 				$this->request->data['Event']['stop_token'] = substr($hash, -$complexity, $complexity); // 9 ending characters
 
 				// create and save the event
-				$this->Event->create();
 				if ($this->Event->saveAll($this->request->data)) 
 				{
 					$this->getEventManager()->dispatch( new CakeEvent('App.Event.Add.Success', $this, array('event_id' => $this->Event->id) ) );
@@ -349,81 +320,101 @@ class EventsController extends AppController {
 		));
 		$this->set( compact('times', 'event') );
 	}
+	
+	public function trigger($event_id, $event_slug = "App.Event.afterSave.created")
+	{
+		$event = new CakeEvent($event_slug, $this->Event, array(
+			'event_id' => $event_id));
+		$this->getEventManager()->dispatch($event);
+	}
 
 	public function coordinator_view($event_id = null)
 	{
-		$user_organizations = $this->_GetUserOrganizationsByPermission('write');
-
-		// if( !$this->_CurrentUserCanRead($user_organizations) )
-		// {
-		// 	$this->Session->setFlash('You do not have permission.', 'danger');
-		// 	return $this->redirect(array('supervisor' => true,
-		// 		'controller' => 'events', 'action' => 'view', $event_id));
-		// }
-
-		$sql_date_fmt = 'Y-m-d H:i:s';
-		$contain = array(
-			'Organization', 
-			'Rsvp' => array(
-				'conditions' => array(
-					'Rsvp.status' => 'going'
-				),
-				'User'), 
-			'Skill', 
-			'Address', 
-			'EventTime' => array(
-				'Time' => array('User')
-			)
-		);
-
-		// summary all time
-		//$users = $this->_GetUsersByOrganization($event_id);
-
-		$event = $this->Event->find('first', array('conditions' => array('Event.event_id' => $event_id), 'contain' => $contain ) );
-		
-		$this->organization_id = $event['Event']['organization_id'];
-
-		if( empty($event) )
-		{
-			throw new NotFoundException( __('Page Not Found') );
-		}
-
-		if( !$this->_CurrentUserCanWrite($event['Event']['organization_id']) )
-		{
-			return $this->redirect( array('supervisor' => true, 'controller' => 'events', 'action' => 'view', $event_id) );
-		}
-		
-		$conditions = array(
-			'EventTime.event_id' => $event_id
-		);
-		$fields = array(
-			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) )/60 as EventTotal'
-		);
-		$event_total = $this->Event->EventTime->find('all', array('conditions' => $conditions, 'fields' => $fields) );
-		$this->set( compact('event_total') );
-
-		$c_conditions = array('Comment.event_id' => $event_id);
-		$c_contain = array('User', 'ParentComment' => array('User'));
-		$c_order = array('Comment.created ASC');
-		$comments = $this->Event->Comment->find('threaded', array('conditions' => $c_conditions, 'contain' => $c_contain, 'order' => $c_order) );
-
-		$user_attending = ($this->Event->Rsvp->find('count', array('conditions' => array(
-			'Rsvp.user_id' => $this->Auth->user('user_id'), 
-			'Rsvp.event_id' => $event_id,
-			'Rsvp.status' => 'going' ) ) ) == 1)? true : false;
+		if( !$this->request->is('post') )
+			CakeLog::write('error', __("Invalid request to %s came from %s", __METHOD__, $this->referer() ) );
 			
-		$not_going = $this->Event->Rsvp->find('count', array(
-			'conditions' => array(
-				'Rsvp.event_id' => $event_id,
-				'Rsvp.status' => 'not_going'
-			)
-		));
+ 		return $this->redirect( array('volunteer' => false, 'controller' => 'events', 'action' => 'view', $event_id ));
+		
+// 		$user_organizations = $this->_GetUserOrganizationsByPermission('write');
+		
+		
+
+// 		// if( !$this->_CurrentUserCanRead($user_organizations) )
+// 		// {
+// 		// 	$this->Session->setFlash('You do not have permission.', 'danger');
+// 		// 	return $this->redirect(array('supervisor' => true,
+// 		// 		'controller' => 'events', 'action' => 'view', $event_id));
+// 		// }
+
+// 		$sql_date_fmt = 'Y-m-d H:i:s';
+// 		$contain = array(
+// 			'Organization', 
+// 			'Rsvp' => array(
+// 				'conditions' => array(
+// 					'Rsvp.status' => 'going'
+// 				),
+// 				'User'), 
+// 			'Skill', 
+// 			'Address', 
+// 			'EventTime' => array(
+// 				'Time' => array('User')
+// 			)
+// 		);
+
+// 		// summary all time
+// 		//$users = $this->_GetUsersByOrganization($event_id);
+
+// 		$event = $this->Event->find('first', array('conditions' => array('Event.event_id' => $event_id), 'contain' => $contain ) );
+		
+// 		$this->organization_id = $event['Event']['organization_id'];
+
+// 		if( empty($event) )
+// 		{
+// 			throw new NotFoundException( __('Page Not Found') );
+// 		}
+		
+
+// 		if( !$this->_CurrentUserCanWrite($event['Event']['organization_id']) )
+// 		{
+// 			return $this->redirect( array('supervisor' => true, 'controller' => 'events', 'action' => 'view', $event_id) );
+// 		}
+		
+// 		$conditions = array(
+// 			'EventTime.event_id' => $event_id
+// 		);
+// 		$fields = array(
+// 			'SUM( TIMESTAMPDIFF(MINUTE, Time.start_time, Time.stop_time) )/60 as EventTotal'
+// 		);
+// 		$event_total = $this->Event->EventTime->find('all', array('conditions' => $conditions, 'fields' => $fields) );
+// 		$this->set( compact('event_total') );
+
+// 		$c_conditions = array('Comment.event_id' => $event_id);
+// 		$c_contain = array(
+// 			'User', 
+// 			'ParentComment' => array('User'),
+// 			'Mention' => array('User')
+// 		);
+// 		$c_order = array('Comment.created ASC');
+// 		$comments = $this->Event->Comment->find('threaded', array('conditions' => $c_conditions, 'contain' => $c_contain, 'order' => $c_order) );
+		
+// 		$user_attending = ($this->Event->Rsvp->find('count', array('conditions' => array(
+// 			'Rsvp.user_id' => $this->Auth->user('user_id'), 
+// 			'Rsvp.event_id' => $event_id,
+// 			'Rsvp.status' => 'going' ) ) ) == 1)? true : false;
+			
+// 		$not_going = $this->Event->Rsvp->find('count', array(
+// 			'conditions' => array(
+// 				'Rsvp.event_id' => $event_id,
+// 				'Rsvp.status' => 'not_going'
+// 			)
+// 		));
 
 
-//		$times = $this->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
-		$this->set('event_id', $event_id);
-		$this->set( compact('times', 'event', 'comments', 'user_attending', 'not_going') );
-		$this->set('title_for_layout', __('Coordinator: %s - %d%%', $event['Event']['title'], $event['Event']['rsvp_percent']));
+// //		$times = $this->Event->Time->find('all', array('conditions' => $conditions, 'fields' => $fields, 'group' => $group) );
+		
+// 		$this->set('event_id', $event_id);
+// 		$this->set( compact('times', 'event', 'comments', 'user_attending', 'not_going') );
+// 		$this->set('title_for_layout', __('Coordinator: %s - %d%%', $event['Event']['title'], $event['Event']['rsvp_percent']));
 	}
 
 	public function volunteer_index($id = null)
@@ -442,6 +433,11 @@ class EventsController extends AppController {
 		$this->set('title_for_layout', __('Upcoming Events') );
 	}
 	
+	/**
+	 * Sets an Rsvp
+	 * 
+	 * @deprecated Use Rsvp->setForUser($status, $event, [$user_id]) from now on.
+	 */
 	private function _set_rsvp($event_id, $mode = "going", $force = false)
 	{
 		if( !in_array($mode, array('going', 'not_going') ) )
@@ -544,14 +540,29 @@ class EventsController extends AppController {
 		$this->set( compact('user_events') );
 	}
 
-	public function volunteer_rsvp($event_id)
+	public function volunteer_rsvp($status, $event_id)
 	{
-		
-		$response = $this->_set_rsvp($event_id, 'going', false);
+		if( $this->Event->Rsvp->setForUser($status, $event_id) )
+		{
+			switch ($status)
+			{
+				case 'going':
+					$message = __("You are going to this event");
+					break;
+					
+				case 'maybe':
+					$message = __("You might go to this event.");
+					break;
+					
+				case 'not_going':
+					$message = __("You are not going to this event");
+					break;
+			}
+		}
 
-		$this->Session->setFlash($response['message'], 'toast');
+		$this->Session->setFlash($message, 'toast');
 		
-		return $this->redirect( array('go' => true, 'controller' => 'events', 'action' => 'view', $event_id) );
+		return $this->redirect( array('go' => false, 'controller' => 'events', 'action' => 'view', $event_id) );
 	}
 
 	public function volunteer_cancel_rsvp($event_id)
@@ -573,7 +584,12 @@ class EventsController extends AppController {
 
 			if( $this->Event->Comment->save($save) )
 			{
-				return $this->redirect( array('go' => true, 'controller' => 'events', 'action' => 'view', $event_id, '#' => sprintf('comment-%s', $this->Event->Comment->id) ) );
+				return $this->redirect( array(
+					'go' => false, 
+					'controller' => 'events', 
+					'action' => 'view', 
+					$event_id, 
+					'#' => sprintf('!comments/comment-%s', $this->Event->Comment->id) ) );
 			}
 			else
 			{
@@ -587,22 +603,6 @@ class EventsController extends AppController {
 		$conditions = array('Comment.user_id' => $this->Auth->user('user_id'), 'Comment.comment_id' => $comment_id);
 		$this->Event->Comment->deleteAll($conditions);
 		return $this->redirect($this->referer());
-	}
-
-	public function volunteer_view($event_id = null)
-	{
-		$event = $this->Event->findByEventId($event_id);
-		$this->organization_id = $event['Event']['organization_id'];
-		$c_conditions = array('Comment.event_id' => $event_id);
-		$c_contain = array('User', 'ParentComment' => array('User'));
-		$c_order = array('Comment.created ASC');
-		$user_attending = ($this->Event->Rsvp->find('count', array('conditions' => array(
-			'Rsvp.user_id' => $this->Auth->user('user_id'), 
-			'Rsvp.event_id' => $event_id,
-			'Rsvp.status' => 'going' ) ) ) == 1)? true : false;
-		$comments = $this->Event->Comment->find('threaded', array('conditions' => $c_conditions, 'contain' => $c_contain, 'order' => $c_order) );
-		$this->set( compact('event', 'comments', 'user_attending') );
-		$this->set('title_for_layout', __('Viewing Event - '. $event['Event']['title']) );
 	}
 
 	public function index($id = null)
@@ -629,18 +629,112 @@ class EventsController extends AppController {
 		$this->set('events', $this->Paginator->paginate());	
 		$this->set('title_for_layout', __('Upcoming Events') );
 	}
-
-	public function view($id = null)
+	
+	/**
+	 * Volunter view
+	 * 
+	 * @deprecated since 2.5
+	 */
+	public function volunteer_view($event_id = null)
 	{
-		// if (!$this->Event->exists($id)){
-		// 	throw new NotFoundException(__('Invalid event'));
-		// }
+		return $this->redirect( array('volunteer' => false, 'controller' => 'events', 'action' => 'view', $event_id ));
+	}
 
-		$options = array('conditions' => array('Event.' . $this->Event->primaryKey => $id));
-		$event = $this->Event->find('first', $options);
-		$this->request->data = $event;
-		$this->set( compact('event') );
-		$this->set('title_for_layout', __('Viewing Event - '. $event['Event']['title']) );
+	/**
+	 * Returns a unified, user-appropriate view
+	 * 
+	 * @param int? $event_id Event identifier.
+	 * @since version 2.5
+	 */
+	public function view($event_id = null)
+	{
+		$array_empty = array();
+		if( !$this->Event->exists($event_id) )
+			throw new NotFoundException("Page Not Found");
+			
+		$contain = array(
+			'Organization',
+			'EventTime',
+			'Comment',
+			'EventSkill' => array('Skill')
+		);
+		$conditions = array(
+			'Event.event_id' => $event_id
+		);
+			
+		$event = $this->Event->find('first', compact('contain', 'conditions'));
+		$rsvp = $this->Event->Rsvp->findByEventIdAndUserId($event_id, $this->Auth->user('user_id'), array('contain' => array() ) );
+		
+		$rsvp_going_count = $this->Event->Rsvp->find('count', array(
+			'conditions' => array(
+				'Rsvp.event_id' => $event_id,
+				'Rsvp.status' => 'going'
+			),
+			'contain' => array()
+		));
+		
+		$time_count = $this->Event->EventTime->find('count', array(
+			'conditions' => array(
+				'EventTime.event_id' => $event_id
+			),
+			'contain' => array()
+		));
+		
+		$this->set( compact('rsvp_going_count', 'time_count') );
+		
+		$this->organization_id = $event['Event']['organization_id'];
+			
+		if( $this->_CurrentUserCanWrite($event['Event']['organization_id']) )
+		{
+			$rsvp_going = $this->Event->Rsvp->find('all', array(
+				'conditions' => array(
+					'event_id' => $event_id,
+					'status' => 'going'
+				),
+				'contain' => array('User')
+			));
+			$rsvp_not_going = $this->Event->Rsvp->find('all', array(
+				'conditions' => array(
+					'event_id' => $event_id,
+					'status' => 'not_going'
+				),
+				'contain' => array('User')
+			));
+			$rsvp_maybe = $this->Event->Rsvp->find('all', array(
+				'conditions' => array(
+					'event_id' => $event_id,
+					'status' => 'maybe'
+				),
+				'contain' => array('User')
+			));
+			
+			$time = $this->Event->EventTime->find('all', array(
+				'conditions' => array('EventTime.event_id' =>$event_id),
+				'contain' => array('Time' => array('User')),
+				'order' => array('Time.modified' => 'DESC')
+			));
+			
+			$this->set('time', $time);
+			$this->set(compact('rsvp_going', 'rsvp_not_going', 'rsvp_maybe') );
+		}
+		
+		if( $this->Auth->user('user_id') ) // logged in users can see...
+		{
+			$c_conditions = array('Comment.event_id' => $event_id);
+			$c_contain = array('User', 'ParentComment' => array('User'), 'Mention' => array('User'));
+			$c_order = array('Comment.created ASC');
+			$comments = $this->Event->Comment->find('threaded', array('conditions' => $c_conditions, 'contain' => $c_contain, 'order' => $c_order) );
+		
+		
+			$this->set('rsvp', $rsvp);
+			$this->set('comment', $comments);
+		}
+		$this->set('title_for_layout', $event['Event']['title']);
+		
+		$this->set('render_container', false);
+		$this->set('event', $event);
+		
+
 
 	}
 

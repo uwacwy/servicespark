@@ -79,7 +79,7 @@
 						); ?>
 						
 					</span><br>
-					<span><?php echo h($event['Event']['description']); ?></span>
+					<span><?php echo $this->Utility->blurb( $event['Event']['description'], 75 ); ?></span>
 				</div>
 				<div class="_td">
 					<?php echo $this->Duration->format($event['Event']['start_time'], $event['Event']['stop_time']); ?>

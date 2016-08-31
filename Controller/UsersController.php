@@ -28,26 +28,6 @@ class UsersController extends AppController {
 	}
 	
 
-	public function go_login()
-	{
-		$this->redirect(array('controller' => 'users', 'action' => 'login', 'admin' => false, 'coordinator' => false, 'manager' => false));
-	}
-
-	public function volunteer_login()
-	{
-		$this->go_login();
-	}
-
-	public function coordinator_login()
-	{
-		$this->go_login();
-	}
-	
-	public function supervisor_login()
-	{
-		$this->go_login();
-	}
-
 	public function login()
 	{
 		if ($this->request->is('post'))
@@ -59,6 +39,17 @@ class UsersController extends AppController {
 				*/
 				$this->Session->delete('can_coordinate');
 				$this->Session->delete('can_supervise');
+				
+				ServiceSparkUtility::log( $this->Auth->user() );
+				
+				$this->Session->write('push_channel', ServiceSparkUtility::Hash(
+					$this->Auth->user('push_key'),
+					5
+				));
+				
+				$this->User->add_meta('login', array(
+					'ip_address' => $_SERVER['REMOTE_ADDR']
+				));
 
 				/*
 					delete recoveries
@@ -71,15 +62,154 @@ class UsersController extends AppController {
 				if( $this->User->Recovery->exists( $this->Auth->user('user_id') ) )
 				{
 					$this->User->Recovery->delete( $this->Auth->user('user_id') );
-				}	
+				}
+				
+				$dest = $this->Auth->redirectUrl();
+				if( $this->Auth->user('account_age') < (3 * 24 * 60) )
+					$dest = array('controller' => 'users', 'action' => 'welcome');
 
-	        	return $this->redirect( $this->Auth->redirectUrl() );
+	        	return $this->redirect( $dest );
 	    	}
 	    	$this->Session->setFlash(__('Invalid username or password, try again'), 'danger');
 		}
 
 		$title_for_layout = sprintf( __('Login to %s'), Configure::read('Solution.name') );
 		$this->set( compact('title_for_layout') );
+	}
+	
+	public function welcome()
+	{
+		$user_id = $this->Auth->user('user_id');
+		
+		$conditions = array(
+			'User.user_id' => $user_id
+		);
+		$contain = array(
+			'SkillUser' => array('Skill'),
+			'Permission.follow=1' => array('Organization')
+		);
+		
+		$skill_count = $this->User->SkillUser->Skill->find('count');
+		$organization_count = $this->User->Permission->Organization->find('count');
+		
+		$user = $this->User->find('first', compact('conditions', 'contain') );
+		
+		$this->set('user', $user);
+		$this->set('skill_count', $skill_count);
+		$this->set('organization_count', $organization_count);
+		
+		$this->set('render_container', false);
+
+	}
+	
+	/**
+	 * Attaches a skill to a user's profile
+	 * 
+	 */
+	public function api_skill_attach()
+	{
+		$this->response->type('json');
+		$this->response->statusCode(200);
+		$this->response->body("");
+		if( $this->request->is('post') )
+		{
+			$user_id = $this->Auth->user('user_id');
+			$skill_id = $this->request->data['skill_id'];
+			
+			$conditions = array(
+				'SkillUser.user_id' => $user_id,
+				'SkillUser.skill_id' => $skill_id
+			);
+			$attached_count = $this->User->SkillUser->find('count', array('conditions' => $conditions) );
+			
+			if( $attached_count == 0 )
+			{
+				$skill_user = array(
+					'skill_id' => $skill_id,
+					'user_id' => $user_id
+				);
+				if( $this->User->SkillUser->save($skill_user) )
+				{
+					$this->response->statusCode(201);
+					$this->response->body( json_encode(array(
+						'attached' => true,
+						'created' => true,
+						'modified' => false,
+						'skill_user_id' => $this->User->SkillUser->id
+					)));
+				}
+			}
+			else
+			{
+				$this->response->body( json_encode(array(
+					'attached' => true,
+					'created' => false,
+					'modified' => false
+				)));
+			}
+		}
+		return $this->response;
+	}
+	
+	public function skills()
+	{
+		
+	}
+	
+	public function api_skills($count = 5, $exclude = null)
+	{
+		$user_id = $this->Auth->user('user_id');
+		
+		if( !$user_id )
+			throw new ForbiddenException('This endpoint requires authentication.');
+			
+		if( !is_numeric($count) )
+			$count = 5;
+		
+		$exploded_exclude = array();
+		if( !is_null($exclude) )
+			$exploded_exclude = explode(",", $exclude);
+			
+		// returns $skill_user_id => $skill_id
+		$existing_skill_ids = $this->User->SkillUser->find('list', array(
+			'fields' => array(
+				'skill_id'
+			),
+			'conditions' => array(
+				'SkillUser.user_id' => $user_id
+			)
+		));
+		
+		$ignore = array_merge($existing_skill_ids, $exploded_exclude);
+		
+		$conditions = array('hidden' => 0);
+		
+		if( !empty($ignore) )
+			$conditions['skill_id NOT IN'] = $ignore;
+		
+		$recommended_skills = $this->User->SkillUser->Skill->find('list', array(
+			'fields' => array('skill'),
+			'conditions' => $conditions,
+			'contain' => array(),
+			'limit' => $count
+		));
+		
+		//debug( json_encode($recommended_skills) );
+		
+		$this->response->type('json');
+		$this->response->body( json_encode($recommended_skills) );
+		
+		return $this->response;
+	}
+	
+	public function api_notification()
+	{
+		$this->layout = 'ajax';
+		$notifications = $this->User->getUnreadNotification( AuthComponent::user('user_id') );
+		
+		$this->set( compact('notifications') );
+
+		
 	}
 
 /**
@@ -142,42 +272,7 @@ class UsersController extends AppController {
 
 	}
 
-/**
-	view methods
-*/
-	/**
-	 * view method
-	 *
-	 * TEMPORARILY DISABLED!
-	 *
-	 * @throws NotFoundException
-	 * @param string $username
-	 * @return void
-	 */
-	// public function view($username)
-	// {
-	// 	/*
-	// 		cake's magic methods let us use cool methods to find stuff
-	// 	*/
-	// 	$user_id = $this->User->findByUsername($username);
 
-	// 	debug($user_id);
-
-	// 	$options = array(
-	// 		'conditions' => array('User.username'  => $username),
-	// 		'contain' => array(
-	// 			'Recovery', 
-	// 			'Permission' => array('Organization'), // without this containable behavior, cake would have sent the related User back again
-	// 			'Skill',
-	// 			'Address',
-	// 			'Time' => array('Event')
-	// 		)
-	// 	);
-
-	// 	$user = $this->User->find('first', $options);
-
-	// 	$this->set( compact('user') );
-	// }
 	
 	public function notifications()
 	{
@@ -199,8 +294,6 @@ class UsersController extends AppController {
 	{
 
 		header('Content-type: application/json');
-
-
 
 		$username = ( isset($this->params->query['username']) )? $this->params->query['username']: '';
 
@@ -274,65 +367,40 @@ class UsersController extends AppController {
 	public function register()
 	{
 		//unset( $this->request->data['User']['password'] );
-
-
-		if ($this->request->is('post'))
+		
+		if( $this->request->is('post') )
 		{
-			$entry = $this->request->data;
-			/*
-				Process the password.
-				--
-				hashing is handled by the model
-				--
-				if password_l and password_r match
-					set User.password
-				else
-					blank password_l and password_r and return false so the form is displayed again
-			*/
-			if( $entry['User']['password_l'] != $entry['User']['password_r'] )
-			{
-				$this->Session->setFlash( __('The passwords did not match.  Please try again.'), 'danger' );
-				unset(
-					$entry['User']['password_l'], 
-					$entry['User']['password_r']
-				); // this will blank the fields
-
-				return false; // stops remaining processing
-			}
-			else
-			{
-				$entry['User']['password'] = $entry['User']['password_l'];
-			}
-
-			$address_ids = $skill_ids = null;
-
-			if( isset( $this->request->data['Address']) )
-				$address_ids = $this->_ProcessAddresses($this->request->data['Address'], $this->User->Address);
+			$data = $this->request->data;
+			$user = array(
+				'username' => $data['User']['username'],
+				'password' => $this->hash_for(1, 'sha1'),
+				'first_name' => $data['User']['first_name'],
+				'last_name' => $data['User']['last_name'],
+				'email' => $data['User']['email']
+			);
 			
-			if( isset($this->request->data['Skill']) )
-				$skill_ids = $this->_ProcessSkills($this->request->data['Skill'], $this->User->Skill);
-
-			unset( $entry['Address'], $entry['Skill'] );
-
-			$entry['Address'] = $address_ids;
-			$entry['Skill'] = $skill_ids;
-
-			//return;
-
-			$this->User->create();
-
-			if ( $this->User->save($entry) )
+			$verification = array(
+				'token' => $this->hash_for(1, 'sha256'),
+				'expires' => $this->User->getDataSource()->expression('DATE_ADD( NOW(), INTERVAL 1 DAY)')
+			);
+			
+			$save = array(
+				'User' => $user,
+				'Verification' => array(
+					$verification
+				)
+			);
+			
+			if( $this->User->saveAssociated($save) )
 			{
-				$this->Session->setFlash( __('This account has been created.  Login with your username and password.'), 'success' );
-				return $this->redirect( array('controller' => 'users', 'action' => 'login') );
-			}
-			else
-			{
-				$this->Session->setFlash( __('The user could not be saved. Please, try again.'), 'danger');
+				return $this->redirect( array(
+					'controller' => 'verifications',
+					'action' => 'email'
+				));
 			}
 		}
-
-		$this->set( 'title_for_layout', __('Create An Account') );
+		
+		return;
 
 	}
 

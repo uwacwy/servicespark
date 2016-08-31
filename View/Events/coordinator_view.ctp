@@ -5,7 +5,6 @@
 		$stopTime = new DateTime($event['Event']['stop_time']);
 	?>
 
-
 	<div class="row">
 		<div class="col-md-3">
 			<h3>Viewing Event</h3>
@@ -42,7 +41,7 @@
 			<h1><small><?php echo $event['Organization']['name']; ?></small><br>
 				<?php echo h($event['Event']['title']); ?>
 				<small><?php echo $this->Duration->format($startTime->format(DateTime::W3C), $stopTime->format(DateTime::W3C) ); ?></small></h1>
-			<blockquote><?php echo h($event['Event']['description']); ?></blockquote>
+			<div class="markdown"><?php echo $this->Utility->markdown($event['Event']['description']); ?></div>
 			<?php
 				$rsvp_count = $event['Event']['rsvp_count'];
 				echo $this->Element('rsvp', compact('rsvp_count', 'user_attending') );
@@ -124,9 +123,7 @@
 			<hr>
 			
 			<div class="addresses">
-			
 			<?php echo $this->Element('print_addresses', array('addresses' => $event['Address']) ); ?>
-
 			</div>
 			
 			<hr>

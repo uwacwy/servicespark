@@ -81,13 +81,11 @@ class Event extends AppModel
 		);
 		$contain = array('Address', 'Organization');
 		
-		$event = $this->find('first', $event_id);
+		$event = $this->find('first', compact('conditions', 'contain'));
 		
 		// Event should be at $event['Event']
-		$start_time_dt = new DateTime($event['Event']['start_time']);
-		$stop_time_dt = new DateTime($event['Event']['stop_time']);
-		$start_time_utc = CakeTime::convert( $start_time_dt->getTimestamp(), 'UTC');
-		$stop_time_utc = CakeTime::convert( $stop_time_dt->getTimestamp(), 'UTC');
+		$start_time_utc = CakeTime::convert( CakeTime::fromString($event['Event']['start_time']), 'UTC');
+		$stop_time_utc = CakeTime::convert( CakeTime::fromString($event['Event']['stop_time']), 'UTC');
 		$now = CakeTime::convert( time(), 'UTC');
 		$event_url = Router::url(array(
 			'go' => true,
@@ -102,25 +100,27 @@ class Event extends AppModel
 			$address_one_liners = Hash::extract($event, 'Address.{n}.one_line');
 		}
 		
-		$description = sprintf("%s\\n\\n%s", $event['Event']['description'], $event_url);
+		$description = sprintf("%s\\n\\n%s\\n%s", $event['Event']['description'], $event_url, date_default_timezone_get());
 		
 		$lines = array(
 			'BEGIN:VCALENDAR',
 			'VERSION:2.0',
 			'PRODID:-//uwacwy/servicespark//EN',
-			'CALSCALE:GREGORIAN',
+			'METHOD:REQUEST',
 			'BEGIN:VEVENT',
-			sprintf('DTEND:%s', $this->dateToCal($stop_time_utc)),
-			sprintf('UID:%s', hash('sha256', $event_url) ), // this can be used to automate cancellations
+			'ATTENDEE;RSVP=TRUE;',
+			' CN=bradkovach@gmail.com:MAILTO:bradkovach@gmail.com',
 			sprintf('DTSTAMP:%s', $this->dateToCal($now) ),
-			sprintf('LOCATION:%s', $this->escapeString( implode(' or ', $address_one_liners) ) ),
+			sprintf('UID:%s', hash('sha256', $event_url) ), // this can be used to automate cancellations
+			sprintf('SUMMARY:%s', $this->escapeString($event['Event']['title'])), // event title
 			sprintf('DESCRIPTION:%s', $this->escapeString($description) ), // event description
-			sprintf('ORGANIZER;CN=%s\;MAILTO:%s', 
-				$this->escapeString($event['Organization']['name']), 
+			sprintf('DTSTART:%s', $this->dateToCal($start_time_utc)),
+			sprintf('DTEND:%s', $this->dateToCal($stop_time_utc)),
+			sprintf('LOCATION:%s', $this->escapeString( implode(' or ', $address_one_liners) ) ),
+			sprintf('ORGANIZER;CN=%s:mailto:%s', 
+				$this->escapeString(sprintf("%s via %s", $event['Organization']['name'], Configure::read('Solution.name') ) ),
 				$this->escapeString(sprintf("organization-%s@reply.servicespark.org", $event['Organization']['organization_id']) ) ),
 			sprintf('URL;VALUE=URI:%s', $this->escapeString( $event_url ) ),
-			sprintf('SUMMARY:%s', $this->escapeString($event['Event']['title'])), // event title
-			sprintf('DTSTART:%s', $this->dateToCal($start_time_utc)),
 			'END:VEVENT',
 			'END:VCALENDAR'
 		);
@@ -162,12 +162,6 @@ class Event extends AppModel
 			'joinTable' => 'addresses_events',
 			'foreignKey' => 'event_id',
 			'associationForeignKey' => 'address_id'
-		),
-		'Skill' => array(
-			'className' => 'Skill',
-			'joinTable' => 'events_skills',
-			'foreignKey' => 'event_id',
-			'associationForeignKey' => 'skill_id'
 		)
 	);
 
@@ -179,6 +173,9 @@ class Event extends AppModel
 			'dependent' => true,
 		),
 		'Comment' => array(
+			'dependent' => true,
+		),
+		'EventSkill' => array(
 			'dependent' => true,
 		)
 

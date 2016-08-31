@@ -36,19 +36,6 @@ class Skill extends AppModel
 /**
 	Associations
 */
-	public $hasAndBelongsToMany = array(
-		'User' => array(
-			'className' => 'User',
-			'joinTable' => 'skills_users',
-			'foreignKey' => 'skill_id',
-			'associationForeignKey' => 'user_id'
-		),
-		'Event' => array(
-			'className' => 'Event',
-			'joinTable' => 'events_skills',
-			'foreignKey' => 'skill_id',
-			'associationForeignKey' => 'event_id'
-		)
-	);
+	var $hasMany = array('EventSkill', 'SkillUser');
 
 }

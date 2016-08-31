@@ -1,5 +1,6 @@
 <?php
 App::uses('AppModel', 'Model');
+App::uses('SimplePasswordHasher', 'Controller/Component/Auth');
 /**
  * User Model
  *
@@ -24,7 +25,8 @@ class User extends AppModel
 
 	public $virtualFields = array(
 		'full_name' => 'CONCAT(User.first_name, " ", User.last_name)',
-		'account_age' => 'TIMESTAMPDIFF( MINUTE, User.created, Now() )'
+		'account_age' => 'TIMESTAMPDIFF( MINUTE, User.created, Now() )',
+		'push_key' => 'CONCAT(User.user_id, User.password)'
 	);
 
 	public $validate = array(
@@ -33,7 +35,7 @@ class User extends AppModel
 				'rule' => 'isUnique'
 			),
 			'Your username must be at least 3 characters with no spaces.' => array(
-				'rule' => '/^[a-zA-Z0-9_]{3,}$/i'
+				'rule' => '/^[a-zA-Z0-9_\.]{3,}$/i'
 			)
 		),
 		'email' => array(
@@ -50,12 +52,6 @@ class User extends AppModel
 	public $hasOne = array('Recovery');
 
 	public $hasAndBelongsToMany = array(
-		'Skill' => array(
-			'className' => 'Skill',
-			'joinTable' => 'skills_users',
-			'foreignKey' => 'user_id',
-			'associationForeignKey' => 'skill_id'
-		),		
 		'Address' => array(
 			'className' => 'Address',
 			'joinTable' => 'addresses_users',
@@ -65,6 +61,7 @@ class User extends AppModel
 	);
 
 	public $hasMany = array(
+		
 		'TimeComment' => array(
 			'dependent' => true
 		),
@@ -78,6 +75,21 @@ class User extends AppModel
 			'dependent' => true // when the User is deleted, all Time entries are deleted
 		),
 		'Comment' => array(
+			'dependent' => true
+		),
+		'UserMeta' => array(
+			'dependent' => true
+		),
+		'Email' => array(
+			'dependent' => true
+		),
+		'Mention' => array(
+			'dependent' => true
+		),
+		'Verification' => array(
+			'dependent' => true
+		),
+		'SkillUser' => array(
 			'dependent' => true
 		)
 
@@ -97,7 +109,36 @@ class User extends AppModel
 		}
 		return true;
 	}
-
 	
+	public function get_meta( $key, $user_id = null, $type = 'all', $fields = array('value') )
+	{
+		if($user_id == null)
+			$user_id = AuthComponent::user('user_id');
+			
+		$result = $this->UserMeta->find($type, array(
+			'conditions' => array(
+				'user_id' => $user_id,
+				'key' => $key
+			),
+			'fields' => 'UserMeta.value',
+			'contain' => array()
+		));
+		
+		return Hash::map($result, '{n}.UserMeta.value', 'json_decode' );
+	}
+	
+	public function add_meta($key, $value, $user_id = null)
+	{
+		if($user_id == null)
+			$user_id = AuthComponent::user('user_id');
+			
+		$value = json_encode($value);
+		
+		return $this->UserMeta->save( array(
+			'user_id' => $user_id,
+			'key' => $key,
+			'value' => $value
+		) );
+	}
 
 }
