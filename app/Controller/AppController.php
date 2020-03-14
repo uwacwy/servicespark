@@ -48,7 +48,6 @@ class AppController extends Controller {
 		'Paginator',
 		'Form' => array('className' => 'BoostCake.BoostCakeForm'),
 		'Notification' => array('className' => 'Notification.Notification')
-		//'Paginator' => array('className' => 'BoostCake.BoostCakePaginator'),
 	);
 
 	public $components = array(
