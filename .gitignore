@@ -1,5 +1,4 @@
-Config/*
-tmp/*
+
 
 #OSX generated files
 
@@ -12,6 +11,10 @@ ehthumbs.db
 Thumbs.db
 node_modules/
 
+app/tmp/
+app/Config/database.php
+app/Config/email.php
 Plugin/
 vendor/
-webroot/node_modules/
+www/node_modules/
+composer.phar

@@ -25,6 +25,9 @@ if (!defined('DS')) {
 	define('DS', DIRECTORY_SEPARATOR);
 }
 
+/**
+ * Define to a full path to the ServiceSpark git repo.
+ */
 if( !defined('REPO') ) {
 	define('REPO',
 		dirname( // $
@@ -51,7 +54,7 @@ if (!defined('ROOT')) {
 
 /**
  * The actual directory name for the "app".
- * by default, $/app
+ * by default, just 'app'
  */
 if (!defined('APP_DIR')) {
 	define('APP_DIR', 'app');
