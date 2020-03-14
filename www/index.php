@@ -39,6 +39,20 @@ if( !defined('REPO') ) {
 }
 
 /**
+ * Define the path to the cache directory
+ */
+if( !defined('CACHE') ) {
+	define('CACHE', REPO . DS . 'cache' . DS);
+}
+
+/**
+ * Define the path to the LOGS directory
+ */
+if( !defined('LOGS') ) {
+	define('LOGS', REPO . DS . 'logs' . DS);
+}
+
+/**
  * These defines should only be edited if you have cake installed in
  * a directory layout other than the way it is distributed.
  * When using custom settings be sure to use the DS and do not add a trailing DS.
