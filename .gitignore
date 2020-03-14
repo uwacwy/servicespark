@@ -9,12 +9,15 @@
 .Trashes
 ehthumbs.db
 Thumbs.db
-node_modules/
 
-app/tmp/
+app/Config/servicespark.bootstrap.php
+app/Config/servicespark.events.php
 app/Config/database.php
 app/Config/email.php
 Plugin/
 vendor/
 www/node_modules/
 composer.phar
+
+logs/
+cache/
