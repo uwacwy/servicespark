@@ -10,14 +10,21 @@
 ehthumbs.db
 Thumbs.db
 
-app/Config/servicespark.bootstrap.php
-app/Config/servicespark.events.php
+# Forbid someone to check in their salts and cipherSeed
+app/Config/core.php
 app/Config/database.php
 app/Config/email.php
+
+# ServiceSpark configuration files
+app/Config/servicespark.bootstrap.php
+app/Config/servicespark.events.php
+
+# Package management
 Plugin/
 vendor/
 www/node_modules/
 composer.phar
 
+# Logs and application state
 logs/
 cache/
