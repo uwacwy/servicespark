@@ -24,7 +24,7 @@ class OrganizationsController extends AppController
 	 * @var array
 	 */
 	public $components = array('Paginator');
-	public $helpers = array('Address', 'PhpExcel');
+	public $helpers = array('Address');
 
 	public function api_get_organization($organization_id)
 	{
@@ -141,7 +141,6 @@ class OrganizationsController extends AppController
 				$id)
 		);
 	}
-
 
 	/**
 	 * go_add method
