@@ -1,0 +1,78 @@
+<?php
+
+/**
+ * Name your site here.  Although this application is called ServiceSpark, 
+ * you can change the name to anything you wish.
+ */
+Configure::write('Solution.name','ServiceSpark');
+
+/**
+ * Describe your site's purpose.
+ */
+Configure::write('Solution.description', 'makes your community better by helping you volunteer doing things you love.');
+
+/**
+ * The full base of your website. Typically, this is just your domain with
+ * https:// in front of it.
+ */
+Configure::write('App.fullBaseUrl', 'https://www.servicespark.org');
+
+/**
+ * Your site's default timezone.
+ * @see https://www.php.net/manual/en/timezones.php
+ */
+$timezone = 'America/Denver';
+
+date_default_timezone_set($timezone);
+Configure::write('Config.timezone', $timezone);
+
+/**
+ * Enable Google Maps by providing a key for the JS library
+ */
+Configure::write('Google.maps.api_key', '-google-maps-api-key-here-');
+
+/**
+ * Enable Google Analytics by providing your property's tracking id.
+ */
+Configure::write('Google.analytics.tracking_id', "UA-tracking-id");
+
+/**
+ * These are the routing prefixes used by the application. For most people
+ * you don't need to change these. If you want to disable the API, remove
+ * 'api' from the end.
+ */
+Configure::write('Routing.prefixes', array(
+	'go', 
+	'admin', 
+	'coordinator', 
+	'volunteer', 
+	'supervisor', 
+	'json', 
+	'api'
+) );
+
+/**
+ * These are used for an expirimental reputation feature.
+ */
+Configure::write('Solution.reputation.cancel_rsvp', -50);
+Configure::write('Solution.reputation.clock_in', 100);
+Configure::write('Solution.reputation.rsvp_bonus', 75);
+
+/**
+ * You shouldn't need to change the directory to the Plugin directory,
+ * but if you do, do it here.
+ * 
+ * Install these resources with composer.phar in the root of the repo.
+ */
+App::build(
+	array(
+		'Plugin' => array(REPO . DS . 'Plugin' . DS)
+	)
+);
+
+require_once APP . 'Config' . DS . 'servicespark.events.php';
+
+CakePlugin::load('BoostCake');
+CakePlugin::load('Mandrill');
+CakePlugin::load('Notification');
+CakePlugin::load('PhpExcel');

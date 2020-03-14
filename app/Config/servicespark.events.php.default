@@ -1,0 +1,36 @@
+<?php
+
+
+App::uses('CakeEventManager', 'Event');
+
+// Notification Listener Configuration
+	
+	App::uses('NotificationListener', 'Lib/Event');
+	CakeEventManager::instance()->attach( new NotificationListener() );
+
+// Email Listener Configuration
+
+	// DefaultEmailListener - uses PHP mail to send email; slow
+	// CakeEventManager::instance()->attach( new DefaultEmailListener() );
+	// TODO: write default email listener
+	
+	// MandrillEmailListener - uses Mandrill to send email; faster
+	// CakeEventManager::instance()->attach( new MandrillListener('mandrill_api_prod') );
+	App::uses('MandrillListener', 'Lib/Event');
+	CakeEventManager::instance()->attach( new MandrillListener('mandrill_api_prod') );
+
+// Webhook Configuration
+	
+	// SlackListener - posts detailed ServiceSpark activity to a SlackWebhook
+	App::uses('SlackListener', 'Lib/Event');
+	CakeEventManager::instance()->attach( new SlackListener('--slack incoming webhook here--') );
+	
+	App::uses('RsvpCountListener', 'Lib/Event');
+	CakeEventManager::instance()->attach( new RsvpCountListener() );
+
+// Incoming Webhook Configuration
+
+    App::uses('LogListener', 'Lib/Event');
+    CakeEventManager::instance()->attach( new LogListener('-- amazon sns listener here --') );
+
+	
