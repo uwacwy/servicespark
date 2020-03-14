@@ -17,15 +17,36 @@
  * @license       http://www.opensource.org/licenses/mit-license.php MIT License
  */
 
+ if( !defined('REPO') ) {
+	 define( 'REPO', dirname(dirname(dirname(__FILE__))));
+ }
+
 $ds = DIRECTORY_SEPARATOR;
-$dispatcher = 'Cake' . $ds . 'Console' . $ds . 'ShellDispatcher.php';
+
+$cake_lib = implode( $ds, [
+	dirname(dirname(dirname(__FILE__))),
+	'vendor',
+	'cakephp',
+	'cakephp',
+	'lib'
+]);
+
+$dispatcher = implode(
+	$ds,
+	[
+		$cake_lib,
+		'Cake',
+		'Console',
+		'ShellDispatcher.php'
+	]
+);
 
 if (function_exists('ini_set')) {
 	$root = dirname(dirname(dirname(__FILE__)));
 
 	// the following line differs from its sibling
 	// /lib/Cake/Console/Templates/skel/Console/cake.php
-	ini_set('include_path', $root . $ds . 'lib' . PATH_SEPARATOR . ini_get('include_path'));
+	ini_set('include_path', $cake_lib . PATH_SEPARATOR . ini_get('include_path'));
 }
 
 if (!include $dispatcher) {
