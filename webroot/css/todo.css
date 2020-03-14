@@ -1,0 +1,32 @@
+select[disabled]{
+    color: #aaa;
+    background-color: #ddd;
+    border: solid 1px #aaa;
+}
+
+.radio-bar:hover .radio-bar__label:hover {
+    border-color: #bbb;
+    position: relative;
+    z-index: 1;
+  }
+
+.radio-bar:hover .radio-bar__label {
+    border-color: #ddd;
+}
+
+.text-very-quiet {
+    color: #ddd;
+}
+
+.quiet-select {
+    border: solid 1px #ddd;
+    border-radius: 2px;
+}
+
+.sort {}
+.sort--active.sort--asc:after {
+    content: "\2193"
+}
+.sort--active.sort--desc:after {
+    content: "\2191"
+}

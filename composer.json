@@ -1,10 +1,43 @@
 {
+    "name": "uwacwy/servicespark",
+    "description": "A CakePHP 2.x application to manage and track volunteer activity in your community.",
+    "type": "project",
+    "license": "MIT",
+    "repositories": [
+        {
+            "type": "git",
+            "url": "https://github.com/cakephp/cakephp.git"
+        },
+        {
+            "type": "git",
+            "url": "https://github.com/a2design-inc/mandrill-cakephp-plugin.git"
+        },
+        {
+            "type": "git",
+            "url": "https://github.com/aschelch/cakephp-notification-plugin.git"
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "segy/php-excel",
+                "version": "1.0.0",
+                "type": "cakephp-plugin",
+                "source": {
+                    "url": "https://github.com/segy/PhpExcel.git",
+                    "type": "git",
+                    "reference": "master"
+                },
+                "extra": {
+                    "installer-name": "PhpExcel"
+                }
+            }
+        }
+    ],
     "require": {
-        "slywalker/boost_cake": "*"
-    },
-    "extra" : {
-    	"installer-paths" : {
-    		"Plugin/BoostCake" : ["slywalker/boost_cake"]
-    	}
+        "cakephp/cakephp": "2.4.7",
+        "a2design-inc/mandrill-cakephp-plugin": "1.0.1",
+        "slywalker/boost_cake": "*",
+        "aschelch/cakephp-notification-plugin": "dev-master",
+        "segy/php-excel": "*"
     }
 }

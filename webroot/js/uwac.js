@@ -63,10 +63,42 @@ $document.ready(function(){
 	
 	$('[data-toggle="tooltip"]').tooltip();
 
+	$('#TimeVolunteerIndexForm').submit(function(e){
+		var $form = $(this);
+		setTimeout(function(){
+			$form.find('.btn').attr('disabled', true);
+		}, 0);
+		return true;
+	});
+
+	$('#TimeVolunteerInForm').submit(function(e) {
+		var $form = $(this);
+		setTimeout(function(){
+			$form.find('.btn').attr('disabled', true);
+		}, 0);
+		return true;
+	})
+
+	$('body').on('click', '.time__blank', function(e){
+		var cbx = $(this);
+		console.log('blank clicked');
+		var isChecked = cbx.prop('checked');
+		
+		cbx
+			.parent() // ._td
+			.parent() // ._tr
+			.find('.time__stop_time')
+			.prop('disabled', isChecked);
+		
+	})
+
 	$('.comments').on('click', '.comment-reply-trigger', function(e){
 		e.preventDefault();
-		$(this).toggleClass('active inactive').parent().find(".comment-reply").slideToggle();
-		console.log('displaying comment form');
+		$(this)
+			.toggleClass('active inactive')
+			.parent()
+			.find(".comment-reply")
+			.slideToggle();
 		return false;
 	});
 	$('body').on('change cut paste drop keydown', '.reply-body', function(e){
@@ -93,7 +125,6 @@ $document.ready(function(){
 	}, 2500);
 	
 	$('.append-username').each(function(idx){
-		console.log('username found');
 		var $appender = $(this);
 		
 		$appender.on('click', function(e){
@@ -103,10 +134,86 @@ $document.ready(function(){
 				var $cmtBlock = $(this);
 				var newComment = $cmtBlock.val() + " @" + $appender.text();
 				$cmtBlock.val( newComment.trim() + " " );
-				$cmtBlock.focus();
+				if( !e.ctrlKey ) {
+					$cmtBlock.focus();
+				}
 			});
 			
 			return false;
+		});
+	});
+
+	function toast(message) {
+		$('<div />')
+			.addClass('toast')
+			.text(message)
+			.appendTo($('.toasts'))
+			.delay(2500)
+			.fadeOut('fast', function(){
+				$(this).remove()
+			});
+	}
+
+	function clearAll($radioBar) {
+		return $radioBar
+			.find(".radio-bar__label")
+			.removeClass("radio-bar__label--selected");
+	}
+
+	function select($radioBar, $radio, init = false) {
+		if(!init) {
+			let payload = {};
+			payload[ $radioBar.data('model') ] = {};
+			payload[ $radioBar.data('model') ][$radio.attr('name')] = $radio.attr('value')
+		
+			return $.ajax({
+				method: $radioBar.data('method'),
+				data: JSON.stringify(payload),
+				headers: {
+					"Accept": 'application/json'
+				},
+				url: $radioBar.data('url'),
+				dataType: "json",
+				contentType: "application/json; charset=utf-8",
+			}).then(
+				function(success) {
+					if( success[ $radioBar.data('model') ][ $radio.attr('name') ] == $radio.attr('value')) {
+						var words = {
+							going: "are now going",
+							maybe: "are interested",
+							not_going: "are not going"
+						};
+						toast("You " + words[$radio.attr('value')] + " to this event.");
+						$radio
+							.closest(".radio-bar__label")
+							.addClass("radio-bar__label--selected")
+					} else {
+						$radioBar.addClass("radio-bar--error");
+					}
+					
+				}, function(error) {
+					$radioBar.addClass("radio-bar--error");
+				}
+			)
+		} else {
+			$radio
+				.closest(".radio-bar__label")
+				.addClass("radio-bar__label--selected")
+		}
+	}
+
+	$(".radio-bar").each(function() {
+		var $radioBar = $(this);
+		clearAll($radioBar);
+		$radioBar.find(".radio-bar__radio").each(function(rb, idx, all) {
+			var $radio = $(this);
+			if ($radio.prop("checked")) {
+				select($radioBar, $radio, true);
+			}
+			$radio.on("change", function(e) {
+				clearAll($radioBar);
+				return select($radioBar, $radio);
+			});
 		});
 	});
 	
@@ -180,15 +287,9 @@ $document.ready(function(){
 						{
 							$this.parent().toggleClass( $this.attr('data-toggle-class') );
 						}
+
+						toast(r.response.message);
 						
-						$('<div />')
-							.addClass('toast')
-							.text(r.response.message)
-							.appendTo($body)
-							.delay(2500)
-							.fadeOut('fast', function(){
-								$(this).remove()
-							});
 					}
 				});
 			});
@@ -221,17 +322,15 @@ $document.ready(function(){
 					{
 						$this.parent().toggleClass( $this.attr('data-toggle-class') );
 					}
-					
-					console.log(r);
-					
-					$('<div />')
-						.addClass('toast')
-						.text(r.response.message)
-						.appendTo($body)
-						.delay(2500)
-						.fadeOut('fast', function(){
-							$(this).remove()
-						});
+
+					if( on_success === 'manage_parent_class' ) {
+						$this.parent()
+							.addClass($this.attr('data-add-class'))
+							.removeClass($this.attr('data-remove-class'));
+					}
+
+					toast( r.response.message );
+										
 				}
 			});
 			return false;

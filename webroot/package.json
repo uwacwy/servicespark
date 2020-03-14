@@ -1,0 +1,38 @@
+{
+  "name": "servicespark",
+  "version": "1.0.0",
+  "description": "Supercharge community service in your area.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uwacwy/servicespark.git"
+  },
+  "keywords": [
+    "community",
+    "service",
+    "volunteer"
+  ],
+  "author": "Brad Kovach",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/uwacwy/servicespark/issues"
+  },
+  "homepage": "https://github.com/uwacwy/servicespark#readme",
+  "devDependencies": {
+    "ts-loader": "^4.0.1",
+    "typescript": "^2.7.2",
+    "webpack": "^4.1.1",
+    "webpack-cli": "^2.0.11"
+  },
+  "dependencies": {
+    "@types/angular": "^1.6.43",
+    "@uirouter/angularjs": "^1.0.15",
+    "angular": "^1.6.9"
+  },
+  "prettier": {
+    "useTabs": true
+  }
+}
