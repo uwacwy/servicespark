@@ -32,7 +32,7 @@
 	"dependencies": {
 		"@types/angular": "^1.6.43",
 		"@uirouter/angularjs": "^1.0.15",
-		"angular": "^1.6.9",
+		"angular": "^1.7.9",
 		"moment": "^2.21.0",
 		"npm": "^5.8.0",
 		"showdown": "^1.8.6"
