@@ -8,22 +8,69 @@ ServiceSpark is maintained by @bradkovach for the United Way of Albany County.  
 Use the 5-minute installer from https://github.com/uwacwy/servicespark-installer
 
 ## Install
-1. Install CakePHP 2.x on your webserver. 
-2. Make sure CakePHP is able to connect to your database.  
-3. Copy the `Config/` directory somewhere safe.
-4. Delete the `app` directory
-5. Replace the contents of the `app/` directory with this repository.
+
+### 1. Clone Repository
+
+```bash
+git clone https://github.com/uwacwy/servicespark.git servicespark
+```
+
+#### Verify the installation...
+```bash
+tree -L 1 --dirsfirst -F servicespark
+```
+
+You should see the following output...
+
+```
+servicespark/
+├── app/
+├── cache/
+├── install/
+├── logs/
+├── www/
+├── composer.json
+├── composer.lock
+└── README.md
+
+5 directories, 3 files
+```
+
+### 2. Install Dependencies with Composer
+
+ServiceSpark uses plugin packages that are not in the Packagist.org repository.  As a result, enumerating the packages may take a very long time.  It may time out, so try again, as composer will pickup where it left off.
+
+#### With `composer` installed globally...
+```bash
+cd servicespark
+composer install
+```
+
+#### Install and use local `composer.phar` locally...
+```bash
+cd servicespark
+curl https://getcomposer.org/installer | php
+php composer.phar install
+```
+
+#### If Composer times out during `install`...
+You may need to disable the composer process timeout, as the cakephp/cakephp repository is large.  Prepend your composer command with `COMPOSER_PROCESS_TIMEOUT=0`
+
+```bash
+# when installing globally...
+COMPOSER_PROCESS_TIMEOUT=0 composer install
+# when installing locally...
+COMPOSER_PROCESS_TIMEOUT=0 php composer.phar install
+```
 
 ### Database installation
 Execute the contents of `sql/install.sql` on your database.
 
 ### Application Settings
-Open `Config/bootstrap.php` and add the following at line ~28
-```php
-Configure::write('Solution.name','ServiceSpark');
-Configure::write('Solution.description','makes your community better by helping you volunteer doing things you love.');
-Configure::write('Google.maps.api_key', '---your---google---maps---api---key---here');
-```
+Open and edit the following files and save removing `.default` from the filenames...
+
+- `$/app/Config/servicespark.bootstrap.php.default`
+- `$/app/Config/servicespark.events.php.default`
 
 ### Adjust Routing Prefixes
 Open `Config/core.php` and add the following at line ~145
@@ -31,17 +78,15 @@ Open `Config/core.php` and add the following at line ~145
 Configure::write('Routing.prefixes', array('go', 'admin', 'coordinator', 'volunteer', 'supervisor', 'json') );
 ```
 
-### Adjust the timezone for DB connection and PHP installation if necessary.
-
-Type a comma `,` after line 9, a return and add the following line to adjust database time zone
-```php
-'settings' => array( 'time_zone' => "'-06:00'" )
-```
 ### Start using ServiceSpark
-Visit your ServiceSpark installation and create an account.  Before you can begin using ServiceSpark, you will also need to create an Organization.  At the moment, manually editing the `users` table is the only way to give yourself full administrative privileges.
+Visit your ServiceSpark installation and create an account.  Before you can begin using ServiceSpark, you will also need to create an Organization.
 
-### If you are attempting to create events
-1. Create an organization
-2. Join the organization
+To make yourself a super administrator, edit your user row in the `users` table.
+
+At the moment, manually editing the `users` table is the only way to give yourself full administrative privileges.
+
+### To create events
+1. Create an organization (Volunteer > Create Organization)
+2. Join the organization (Volunteer > Join Organizations)
 3. Find the permission row in `permissions` that corresponds to your organization id and your user id and set the `write` field to `1`
 4. Logout and log back in to ServiceSpark.  You will now be able to coordinate events for your organization.
