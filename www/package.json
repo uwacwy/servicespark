@@ -30,7 +30,7 @@
   "dependencies": {
     "@types/angular": "^1.6.43",
     "@uirouter/angularjs": "^1.0.15",
-    "angular": "^1.6.9"
+    "angular": "^1.8.0"
   },
   "prettier": {
     "useTabs": true
