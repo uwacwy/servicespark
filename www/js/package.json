@@ -35,7 +35,7 @@
 		"angular": "^1.6.9",
 		"moment": "^2.21.0",
 		"npm": "^5.8.0",
-		"showdown": "^1.8.6"
+		"showdown": "^1.9.1"
 	},
 	"prettier": {
 		"useTabs": true,
