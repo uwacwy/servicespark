@@ -34,7 +34,7 @@
         }
     ],
     "require": {
-        "cakephp/cakephp": "2.4.7",
+        "cakephp/cakephp": "3.10.3",
         "a2design-inc/mandrill-cakephp-plugin": "1.0.1",
         "slywalker/boost_cake": "*",
         "aschelch/cakephp-notification-plugin": "dev-master",
